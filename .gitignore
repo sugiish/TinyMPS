@@ -4,3 +4,5 @@
 *.json
 
 ./Eigen/*
+
+*.dSYM
