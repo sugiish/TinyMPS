@@ -3,4 +3,4 @@
 *.o
 *.json
 
-./Eigen
+./Eigen/*
