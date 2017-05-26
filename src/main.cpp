@@ -3,6 +3,9 @@
 
 using Eigen::MatrixXd;
 
+using namespace Eigen;
+using namespace std;
+
 int main()
 {
   MatrixXd m(2,2);
