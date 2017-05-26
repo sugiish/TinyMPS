@@ -37,6 +37,7 @@
 *.exe
 *.out
 *.app
+mps
 
 # Windows image file caches
 Thumbs.db
