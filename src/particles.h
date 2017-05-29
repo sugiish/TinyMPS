@@ -3,6 +3,10 @@
 
 #include<Eigen/Dense>
 
+
+using namespace Eigen;
+using namespace std;
+
 class Particles
 {
 
