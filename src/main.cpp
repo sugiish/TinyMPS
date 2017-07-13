@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 
+#include "particles.h"
+
 using namespace Eigen;
 using namespace std;
 
@@ -13,5 +15,10 @@ int main()
     m(0,1) = -1;
     m(1,1) = m(1,0) + m(0,1);
     std::cout << m << std::endl;
+
+    // temp
+
+    Particles* pt;
+    pt = new Particles(10, 3);
 
 }

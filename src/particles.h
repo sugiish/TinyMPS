@@ -20,8 +20,13 @@ public:
 	MatrixXd temporal_position;
 	MatrixXd temporal_velocity;
 
-	Particles(int particles_number);
-	~Partricles();
+	VectorXi type;
+
+	Particles(int particles_number, int dimension);
+	virtual ~Particles();
+
+private:
+	int dimension;
 
 };
 
