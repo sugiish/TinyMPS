@@ -11,10 +11,10 @@ class Space
 public:
 	Particles particles;
 	int dimension;
-	VectorXd lowerLimit;
-	VectorXd HigherLimit;
-	
 
+	
+	Space();
+	virtual ~Space();
 
 };
 

@@ -2,6 +2,10 @@
 
 #include <Eigen/Dense>
 
+
+/**
+ * Class for describing particles status.
+ */
 Particles::Particles(int particles_number, int dimension)
 {
 	this->particles_number = particles_number;
@@ -14,9 +18,8 @@ Particles::Particles(int particles_number, int dimension)
 	temporal_position = MatrixXd::Zero(particles_number, dimension);
 	temporal_velocity = MatrixXd::Zero(particles_number, dimension);
 
-	type = VectorXi::Zero(particles_number);
-
-
+	particles_type = VectorXi::Zero(particles_number);
+	ghost_particles = VectorXi::Zero(particles_number);
 
 }
 

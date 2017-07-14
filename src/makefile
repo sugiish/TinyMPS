@@ -1,3 +1,8 @@
+CXX = g++
+CXXFLAGS = -O2 -Wall
+
+
+.PHONY: clean
 
 mps: main.o particles.o
 	g++ -Wall main.o particles.o
@@ -11,4 +16,4 @@ particles.o: particles.cpp
 particles.o: particles.h
 
 clean:
-	rm *.o *.out
+	rm -f *.o *.out

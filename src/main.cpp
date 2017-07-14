@@ -1,12 +1,14 @@
+#include "particles.h"
+
 #include <iostream>
 #include <Eigen/Dense>
-
-#include "particles.h"
 
 using namespace Eigen;
 using namespace std;
 
-// This is a sample code using mps library.
+/**
+ * This is a sample code using mps library.
+ */
 int main()
 {
     MatrixXd m(2,2);
