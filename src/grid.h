@@ -18,14 +18,15 @@ public:
 private:
 	int dimension;
 
-	MatrixXd& coordinates;
-	Vector3d& lower_coordinate;
-	Vector3d& higher_coordinate;
+	const MatrixXd& coordinates;
+	const Vector3d& lower_coordinate;
+	const Vector3d& higher_coordinate;
 
 	std::vector<int> hash;
 	std::vector<int> index;
 
 	double grid_size;
+	int grid_number[3];
 
 };
 

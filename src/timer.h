@@ -13,6 +13,9 @@ public:
 
     double cfl_condition;
 
+    Timer();
+    virtual ~Timer();
+
 };
 
 #endif //MPS_TIMER_H_INCLUDED

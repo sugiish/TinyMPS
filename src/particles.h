@@ -1,7 +1,11 @@
 #ifndef MPS_PARTICLES_H_INCLUDED
 #define MPS_PARTICLES_H_INCLUDED
 
-#include<Eigen/Dense>
+#include <string>
+
+#include <Eigen/Dense>
+
+#include "timer.h"
 
 using namespace Eigen;
 using namespace std;
@@ -21,12 +25,19 @@ public:
 	MatrixXd temporal_velocity;
 
 	VectorXi particles_type;
+	VectorXi ghost_particles;
+
+	Timer timer;
 
 	Particles(int particles_number, int dimension);
+	Particles(string path, int dimension);
 	virtual ~Particles();
 
 private:
 	int dimension;
+
+	void initialize(int particles_number, int dimension);
+	int readGridFile(string path, int dimension);
 
 };
 

@@ -9,6 +9,7 @@ Reader::readGridFile(const string &path)
 {
     ifstream ifs(path);
     string tmp_str;
+    int particles_number;
 
     if(ifs.fail())
     {
