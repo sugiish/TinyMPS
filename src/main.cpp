@@ -21,6 +21,9 @@ int main()
     // temp
 
     Particles* pt;
-    pt = new Particles(10, 3);
+    pt = new Particles(10, 2);
+
+    Particles* pt2;
+    pt2 = new Particles("../input/input.grid", 3);
 
 }

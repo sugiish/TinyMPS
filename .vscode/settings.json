@@ -13,6 +13,7 @@
         "iostream": "cpp",
         "istream": "cpp",
         "sstream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "__locale": "cpp"
     }
 }

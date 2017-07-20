@@ -18,7 +18,7 @@ Particles::Particles(int particles_number, int dimension)
 
 Particles::Particles(string path, int dimension)
 {
-	
+	readGridFile(path, dimension);
 }
 
 Particles::~Particles()
@@ -46,12 +46,8 @@ Particles::initialize(int particles_number, int dimension)
 int
 Particles::readGridFile(string path, int dimension)
 {
-	int ptcl_num;
-	string tmp_str;
-
 	ifstream ifs(path);
-	stringstream ss;
-
+	
     if(ifs.fail())
     {
         std::cerr << "Error: in readGridFile()" << std::endl;
@@ -59,20 +55,50 @@ Particles::readGridFile(string path, int dimension)
 
 		return 1;
     }
+
+	string tmp_str;
+
 	//Line 0: Start time
 	getline(ifs, tmp_str);
 
 	//Line 1: particles_number
 	getline(ifs, tmp_str);
-	ss.clear();
-	ss.str(tmp_str);
-	ss >> ptcl_num;
 
-	initialize(ptcl_num, dimension);
+	{
+		stringstream ss;
+		int ptcl_num = 0;
 
+		ss.str(tmp_str);
+		ss >> ptcl_num;
+		initialize(ptcl_num, dimension);
+	}
+
+	int i_counter = 0;
     while(getline(ifs, tmp_str))
     {
-        std::cout << "[" << tmp_str << "]" << std::endl;
+		stringstream ss;
+		ss.str(tmp_str);
+        
+		ss >> particles_type(i_counter);
+
+		for(int i_dim = 0; i_dim < 3; i_dim++)
+		{
+			double tmp;
+			ss >> tmp;
+			if(i_dim < dimension)position(i_counter, i_dim) = tmp;
+			
+		}
+
+		for(int i_dim = 0; i_dim < 3; i_dim++)
+		{
+			double tmp;
+			ss >> tmp;
+			if(i_dim < dimension)velocity(i_counter, i_dim) = tmp;
+		}
+
+		ss >> pressure(i_counter);
+
+		i_counter++;
     }
 
 
