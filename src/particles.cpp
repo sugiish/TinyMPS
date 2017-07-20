@@ -6,6 +6,8 @@
 
 #include <Eigen/Dense>
 
+#include "timer.h"
+
 
 /**
  * Class for describing particles status.
@@ -16,7 +18,7 @@ Particles::Particles(int particles_number, int dimension)
 
 }
 
-Particles::Particles(string path, int dimension)
+Particles::Particles(const string& path, int dimension)
 {
 	readGridFile(path, dimension);
 }
@@ -44,7 +46,7 @@ Particles::initialize(int particles_number, int dimension)
 }
 
 int
-Particles::readGridFile(string path, int dimension)
+Particles::readGridFile(const string& path, int dimension)
 {
 	ifstream ifs(path);
 	

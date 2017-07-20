@@ -9,9 +9,6 @@
 
 using namespace Eigen;
 using namespace std;
-static const int DimX = 0;
-static const int DimY = 1;
-static const int DimZ = 2;
 
 class Particles
 {
@@ -30,14 +27,14 @@ public:
 	Timer timer;
 
 	Particles(int particles_number, int dimension);
-	Particles(string path, int dimension);
+	Particles(const string& path, int dimension);
 	virtual ~Particles();
 
 private:
 	int dimension;
 
 	void initialize(int particles_number, int dimension);
-	int readGridFile(string path, int dimension);
+	int readGridFile(const string& path, int dimension);
 
 };
 
