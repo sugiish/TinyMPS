@@ -13,10 +13,13 @@ main.o: main.cpp
 particles.o: particles.cpp
 	g++ -Wall -c particles.cpp
 
+particles.o: particles.h
+
 timer.o: timer.cpp
 	g++ -Wall -c timer.cpp
 
-particles.o: particles.h
+grid.o: grid.cpp
+	g++ -Wall -c grid.cpp
 
 clean:
 	rm -f *.o *.out

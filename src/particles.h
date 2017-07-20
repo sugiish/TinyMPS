@@ -13,7 +13,6 @@ using namespace std;
 class Particles
 {
 public:
-	int particles_number;
 	MatrixXd position;
 	MatrixXd velocity;
 	VectorXd pressure;
@@ -31,6 +30,7 @@ public:
 	virtual ~Particles();
 
 private:
+	int particles_number;
 	int dimension;
 
 	void initialize(int particles_number, int dimension);

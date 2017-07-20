@@ -12,21 +12,26 @@ using namespace Eigen;
 class Grid
 {
 public:
-	Grid(int dimension, const MatrixXd& coordinates, const Vector3d& lower_coordinate, const Vector3d& higher_coordinate);
+	Grid(int particles_number, int dimension, const MatrixXd& coordinates, const Vector3d& lower_coordinate, const Vector3d& higher_coordinate);
 	virtual ~Grid();
 
+	
 private:
+	int particles_number;
 	int dimension;
 
 	const MatrixXd& coordinates;
 	const Vector3d& lower_coordinate;
 	const Vector3d& higher_coordinate;
 
-	std::vector<int> hash;
+	std::vector<long long> hash;
 	std::vector<int> index;
 
 	double grid_size;
 	int grid_number[3];
+
+	void resetHash();
+	int getHashValue(const Vector3d& position);
 
 };
 

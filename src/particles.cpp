@@ -62,6 +62,7 @@ Particles::readGridFile(const string& path, int dimension)
 
 	//Line 0: Start time
 	getline(ifs, tmp_str);
+	
 
 	//Line 1: particles_number
 	getline(ifs, tmp_str);
@@ -102,7 +103,6 @@ Particles::readGridFile(const string& path, int dimension)
 
 		i_counter++;
     }
-
 
 	return 0;
 }
