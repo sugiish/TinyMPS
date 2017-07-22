@@ -14,6 +14,7 @@
         "istream": "cpp",
         "sstream": "cpp",
         "ostream": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "cmath": "cpp"
     }
 }
