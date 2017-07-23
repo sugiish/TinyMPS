@@ -4,6 +4,7 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/c_cpp_properties.json
 
 # Prerequisites
 *.d
@@ -13,6 +14,10 @@
 *.lo
 *.o
 *.obj
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
 
 # Precompiled Headers
 *.gch
@@ -37,7 +42,6 @@
 *.exe
 *.out
 *.app
-mps
 
 # Windows image file caches
 Thumbs.db

@@ -5,7 +5,7 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/mps",
+            "program": "${workspaceRoot}/mps.out",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
