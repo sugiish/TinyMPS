@@ -29,6 +29,26 @@ public:
 	Particles(const string& path, int dimension);
 	virtual ~Particles();
 
+	inline int getParticlesNumber() const
+	{
+		return particles_number;
+	}
+
+	inline int getDimension() const
+	{
+		return dimension;
+	}
+
+	inline void getMaxPosition(VectorXd& answer) const
+	{
+		answer = position.rowwise().maxCoeff();
+	}
+
+	inline void getMinPosition(VectorXd& answer) const
+	{
+		answer = position.rowwise().minCoeff();
+	}
+
 private:
 	int particles_number;
 	int dimension;

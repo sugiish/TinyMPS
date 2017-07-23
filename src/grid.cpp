@@ -1,20 +1,26 @@
 #include "grid.h"
+#include "particles.h"
 
+#include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <vector>
 
-Grid::Grid(int particles_number, int dimension, const MatrixXd & coordinates, const Vector3d & lower_coordinate, const Vector3d & higher_coordinate)
-	: particles_number(particles_number), dimension(dimension), coordinates(coordinates), lower_coordinate(lower_coordinate), higher_coordinate(higher_coordinate)
+Grid::Grid(const Particles& particles, double grid_width) : particles(particles), grid_width(grid_width)
 {
-	//hash = std::vector(particles_number);
-	//index = std::vector(particles_number);
+	int dim = particles.getDimension();
+	particles.getMaxPosition(higher_bounds);
+	particles.getMinPosition(lower_bounds);
 
-	Vector3d diff = higher_coordinate - lower_coordinate;
+	VectorXd diff = higher_bounds - lower_bounds;
 	for(int i = 0; i < 3; i++)
 	{
-		if(i < dimension)grid_number[i] = std::ceil(diff(i) / grid_size);
+		if(i < dim)grid_number[i] = std::ceil(diff(i) / grid_width);
 		else grid_number[i] = 0;
 	}
+
+	resetHash();
+
 }
 
 Grid::~Grid()
@@ -25,20 +31,26 @@ Grid::~Grid()
 void
 Grid::resetHash()
 {
+	int pt_num = particles.getParticlesNumber();
+	hash.resize(pt_num);
+	
+	for(int i = 0; i < pt_num; i++)
+	{
+		hash[i] = std::make_pair(getHashValue(particles.position.row(i)), i);
+	}
 
-
+	std::sort(hash.begin(), hash.end());
 }
 
 int
-Grid::getHashValue(const Vector3d& position)
+Grid::getHashValue(const VectorXd& position) const
 {
 	int grid_index[3];
 	for(int i = 0; i < 3; i++)
 	{
-		if(i < dimension)grid_index[i] = std::ceil(position(i) / grid_size);
+		if(i < particles.getDimension())grid_index[i] = std::ceil((position(i) - lower_bounds(i)) / grid_width);
 		else grid_index[i] = 0;
 	}
 
 	return grid_index[0] + grid_index[1] * grid_number[0] + grid_index[2] * grid_number[1] * grid_number[0];
-
 }

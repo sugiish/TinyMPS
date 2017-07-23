@@ -1,4 +1,5 @@
 #include "particles.h"
+#include "grid.h"
 
 #include <iostream>
 #include <Eigen/Dense>
@@ -26,5 +27,10 @@ int main()
     Particles* pt2;
     pt2 = new Particles("./input/input.grid", 3);
     pt2->timer.setInitialDeltaTime(0.0002);
+    //Grid grid(*pt2, 0.0002);
 
+    Particles pt3("./input/input.grid", 2);
+    pt3.timer.setInitialDeltaTime(0.00001);
+
+    Grid g(pt3, 0.0002);
 }

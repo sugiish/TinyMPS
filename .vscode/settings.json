@@ -15,6 +15,13 @@
         "sstream": "cpp",
         "ostream": "cpp",
         "__locale": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "__functional_base": "cpp",
+        "bitset": "cpp",
+        "functional": "cpp",
+        "memory": "cpp",
+        "string": "cpp",
+        "system_error": "cpp",
+        "vector": "cpp"
     }
 }

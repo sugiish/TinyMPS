@@ -6,32 +6,31 @@
 
 using namespace Eigen;
 
+class Particles;
+
 /**
  * Class for neighbor searching. 
  */
 class Grid
 {
 public:
-	Grid(int particles_number, int dimension, const MatrixXd& coordinates, const Vector3d& lower_coordinate, const Vector3d& higher_coordinate);
+	Grid(const Particles& particles, double grid_width);
 	virtual ~Grid();
 
-	
 private:
-	int particles_number;
-	int dimension;
+	const Particles& particles;
 
-	const MatrixXd& coordinates;
-	const Vector3d& lower_coordinate;
-	const Vector3d& higher_coordinate;
+	VectorXd lower_bounds;
+	VectorXd higher_bounds;
 
-	std::vector<long long> hash;
+	std::vector<std::pair<int, int> > hash;
 	std::vector<int> index;
 
-	double grid_size;
+	double grid_width;
 	int grid_number[3];
 
 	void resetHash();
-	int getHashValue(const Vector3d& position);
+	int getHashValue(const VectorXd& position) const;
 
 };
 
