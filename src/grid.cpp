@@ -30,7 +30,7 @@ Grid::resetHash()
 }
 
 int
-getHashValue(const Vector3d& position)
+Grid::getHashValue(const Vector3d& position)
 {
 	int grid_index[3];
 	for(int i = 0; i < 3; i++)

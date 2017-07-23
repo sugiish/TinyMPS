@@ -24,7 +24,7 @@ int main()
     pt = new Particles(10, 2);
 
     Particles* pt2;
-    pt2 = new Particles("../input/input.grid", 3);
+    pt2 = new Particles("./input/input.grid", 3);
     pt2->timer.setInitialDeltaTime(0.0002);
 
 }
