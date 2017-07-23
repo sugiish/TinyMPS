@@ -22,6 +22,10 @@
         "memory": "cpp",
         "string": "cpp",
         "system_error": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "__bit_reference": "cpp",
+        "__split_buffer": "cpp",
+        "iterator": "cpp",
+        "list": "cpp"
     }
 }
