@@ -58,3 +58,4 @@ $RECYCLE.BIN/
 
 # Debug files
 *.dSYM
+input/

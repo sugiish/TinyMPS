@@ -29,7 +29,7 @@ int main()
     pt2->timer.setInitialDeltaTime(0.0002);
     //Grid grid(*pt2, 0.0002);
 
-    Particles pt3("./input/input.grid", 2);
+    Particles pt3("./input/dambreak.grid", 2);
     pt3.timer.setInitialDeltaTime(0.00001);
 
     Grid g(pt3, 0.0002);
