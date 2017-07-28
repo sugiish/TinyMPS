@@ -27,6 +27,7 @@ public:
 		std::regex re2("-+\\w+-+");// For removing like --**--
 		while(getline(ifs, tmp_str))
 		{
+			if(tmp_str.empty()) continue;
 			std::stringstream ss;
 			ss.str(tmp_str);
 
@@ -38,10 +39,8 @@ public:
 				if(first == '#') continue;
 			}
 
-			std::cout << item << std::endl;
 			item = std::regex_replace(item, re, "");
 			item = std::regex_replace(item, re2, "");
-			std::cout << item << std::endl;
 			
 			ss >> value;
 			data[item] = value;
@@ -74,7 +73,7 @@ public:
 		return 0;
 	}
 
-	int getValue(const std::string& item, bool& value)
+	inline int getValue(const std::string& item, bool& value)
 	{
 		if(data.find(item) == data.end())
 		{
@@ -106,7 +105,7 @@ public:
 	inline void printValues()
 	{
 		for(std::unordered_map<std::string, std::string>::iterator itr = data.begin(); itr != data.end(); ++itr) {
-        	std::cout << "key = " << itr->first << ", val = " << itr->second << "\n";
+        	std::cout << "Key: " << itr->first << ", \tValue: " << itr->second << "\n";
     	}
 	}
 

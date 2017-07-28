@@ -38,7 +38,7 @@ int main()
     g.getNeighbor(3582, a, b);
     std::cout << a << "," << b << std::endl;
 
-    Reader reader("./input/input.data");
+    /*Reader reader("./input/input.data");
     reader.printValues();
     bool abst = false;
     reader.getValue("outputPressureFile", abst);
@@ -52,4 +52,14 @@ int main()
     std::cout << tmp_d << std::endl;
     reader.getValue("compressibilityOfType0", tmp_d);
     std::cout << tmp_d << std::endl;
+*/
+    Reader reader2("./input/new_input.data");
+    reader2.printValues();
+
+    double average, compressibility;
+    reader2.getValue("finish_time", average);
+    reader2.getValue("compressibility", compressibility);
+    std::cout << average << std::endl;
+    std::cout << compressibility << std::endl;
+
 }
