@@ -6,12 +6,18 @@
 class Condition
 {
 public:
+	double average_distnace;
+
 	Vector3d gravity;
 	double temperature;
 	double head_pressure;
-
 	double kinematic_viscosity;
 
+	double cfl_number;
+	double diffusion_number;
+
+	double gradient_ratio;
+	double laplacian_ratio;
 
 };
 

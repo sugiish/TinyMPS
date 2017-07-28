@@ -1,12 +1,11 @@
-CC := g++
-CXX := g++
 TARGET := mps.out
-
 SOURCE_DIR := src
 OBJECT_DIR := obj
 INCLUDE_DIR := include
 
-CXXFLAGS := -g -O0 -Wall -MP -MMD
+CC := g++
+CXX := g++
+CXXFLAGS := -g -O0 -Wall -Wextra -MP -MMD
 CPPFLAGS := -I $(INCLUDE_DIR)
 
 MKDIR := mkdir -p
@@ -22,9 +21,9 @@ create-object-directory :=					\
 			$(TEST) -d $$f | $(MKDIR) $$f;	\
 		done)
 
-sources = $(wildcard $(SOURCE_DIR)/*.cpp)
-objects = $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
-dependencies = $(objects:.o=.d)
+sources := $(wildcard $(SOURCE_DIR)/*.cpp)
+objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
+dependencies := $(objects:.o=.d)
 
 
 .PHONY: all

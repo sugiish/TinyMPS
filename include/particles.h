@@ -21,13 +21,15 @@ public:
 	MatrixXd temporal_velocity;
 
 	VectorXi particles_type;
-	VectorXi ghost_particles;
+	VectorXi particles_valid;
 
 	Timer timer;
 
 	Particles(int particles_number, int dimension);
 	Particles(const string& path, int dimension);
 	virtual ~Particles();
+
+	void moveParticlesExplicitly(double delta_time, const VectorXd& force);
 
 	inline int getParticlesNumber() const
 	{

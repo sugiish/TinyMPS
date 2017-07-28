@@ -1,5 +1,6 @@
 #include "particles.h"
 #include "grid.h"
+#include "reader.h"
 
 #include <iostream>
 #include <Eigen/Dense>
@@ -33,4 +34,22 @@ int main()
     pt3.timer.setInitialDeltaTime(0.00001);
 
     Grid g(pt3, 0.0002);
+    int a,b;
+    g.getNeighbor(3582, a, b);
+    std::cout << a << "," << b << std::endl;
+
+    Reader reader("./input/input.data");
+    reader.printValues();
+    bool abst = false;
+    reader.getValue("outputPressureFile", abst);
+    std::cout << abst << std::endl;
+    reader.getValue("autoSettingOfCapacityOfNeighborTable", abst);
+    std::cout << abst << std::endl;
+    std::cout << true << std::endl;
+
+    double tmp_d;
+    reader.getValue("gassConstant", tmp_d);
+    std::cout << tmp_d << std::endl;
+    reader.getValue("compressibilityOfType0", tmp_d);
+    std::cout << tmp_d << std::endl;
 }

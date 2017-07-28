@@ -42,7 +42,7 @@ Particles::initialize(int particles_number, int dimension)
 	temporal_velocity = MatrixXd::Zero(particles_number, dimension);
 
 	particles_type = VectorXi::Zero(particles_number);
-	ghost_particles = VectorXi::Zero(particles_number);
+	particles_valid = VectorXi::Zero(particles_number);
 }
 
 int
@@ -105,4 +105,10 @@ Particles::readGridFile(const string& path, int dimension)
     }
 
 	return 0;
+}
+
+void
+moveParticlesExplicitly(double delta_time, const VectorXd& force)
+{
+
 }
