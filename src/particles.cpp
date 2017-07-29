@@ -12,15 +12,9 @@
 /**
  * Class for describing particles status.
  */
-Particles::Particles(int particles_number, int dimension)
+Particles::Particles(const string& path, Condition& condition): condition(condition)
 {
-	initialize(particles_number, dimension);
-
-}
-
-Particles::Particles(const string& path, int dimension)
-{
-	readGridFile(path, dimension);
+	readGridFile(path, condition.dimension);
 }
 
 Particles::~Particles()
@@ -32,14 +26,13 @@ void
 Particles::initialize(int particles_number, int dimension)
 {
 	this->particles_number = particles_number;
-	this->dimension = dimension;
 	
 	position = MatrixXd::Zero(particles_number, dimension);
 	velocity = MatrixXd::Zero(particles_number, dimension);
 	pressure = VectorXd::Zero(particles_number);
 
-	temporal_position = MatrixXd::Zero(particles_number, dimension);
-	temporal_velocity = MatrixXd::Zero(particles_number, dimension);
+	temporary_position = MatrixXd::Zero(particles_number, dimension);
+	temporary_velocity = MatrixXd::Zero(particles_number, dimension);
 
 	particles_type = VectorXi::Zero(particles_number);
 	particles_valid = VectorXi::Zero(particles_number);
@@ -107,8 +100,11 @@ Particles::readGridFile(const string& path, int dimension)
 	return 0;
 }
 
-void
-moveParticlesExplicitly(double delta_time, const VectorXd& force)
-{
 
+
+void
+Particles::moveParticlesExplicitly(double delta_time, const VectorXd& force)
+{
+	temporary_velocity = velocity + delta_time * (force);
+	temporary_position = position + delta_time * temporary_velocity;
 }

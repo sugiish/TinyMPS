@@ -1,179 +1,78 @@
-#######--FREQUENTLY-USED-DATA-#####################################
-#--------ParticleSize----------------------------------------------
-averageDistanceBetweenParticles(m)                 0.0002
-#--------Time------------------------------------------------------
-finishTime(sec)                                    1.0e-2
-inititalDt(sec)                                    1.0e-6
-#--------File------------------------------------------------------
-TypeOfOutputInterval(simulationTime/timeStep)      simulationTime
---simulationTime---interval(sec)                   1.0e-5
---timeStep---------interval(timeStep)              1
-#--------Domain----------------------------------------------------
-numberOfDimensions(2or3)                           2 
-autoSettingOfDomainSize(on/off)                    on
---on---upperMarginRatio[XDIM](ratio)               0.0 
---on---upperMarginRatio[YDIM](ratio)               1.0
---on---upperMarginRatio[ZDIM](ratio)               1.0
---on---lowerMarginRatio[XDIM](ratio)               1.0 
---on---lowerMarginRatio[YDIM](ratio)               1.0
---on---lowerMarginRatio[ZDIM](ratio)               1.0
---off--upperLimit[XDIM](m)                         3.0
---off--upperLimit[YDIM](m)                         3.0
---off--upperLimit[ZDIM](m)                         3.0
---off--lowerLimit[XDIM](m)                        -3.0
---off--lowerLimit[YDIM](m)                        -7.0
---off--lowerLimit[ZDIM](m)                        -3.0
-#--------RadiusOfInteractionDomain--------------------------------
-radiusOfParticleNumberDensity(ratio)               2.1
-radiusOfGradient(ratio)                            2.1
-radiusOfLaplacianForViscosity(ratio)               3.1
-radiusOfLaplacianForPressure(ratio)                3.1
-########                                           ***
-#######--LESS-FREQUENTLY-USED-DATA-###############################
-#--------Bucket(subDomain)----------------------------------------
-autoSettingOfBucketCapacity                        on
---on---optimizationOfMemorySize(on/off)            on
---on-----off--marginRatio(ratio)                   2.0
---off--capacityOfBucket                            40
-#--------TableOfNeighborParticles---------------------------------
-theNumberOfNeighborTables(1or2)                    2
-autoSettingOfCapacityOfNeighborTable               on
---on---marginRatioOfLargeTable(ratio)              2.5
---on---marginRatioOfSmallTable(ratio)              2.5
---off--capacityOfLargeNeighborTable                100
---off--capacityOfSmallNeighborTable                100
-#--------ProfFile-------------------------------------------------
-divisionOfProfFile(on/off)                         on
---on---compressionOfProfFile                       off
---on---upperLimitOfNumberOfFiles                   3001
-#--------PressureFile---------------------------------------------
-outputPressureFile(on/off)                         off
---on---outputPressureOfAllWallParticle(on/off)     off
----------off--nameOfInputFile                      input.press
---on---divisionOfPressureFile(on/off)              on
----------on---upperLimitOfNumberOfFiles            1300
----------on---nameOfOutputFile                     output_
----------off--nameOfOutputFile                     output.press
-#--------TorqueFile---------------------------------------------
-outputTorqueFile(on/off)                           off
---on--nameOfOutputFile                             output.torque
-numberOfRotations(/s)                              1.0
-#--------TypeOfParticle-------------------------------------------
-numberOfParticleTypes                              4
---typeNumberOfWallParticle                         2
---typeNumberOfDummyWallParticle                    3
-#--------MassDensity----------------------------------------------
-massDensityOfType0(kg/m^3)                         998.4
-massDensityOfType1(kg/m^3)                         998.4
-massDensityOfType2(kg/m^3)                         998.4
-massDensityOfType3(kg/m^3)                         998.4
-#--------Compressibility------------------------------------------
-compressibilityOfType0                             1.0e-7
-compressibilityOfType1                             1.0e-7
-compressibilityOfType2                             1.0e-7
-compressibilityOfType3                             1.0e-7
-#--------Viscosity------------------------------------------------
-flagOfViscosityCalculation(on/off)                 on
---on--flagOfHighViscosityCalculation(on/off)       off
---on--kinematicViscosity(m^2/s)                    1.0e-6
-#--------Bubble---------------------------------------------------
-flagOfBubbleCalculationy(on/off)                   on                 
---on--nameOfInputfile                              ./input/input.bubble
---on--numperOfParticleForCalculatingBeta           574                        
---on--massDensityOfBubble(kg/m^3)                  8.98
---on--gassConstant(J/K*mol)                        8.3144621
---on--temperature(K)                               292.0
---on--headPressure(Pa)                             101325.0
-#--------OutflowBoundaryCondition---------------------------------
-flagOfOutflowBoundaryCondition(on/off)             on
-negativePressure(on/off)                           on
---on--positionVector[XDIM]                         0.0
---on--positionVector[YDIM]                         0.0
---on--positionVector[ZDIM]                         0.0
---on--normalVector[XDIM]                           0.0
---on--normalVector[YDIM]                          -1.0
---on--normalVector[ZDIM]                           0.0
---on--LengthOfFixedVelocityRegion(ratio)           2.1
---on--LengthOfOutflow(m)                           0.016
---on--widthOfOutflow(m)                            0.004
---on--depthOfOutflow(m)                            1.0
---on--relaxationCoefficient                        10.0
-#--------InflowBoundaryCondition----------------------------------
-flagOfInflowBoundaryCondition(on/off)              on
---on--typeNumberOfInflowParticle                   4
---on--autoSettingOfInflowLevel(on/off)             on
---------on--positionVector[XDIM]                   0.0
---------on--positionVector[YDIM]                   0.044800 
---------on--positionVector[ZDIM]                   0.0
---on--inflowVelocity[XDIM](m/s)                    0.0
---on--inflowVelocity[YDIM](m/s)                   -1.8125
---on--inflowVelocity[ZDIM](m/s)                    0.0
---on--numberOfExtraGhostParticles                  3000
---on--inflowMoleOfBubbles                          2.2448e-12
---on--inflowNumberOfBubbles                        1
-#--------Gravity--------------------------------------------------
-gravity[XDIM](m/s^2)                               0.0
-gravity[YDIM](m/s^2)                              -9.81
-gravity[ZDIM](m/s^2)                               0.0
-#--------TimeDifference-------------------------------------------
-courantNumber                                      0.2
-diffusionNumber                                    0.2
-maxDt(ratio)                                       1.0
-minDt(ratio)                                       1.0e-3
-upperLimitOfChangeRateOfDt(ratio)                  1.2
-#--------SolvelerOfSimultaneousEquations--------------------------
-upperLimitOfIterationNumber                        2000
-lowerLimitOfIterationNumber                        10
-smallNumberForCheckingConvergence                  1.0e-9
-#--------CollisionBetweenParticles--------------------------------
-collisionDistance(ratio)                           0.85
-collisionCoefficient                               0.2
-#--------DirichletBoundaryCondition-------------------------------
-thresholdOfParticleNumberDensity(ratio)            0.97
-#--------Other----------------------------------------------------
-relaxationCoefficientOfLambda                      0.2
-finishTimeStep(timeStep)                           1000000
-######---CustomizedFunctions---###################################
-#--------RigidBody------------------------------------------------
-forcedMotionOfRigidBody(on/off)                    off
---on---typeNumberOfRigidParticle                   1
---on---fileNameOfSamplingDataForRigidBody          input.forcedMotion
-#--------TANAKAandMASUNAGAModel-----------------------------------
-flagOfTanakaAndMasunagaModel(on/off)               off
---on--valueOfGamma                                 0.01
---on--valueOfC                                     1.0
-#--------KONDOandKOSHIZUKAModel-----------------------------------
-flagOfKondoAndKoshizukaModel(on/off)               off 
---on---valueOfAlpha                                1.0
---on---valueOfBeta                                 1.0
---on---valueOfGamma                                0.01
---on---artificialPressure                          100.0
---on---radiusOfCollision(ratio)                    0.7
-#--------GradientTensor-------------------------------------------
-flagOfGradientTensor(on/off)                       on
-#--------AveragePressure------------------------------------------
-flagOfAveragePressureInEachBucket(on/off)          on
---on---timeToStartUpdateAveragePressure            0.0
---on---bucketWidth(m)                              0.0006
---on---upperLimit[XDIM](m)                         0.016
---on---upperLimit[YDIM](m)                         0.048
---on---upperLimit[ZDIM](m)                         1.0
---on---lowerLimit[XDIM](m)                        -0.016
---on---lowerLimit[YDIM](m)                         0.0
---on---lowerLimit[ZDIM](m)                         0.0
-########                                           ***
-########                                           ***
-#-----------------------------------------------------------------
-########                                           ***
-########                                           ***
-########                                           ***
-#-----------------------------------------------------------------
-########                                           ***
-#-----------------------------------------------------------------
-########                                           ***
-########                                           ***
-########                                           ***
-########                                           ***
-########                                           ***
-########                                           ***
-########                                           ***
+#--------------------------------------------------------------------
+#	This is an example input file.
+#	This file can be read by "reader.h".
+#--------------------------------------------------------------------
+
+#--------------------------------------------------------------------
+#	Lines that begin with '#' are comments.
+#	All comments are ignored.
+
+#--------------------------------------------------------------------
+#	Each input variable is defined as follows.
+#	variable_name						variable_value
+grid_file								./input/input.grid
+
+#	It doesn't matter how many tabs and spaces between name and value.
+#	Variable types of int, double, bool and string are available.
+#	We can assign "on" / "off" or "true" / "false" for bool type values.
+
+#	We can get variables via "getValue" function in "reader.h".
+#	Usage:	int getValue(const std::string& name, int& value);
+#			int getValue(const std::string& name, double& value);
+#			int getValue(const std::string& name, bool& value);
+#			int getValue(const std::string& name, string& value);
+#	Return: returns 1 if error occurs.
+#	e.g.)
+#	std::string path;
+#	getValue("grid_file", path);
+
+#--------------------------------------------------------------------
+#	We can use parenthesis "()" to describe their units.
+average_distance(m)						0.0002
+
+#	These parenthesis including units are ignored when we retrieve variables.
+#	e.g.)
+#	std::string path;
+#	getValue("average_distance", path);
+
+#--------------------------------------------------------------------
+#	Parts between hyphens are also ignored.
+#	e.g.)
+#	double viscosity;
+#	getValue("kinematic_viscosity", viscosity);
+viscosity_calculation					on
+--on--kinematic_viscosity(m^2/s)		1.0e-6
+
+
+#--------------------------------------------------------------------
+#	All definitions are shown below.
+#--------------------------------------------------------------------
+dimension(2/3)							2
+
+#	TIME
+finish_time(sec)						1.0e-2
+delta_time(sec)							1.0e-6
+
+output_interval(sec)					1.0e-5
+
+courant_number							0.2
+diffusion_number						0.2
+
+#	INFLUENCE RATIO
+gradient_influence(ratio)				2.1
+laplacian_influence(ratio)				3.1
+
+#	GRAVITY
+gravity_x(m/s^2)						0.0
+gravity_y(m/s^2)						0.0
+gravity_z(m/s^2)						0.0
+
+#	SURFACE CONDITION
+surface_threshold						0.97
+
+
+mass_density(kg/m^3)					1000.0
+compressibility							1.0e-7
+head_pressure(Pa)						101325.0
+temperature(K)							292.0
+gas_constant(J/K*mol)					8.3144621

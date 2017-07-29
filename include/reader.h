@@ -55,7 +55,7 @@ public:
 		{
 			return 1;
 		}
-		stringstream ss;
+		std::stringstream ss;
 		ss << data[item];
 		ss >> value;
 		return 0;
@@ -67,7 +67,7 @@ public:
 		{
 			return 1;
 		}
-		stringstream ss;
+		std::stringstream ss;
 		ss << data[item];
 		ss >> value;
 		return 0;

@@ -5,10 +5,16 @@
 
 #include <Eigen/Dense>
 
+#include "condition.h"
 #include "timer.h"
 
 using namespace Eigen;
 using namespace std;
+
+enum ParticleType
+{
+	
+};
 
 class Particles
 {
@@ -17,16 +23,15 @@ public:
 	MatrixXd velocity;
 	VectorXd pressure;
 
-	MatrixXd temporal_position;
-	MatrixXd temporal_velocity;
+	MatrixXd temporary_position;
+	MatrixXd temporary_velocity;
 
 	VectorXi particles_type;
 	VectorXi particles_valid;
 
 	Timer timer;
 
-	Particles(int particles_number, int dimension);
-	Particles(const string& path, int dimension);
+	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
 	void moveParticlesExplicitly(double delta_time, const VectorXd& force);
@@ -34,11 +39,6 @@ public:
 	inline int getParticlesNumber() const
 	{
 		return particles_number;
-	}
-
-	inline int getDimension() const
-	{
-		return dimension;
 	}
 
 	inline void getMaxPosition(VectorXd& answer) const
@@ -52,8 +52,8 @@ public:
 	}
 
 private:
+	Condition& condition;
 	int particles_number;
-	int dimension;
 
 	void initialize(int particles_number, int dimension);
 	int readGridFile(const string& path, int dimension);

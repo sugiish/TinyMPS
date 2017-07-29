@@ -21,7 +21,7 @@ public:
 
 	void getNeighbor(int hash, int& begin, int& end);
 	
-	inline void getGridHash(std::vector<std::pair<int, int> >& ghash)
+	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const
 	{
 		ghash = grid_hash;
 	}
@@ -29,12 +29,12 @@ public:
 	void resetHash();
 	int getHashValue(const VectorXd& position) const;
 
-	inline int indexToHashValue(int index_x, int index_y)
+	inline int indexToHashValue(int index_x, int index_y) const
 	{
 		return index_x + index_y * grid_number[0];
 	}
 
-	inline int indexToHashValue(int index_x, int index_y, int index_z)
+	inline int indexToHashValue(int index_x, int index_y, int index_z) const
 	{
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
