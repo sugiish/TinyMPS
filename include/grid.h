@@ -16,10 +16,12 @@ class Particles;
 class Grid
 {
 public:
-	Grid(const Particles& particles, double grid_width);
+	Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid_coordinates, int dimension);
 	virtual ~Grid();
 
 	void getNeighbor(int hash, int& begin, int& end);
+
+	bool getNeighbors(int index, std::vector<int>& neighbors);
 	
 	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const
 	{
@@ -28,6 +30,47 @@ public:
 
 	void resetHash();
 	int getHashValue(const VectorXd& position) const;
+
+	inline int getSize() const
+	{
+		return size;
+	}
+
+	inline int getDimension() const
+	{
+		return dimension;
+	}
+
+	inline int getGridNumberX() const
+	{
+		return grid_number[0];
+	}
+
+	inline int getGridNumberY() const
+	{
+		return grid_number[1];
+	}
+
+	inline int getGridNumberZ() const
+	{
+		if(dimension == 2) return 0;
+		return grid_number[2];
+	}
+	
+	inline void getMaxPosition(VectorXd& answer) const
+	{
+		answer = coordinates.rowwise().maxCoeff();
+	}
+
+	inline void getMinPosition(VectorXd& answer) const
+	{
+		answer = coordinates.rowwise().minCoeff();
+	}	
+
+	inline int isValidCoordinate(int index)
+	{
+		return valid_coordinates(index);
+	}
 
 	inline int indexToHashValue(int index_x, int index_y) const
 	{
@@ -39,9 +82,33 @@ public:
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
 
+	inline void hashValueToIndex(int hash, int& dx, int& dy)
+	{
+		dy = hash / grid_number[0];
+		dx = hash % grid_number[0];
+	}
+
+	inline void hashValueToIndex(int hash, int& dx, int& dy, int& dz)
+	{
+		if(dimension == 2)
+		{
+			 hashValueToIndex(hash, dx, dy);
+			 dz = 0;
+		}
+		else
+		{
+			dz = hash / (grid_number[1] * grid_number[0]);
+			dy = (hash % (grid_number[1] * grid_number[0])) / grid_number[0];
+			dx = (hash % (grid_number[1] * grid_number[0])) % grid_number[0];
+		}
+	}
+
 
 private:
-	const Particles& particles;
+	const MatrixXd& coordinates;
+	const VectorXi& valid_coordinates;
+	int dimension;
+	int size;
 
 	VectorXd lower_bounds;
 	VectorXd higher_bounds;

@@ -13,13 +13,22 @@ public:
 	Condition(Reader& reader){
 		reader.getValue("average_distance",  average_distance);
 		reader.getValue("dimension", dimension);
+		if(dimension != 2 && dimension != 3)
+		{
+			std::cerr << dimension << "-dimension is not supported." << std::endl;
+		}
+
+		gravity = VectorXd::Zero(dimension);
+		initial_particle_number_density = 0;
 
 		double gx, gy, gz;
 		reader.getValue("gravity_x", gx);
 		reader.getValue("gravity_y", gy);
 		reader.getValue("gravity_z", gz);
-		gravity << gx, gy, gz;
-		
+		gravity(0) = gx;
+		gravity(1) = gy;
+		if(dimension == 3) gravity(2) = gz;
+
 		reader.getValue("temperature", temperature);
 		reader.getValue("head_pressure", head_pressure);
 
@@ -38,8 +47,9 @@ public:
 
 	double average_distance;
 	int dimension;
+	double initial_particle_number_density;
 
-	Vector3d gravity;
+	VectorXd gravity;
 	double temperature;
 	double head_pressure;
 

@@ -46,6 +46,7 @@ viscosity_calculation					on
 
 #--------------------------------------------------------------------
 #	All definitions are shown below.
+#	You can modify them as needed.
 #--------------------------------------------------------------------
 dimension(2/3)							2
 

@@ -13,6 +13,25 @@ public:
 			: 0;
 	}
 
+	inline void gradient(VectorXd& scalars, VectorXd& output, const Grid& grid, const Condition& condition)
+	{
+		VectorXd ans = VectorXd::Zero(grid.getDimension());
+		for(int j = 0; j < grid.size; j++)
+		{
+			if(grid.isValidCoordinate(j) == 0) continue;
+			std::vector neighbors;
+			grid.getNeighbors(j, neighbors);
+
+			for(int i : neighbors)
+			{
+				VectorXd r_ji= coordinates.row(j) - coordinates.row(i);
+				ans = ans + (scalars(i) - scalars(j)) * r_ji * weightFunction(r_ji.distance(), condition.gradient_influence) 
+				/ r_ji.squaredNorm(); ;
+			}
+
+		}
+	}
+
 };
 
 	

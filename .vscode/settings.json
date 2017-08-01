@@ -36,6 +36,7 @@
         "regex": "cpp",
         "tuple": "cpp",
         "type_traits": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "ios": "cpp"
     }
 }
