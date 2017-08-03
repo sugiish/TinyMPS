@@ -21,7 +21,7 @@ int main()
     
     while(particles.timer.hasNextLoop())
     {
-        break;
-
+        particles.moveParticlesExplicitly(0.01, condition.gravity);
+        particles.timer.update();
     }
 }

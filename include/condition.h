@@ -18,7 +18,6 @@ public:
 			std::cerr << "Error: " << dimension << "-dimension is not supported." << std::endl;
 		}
 
-		gravity = VectorXd::Zero(dimension);
 		initial_particle_number_density = 0;
 
 		double gx, gy, gz;
@@ -28,6 +27,7 @@ public:
 		gravity(0) = gx;
 		gravity(1) = gy;
 		if(dimension == 3) gravity(2) = gz;
+		else gravity(2) = gz;
 
 		reader.getValue("temperature", temperature);
 		reader.getValue("head_pressure", head_pressure);
@@ -49,7 +49,7 @@ public:
 	int dimension;
 	double initial_particle_number_density;
 
-	VectorXd gravity;
+	Vector3d gravity;
 	double temperature;
 	double head_pressure;
 

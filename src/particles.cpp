@@ -12,9 +12,11 @@
 /**
  * Class for describing particles status.
  */
-Particles::Particles(const string& path, Condition& condition): condition(condition)
+Particles::Particles(const string& path, Condition& condition): 
+condition(condition), first_grid(condition.gradient_influence, position, particles_valid, condition.dimension)
 {
 	readGridFile(path, condition.dimension);
+	timer.initialize(0, 1, 0.01);
 }
 
 Particles::~Particles()
@@ -100,10 +102,8 @@ Particles::readGridFile(const string& path, int dimension)
 	return 0;
 }
 
-
-
 void
-Particles::moveParticlesExplicitly(double delta_time, const VectorXd& force)
+Particles::moveParticlesExplicitly(double delta_time, const Vector3d& force)
 {
 	temporary_velocity = velocity + delta_time * (force);
 	temporary_position = position + delta_time * temporary_velocity;

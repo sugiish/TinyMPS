@@ -7,6 +7,7 @@
 
 #include "condition.h"
 #include "timer.h"
+#include "grid.h"
 
 using namespace Eigen;
 using namespace std;
@@ -34,7 +35,7 @@ public:
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
-	void moveParticlesExplicitly(double delta_time, const VectorXd& force);
+	void moveParticlesExplicitly(double delta_time, const Vector3d& force);
 
 	inline int getParticlesNumber() const
 	{
@@ -54,6 +55,7 @@ public:
 private:
 	Condition& condition;
 	int particles_number;
+	Grid first_grid;
 
 	void initialize(int particles_number);
 	int readGridFile(const string& path, int dimension);
