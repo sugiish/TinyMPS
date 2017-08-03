@@ -11,16 +11,6 @@ Grid::Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid
 	this->dimension = dimension;
 	size = coordinates.size();
 
-	getMaxPosition(higher_bounds);
-	getMinPosition(lower_bounds);
-
-	VectorXd diff = higher_bounds - lower_bounds;
-	for(int i = 0; i < 3; i++)
-	{
-		if(i < getDimension())grid_number[i] = std::ceil(diff(i) / grid_width);
-		else grid_number[i] = 0;
-	}
-
 	resetHash();
 }
 
@@ -30,7 +20,7 @@ Grid::~Grid()
 }
 
 void
-Grid::getNeighbor(int hash, int& begin, int& end)
+Grid::getNeighbors(int hash, int& begin, int& end)
 {
 	if(begin_hash.empty())
 	{
@@ -44,60 +34,18 @@ Grid::getNeighbor(int hash, int& begin, int& end)
 
 	begin = begin_hash[hash].first;
 	end = begin_hash[hash].second;
-
 }
 
-bool
-Grid::getNeighbors(int index, std::vector<int>& neighbors)
+void 
+Grid::sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vector3d&)> interaction)
 {
-	if(valid_coordinates(index) == 0) return false;
-
-	if(dimension == 2)
+	Vector3d ans;
+	for(int i_particle = 0; i_particle < size; i_particle++)
 	{
-		int hash = getHashValue(coordinates.row(index));
-		int ix, iy;
-		hashValueToIndex(hash, ix, iy);
-		int x_begin, x_end, y_begin, y_end;
-		x_begin = std::max(ix - 1, 0);
-		y_begin = std::max(iy - 1, 0);
-		x_end = std::min(ix + 1, getGridNumberX() - 1);
-		y_end = std::min(iy + 1, getGridNumberY() - 1);
+		if(isValidCoordinates(i_particle) == 0) continue;
 
-		int total = 0;
-		for(int i = y_begin; i <= y_end; i++)
-		{
-			for(int j = x_begin; j <= x_end; j++)
-			{
-				int begin, end;
-				getNeighbor(indexToHashValue(j, i), begin, end);
-				if(begin == -1 || end == -1) continue;
-				total += end - begin;
-			}
-		}
-
-		std::vector<int> v(total);
-		for(int i = y_begin; i <= y_end; i++)
-		{
-			for(int j = x_begin; j <= x_end; j++)
-			{
-				int begin, end;
-				getNeighbor(indexToHashValue(j, i), begin, end);
-				if(begin == -1 || end == -1) continue;
-				for(int n = begin; n <= end; n++)
-				{
-					int tmp = grid_hash[n].second;
-					v.push_back(tmp);
-				}
-			}
-		}
-
-		neighbors = v;
-	}
-	else
-	{
-		int hash = getHashValue(coordinates.row(index));
 		int ix, iy, iz;
-		hashValueToIndex(hash, ix, iy, iz);
+		toIndex(coordinates.col(i_particle), ix, iy, iz);
 		int x_begin, x_end, y_begin, y_end, z_begin, z_end;
 		x_begin = std::max(ix - 1, 0);
 		y_begin = std::max(iy - 1, 0);
@@ -105,23 +53,12 @@ Grid::getNeighbors(int index, std::vector<int>& neighbors)
 		x_end = std::min(ix + 1, getGridNumberX() - 1);
 		y_end = std::min(iy + 1, getGridNumberY() - 1);
 		z_end = std::min(iz + 1, getGridNumberZ() - 1);
-
-		int total = 0;
-		for(int i = z_begin; i <= z_end; i++)
+		if(dimension == 2)
 		{
-			for(int j = y_begin; j <= y_end; j++)
-			{
-				for(int k = x_begin; k <= x_end; k++)
-				{
-					int begin, end;
-					getNeighbor(indexToHashValue(k, j, i), begin, end);
-					if(begin == -1 || end == -1) continue;
-					total += end - begin;
-				}
-			}
+			z_begin = 0;
+			z_end = 0;
 		}
-		
-		std::vector<int> v(total);
+
 		for(int i = z_begin; i <= z_end; i++)
 		{
 			for(int j = y_begin; j <= y_end; j++)
@@ -129,34 +66,52 @@ Grid::getNeighbors(int index, std::vector<int>& neighbors)
 				for(int k = x_begin; k <= x_end; k++)
 				{
 					int begin, end;
-					getNeighbor(indexToHashValue(k, j, i), begin, end);
+					getNeighbors(toHash(k, j, i), begin, end);
 					if(begin == -1 || end == -1) continue;
+
+					Vector3d r_i = coordinates.col(i_particle);
 					for(int n = begin; n <= end; n++)
 					{
-						int tmp = grid_hash[n].second;
-						v.push_back(tmp);
+						int j_particle = grid_hash[n].second;
+						Vector3d r_j = coordinates.col(j_particle);
+						Vector3d r_ji = r_j - r_i;
+						if(r_ji.norm() > grid_width) continue;
+
+						Vector3d tmp;
+						interaction(i_particle, j_particle, tmp);
+						ans = ans + tmp;
 					}
 				}
 			}
 		}
-
-		neighbors = v;
 	}
-	return true;
+
+	output = ans;
 }
 
 void
 Grid::resetHash()
 {
 	if(!begin_hash.empty()) begin_hash.clear();
+	if(!grid_hash.empty()) grid_hash.clear();
 
 	int pt_num = coordinates.size();
 	if(pt_num == 0) return;
 
 	grid_hash.resize(pt_num);
+
+	getMaxCoordinates(higher_bounds);
+	getMinCoordinates(lower_bounds);
+	Vector3d diff = higher_bounds - lower_bounds;
+	if(getDimension() == 2) diff(2) = 0;
+	for(int i = 0; i < 3; i++)
+	{
+		grid_number[i] = std::ceil(diff(i) / grid_width);
+	}
+
 	for(int i = 0; i < pt_num; i++)
 	{
-		grid_hash[i] = std::make_pair(getHashValue(coordinates.row(i)), i);
+		grid_hash[i] = std::make_pair(toHash(coordinates.col(i)), i);
 	}
 
 	std::sort(grid_hash.begin(), grid_hash.end());
@@ -177,17 +132,4 @@ Grid::resetHash()
 			begin_hash[start_value] = std::make_pair(start_i, i);
 		}
 	}
-}
-
-int
-Grid::getHashValue(const VectorXd& position) const
-{
-	int grid_index[3];
-	for(int i = 0; i < 3; i++)
-	{
-		if(i < getDimension())grid_index[i] = std::ceil((position(i) - lower_bounds(i)) / grid_width);
-		else grid_index[i] = 0;
-	}
-
-	return grid_index[0] + grid_index[1] * grid_number[0] + grid_index[2] * grid_number[1] * grid_number[0];
 }

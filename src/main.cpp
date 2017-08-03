@@ -21,7 +21,7 @@ int main()
     
     while(particles.timer.hasNextLoop())
     {
-
+        break;
 
     }
 }

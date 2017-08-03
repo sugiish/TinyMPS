@@ -19,12 +19,12 @@ enum ParticleType
 class Particles
 {
 public:
-	MatrixXd position;
-	MatrixXd velocity;
+	Matrix<double, 3, Dynamic> position;
+	Matrix<double, 3, Dynamic> velocity;
 	VectorXd pressure;
 
-	MatrixXd temporary_position;
-	MatrixXd temporary_velocity;
+	Matrix<double, 3, Dynamic> temporary_position;
+	Matrix<double, 3, Dynamic> temporary_velocity;
 
 	VectorXi particles_type;
 	VectorXi particles_valid;
@@ -41,12 +41,12 @@ public:
 		return particles_number;
 	}
 
-	inline void getMaxPosition(VectorXd& answer) const
+	inline void getMaxPosition(Vector3d& answer) const
 	{
 		answer = position.rowwise().maxCoeff();
 	}
 
-	inline void getMinPosition(VectorXd& answer) const
+	inline void getMinPosition(Vector3d& answer) const
 	{
 		answer = position.rowwise().minCoeff();
 	}
@@ -55,7 +55,7 @@ private:
 	Condition& condition;
 	int particles_number;
 
-	void initialize(int particles_number, int dimension);
+	void initialize(int particles_number);
 	int readGridFile(const string& path, int dimension);
 
 };

@@ -19,18 +19,17 @@ public:
 	Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid_coordinates, int dimension);
 	virtual ~Grid();
 
-	void getNeighbor(int hash, int& begin, int& end);
+	void getNeighbors(int hash, int& begin, int& end);
 
-	bool getNeighbors(int index, std::vector<int>& neighbors);
-	
+	void sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vector3d&)> interaction);
+
 	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const
 	{
 		ghash = grid_hash;
 	}
 
 	void resetHash();
-	int getHashValue(const VectorXd& position) const;
-
+	
 	inline int getSize() const
 	{
 		return size;
@@ -57,42 +56,58 @@ public:
 		return grid_number[2];
 	}
 	
-	inline void getMaxPosition(VectorXd& answer) const
+	inline void getMaxCoordinates(Vector3d& answer) const
 	{
 		answer = coordinates.rowwise().maxCoeff();
 	}
 
-	inline void getMinPosition(VectorXd& answer) const
+	inline void getMinCoordinates(Vector3d& answer) const
 	{
 		answer = coordinates.rowwise().minCoeff();
 	}	
 
-	inline int isValidCoordinate(int index)
+	inline int isValidCoordinates(int index)
 	{
 		return valid_coordinates(index);
 	}
 
-	inline int indexToHashValue(int index_x, int index_y) const
+	inline int toHash(const Vector3d& coordinates) const
+	{
+		int dx, dy, dz;
+		toIndex(coordinates, dx, dy, dz);
+		return toHash(dx, dy, dz);
+	}
+
+	inline int toHash(int index_x, int index_y) const
 	{
 		return index_x + index_y * grid_number[0];
 	}
 
-	inline int indexToHashValue(int index_x, int index_y, int index_z) const
+	inline int toHash(int index_x, int index_y, int index_z) const
 	{
+		if(dimension == 2) return toHash(index_x, index_y);
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
+	
+	inline void toIndex(const Vector3d& coordinates, int& dx, int& dy, int& dz) const
+	{
+		dx = std::ceil((coordinates(0) - lower_bounds(0)) / grid_width);
+		dy = std::ceil((coordinates(1) - lower_bounds(1)) / grid_width);
+		if(dimension == 3) dz = std::ceil((coordinates(2) - lower_bounds(2)) / grid_width);
+		else dz = 0;
+	}
 
-	inline void hashValueToIndex(int hash, int& dx, int& dy)
+	inline void toIndex(int hash, int& dx, int& dy) const
 	{
 		dy = hash / grid_number[0];
 		dx = hash % grid_number[0];
 	}
 
-	inline void hashValueToIndex(int hash, int& dx, int& dy, int& dz)
+	inline void toIndex(int hash, int& dx, int& dy, int& dz) const
 	{
 		if(dimension == 2)
 		{
-			 hashValueToIndex(hash, dx, dy);
+			 toIndex(hash, dx, dy);
 			 dz = 0;
 		}
 		else
@@ -110,8 +125,8 @@ private:
 	int dimension;
 	int size;
 
-	VectorXd lower_bounds;
-	VectorXd higher_bounds;
+	Vector3d lower_bounds;
+	Vector3d higher_bounds;
 
 	double grid_width;
 	int grid_number[3];

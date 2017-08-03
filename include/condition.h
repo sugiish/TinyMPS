@@ -15,7 +15,7 @@ public:
 		reader.getValue("dimension", dimension);
 		if(dimension != 2 && dimension != 3)
 		{
-			std::cerr << dimension << "-dimension is not supported." << std::endl;
+			std::cerr << "Error: " << dimension << "-dimension is not supported." << std::endl;
 		}
 
 		gravity = VectorXd::Zero(dimension);

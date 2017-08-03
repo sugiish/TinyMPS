@@ -23,16 +23,16 @@ Particles::~Particles()
 }
 
 void
-Particles::initialize(int particles_number, int dimension)
+Particles::initialize(int particles_number)
 {
 	this->particles_number = particles_number;
 	
-	position = MatrixXd::Zero(particles_number, dimension);
-	velocity = MatrixXd::Zero(particles_number, dimension);
+	position = MatrixXd::Zero(3, particles_number);
+	velocity = MatrixXd::Zero(3, particles_number);
 	pressure = VectorXd::Zero(particles_number);
 
-	temporary_position = MatrixXd::Zero(particles_number, dimension);
-	temporary_velocity = MatrixXd::Zero(particles_number, dimension);
+	temporary_position = MatrixXd::Zero(3, particles_number);
+	temporary_velocity = MatrixXd::Zero(3, particles_number);
 
 	particles_type = VectorXi::Zero(particles_number);
 	particles_valid = VectorXi::Zero(particles_number);
@@ -66,7 +66,7 @@ Particles::readGridFile(const string& path, int dimension)
 
 		ss.str(tmp_str);
 		ss >> ptcl_num;
-		initialize(ptcl_num, dimension);
+		initialize(ptcl_num);
 	}
 
 	int i_counter = 0;
@@ -81,7 +81,7 @@ Particles::readGridFile(const string& path, int dimension)
 		{
 			double tmp;
 			ss >> tmp;
-			if(i_dim < dimension)position(i_counter, i_dim) = tmp;
+			if(i_dim < dimension)position(i_dim, i_counter) = tmp;
 			
 		}
 
@@ -89,7 +89,7 @@ Particles::readGridFile(const string& path, int dimension)
 		{
 			double tmp;
 			ss >> tmp;
-			if(i_dim < dimension)velocity(i_counter, i_dim) = tmp;
+			if(i_dim < dimension)velocity(i_dim, i_counter) = tmp;
 		}
 
 		ss >> pressure(i_counter);

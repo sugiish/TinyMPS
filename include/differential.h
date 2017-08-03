@@ -6,6 +6,10 @@
 class Differential
 {
 public:
+	Differential(const Condition& condition) : condition(condition){}
+
+	virtual ~Differential(){}
+
 	inline double weightFunction(double r, double r_e)
 	{
 		return (0 <= r && r < r_e) ? 
@@ -13,7 +17,7 @@ public:
 			: 0;
 	}
 
-	inline void gradient(VectorXd& scalars, VectorXd& output, const Grid& grid, const Condition& condition)
+	inline void gradient(VectorXd& scalars, VectorXd& output, const Grid& grid, const Condition& condition, std::function<double(double)> weight)
 	{
 		VectorXd ans = VectorXd::Zero(grid.getDimension());
 		for(int j = 0; j < grid.size; j++)
@@ -31,6 +35,15 @@ public:
 
 		}
 	}
+
+	inline void gradient(VectorXd& scalars, Vector3d& output, const Grid& grid,  std::function<double(double)>& weight)
+	{
+		
+
+	}
+
+private:
+	const Condition& condition;
 
 };
 

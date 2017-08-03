@@ -37,6 +37,9 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "algorithm": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "__tree": "cpp",
+        "map": "cpp",
+        "utility": "cpp"
     }
 }
