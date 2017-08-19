@@ -51,6 +51,7 @@ viscosity_calculation					on
 dimension(2/3)							2
 
 #	TIME
+initial_time(sec)						0
 finish_time(sec)						1.0e-2
 delta_time(sec)							1.0e-6
 
@@ -65,7 +66,7 @@ laplacian_influence(ratio)				3.1
 
 #	GRAVITY
 gravity_x(m/s^2)						0.0
-gravity_y(m/s^2)						0.0
+gravity_y(m/s^2)						-9.81
 gravity_z(m/s^2)						0.0
 
 #	SURFACE CONDITION

@@ -15,13 +15,17 @@ using namespace std;
  */
 int main()
 {
-    Reader reader("./input/input.data");
-    Condition condition(reader);
-    Particles particles("./input/dambreak.grid", condition);
-    
-    while(particles.timer.hasNextLoop())
-    {
-        particles.moveParticlesExplicitly(0.01, condition.gravity);
-        particles.timer.update();
-    }
+	Condition condition("./input/input.data");
+	Particles particles("./input/dambreak.grid", condition);
+
+	
+	while(particles.timer.hasNextLoop())
+	{
+		particles.moveParticlesExplicitly(0.01, condition.gravity);
+		particles.timer.update();
+		//std::cout << particles.timer.getCurrentTime() << std::endl;
+	}
+
+	particles.writeVtkFile("out.vtk", "test");
+	
 }

@@ -16,7 +16,7 @@ Particles::Particles(const string& path, Condition& condition):
 condition(condition), first_grid(condition.gradient_influence, position, particles_valid, condition.dimension)
 {
 	readGridFile(path, condition.dimension);
-	timer.initialize(0, 1, 0.01);
+	timer.initialize(condition);
 }
 
 Particles::~Particles()
@@ -102,9 +102,66 @@ Particles::readGridFile(const string& path, int dimension)
 	return 0;
 }
 
+int
+Particles::writeVtkFile(const string& path, const string& title)
+{
+	ofstream ofs(path);
+	if(ofs.fail())
+	{
+		std::cerr << "Error: in writeVtkFile()" << std::endl;
+		return 1;
+	}
+
+	ofs << "# vtk DataFile Version 2.0" << endl;
+	ofs << title << endl;
+	ofs << "ASCII" << endl;
+	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
+	ofs << endl;
+
+	ofs << "POINTS " << particles_number << " double" << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << endl;
+	}
+	ofs << endl;
+
+	ofs << "CELL_TYPES " << particles_number << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << 1 << endl;
+	}
+	ofs << endl;
+
+	ofs << "POINT_DATA " << particles_number << endl;
+	ofs << "SCALARS Pressure double" << endl;
+	ofs << "LOOKUP_TABLE default" << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << pressure(i) << endl;
+	}
+	ofs << endl;
+
+	ofs << "VECTORS Velocity double" << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << velocity(0, i) << " " << velocity(1, i) << " " << velocity(2, i) << endl;
+	}
+	ofs << endl;
+
+	ofs << "SCALARS Type int" << endl;
+	ofs << "LOOKUP_TABLE default" << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << particles_type(i) << endl;
+	}
+	
+	return 0;
+}
+
 void
 Particles::moveParticlesExplicitly(double delta_time, const Vector3d& force)
 {
-	temporary_velocity = velocity + delta_time * (force);
+	temporary_velocity = velocity;
+	temporary_velocity.colwise() += delta_time * force;
 	temporary_position = position + delta_time * temporary_velocity;
 }

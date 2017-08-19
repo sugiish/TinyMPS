@@ -52,6 +52,8 @@ public:
 		answer = position.rowwise().minCoeff();
 	}
 
+	int writeVtkFile(const string& path, const string& title);
+
 private:
 	Condition& condition;
 	int particles_number;

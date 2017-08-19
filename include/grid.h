@@ -21,6 +21,7 @@ public:
 
 	void getNeighbors(int hash, int& begin, int& end);
 
+	double sumAllNeighbors(std::function<double(int, int)> interaction);
 	void sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vector3d&)> interaction);
 
 	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const

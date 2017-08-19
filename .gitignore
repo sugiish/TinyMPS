@@ -60,3 +60,6 @@ $RECYCLE.BIN/
 # Debug files
 *.dSYM
 input/
+
+# VTK files
+*.vtk

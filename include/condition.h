@@ -10,7 +10,34 @@ using namespace Eigen;
 class Condition
 {
 public:
-	Condition(Reader& reader){
+	Condition(std::string path) : reader(path)
+	{
+		initialize();
+	}
+
+	virtual ~Condition(){}
+
+	Reader reader;
+
+	double average_distance;
+	int dimension;
+	double initial_particle_number_density;
+
+	Vector3d gravity;
+	double temperature;
+	double head_pressure;
+
+	bool viscosity_calculation;
+	double kinematic_viscosity;
+
+	double courant_number;
+	double diffusion_number;
+
+	double gradient_influence;
+	double laplacian_influence;
+private:
+	inline void initialize()
+	{
 		reader.getValue("average_distance",  average_distance);
 		reader.getValue("dimension", dimension);
 		if(dimension != 2 && dimension != 3)
@@ -40,28 +67,7 @@ public:
 
 		reader.getValue("gradient_influence", gradient_influence);
 		reader.getValue("laplacian_influence", laplacian_influence);
-		
 	}
-
-	virtual ~Condition(){}
-
-	double average_distance;
-	int dimension;
-	double initial_particle_number_density;
-
-	Vector3d gravity;
-	double temperature;
-	double head_pressure;
-
-	bool viscosity_calculation;
-	double kinematic_viscosity;
-
-	double courant_number;
-	double diffusion_number;
-
-	double gradient_influence;
-	double laplacian_influence;
-
 };
 
 
