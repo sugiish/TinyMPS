@@ -35,6 +35,7 @@ public:
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
+	void moveParticlesExplicitly(const Vector3d& force);
 	void moveParticlesExplicitly(double delta_time, const Vector3d& force);
 
 	inline int getParticlesNumber() const

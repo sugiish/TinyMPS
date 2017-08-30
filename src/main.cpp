@@ -21,7 +21,9 @@ int main()
 	
 	while(particles.timer.hasNextLoop())
 	{
-		particles.moveParticlesExplicitly(0.01, condition.gravity);
+		particles.moveParticlesExplicitly(condition.gravity);
+		
+
 		particles.timer.update();
 		//std::cout << particles.timer.getCurrentTime() << std::endl;
 	}
