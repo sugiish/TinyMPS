@@ -166,17 +166,9 @@ Particles::updateParticleNumberDensity()
 }
 
 void
-Particles::moveParticlesExplicitly(const Vector3d& force)
+Particles::moveParticlesExplicitly(const Vector3d& force, Timer timer)
 {
 	double delta_time = timer.getCurrentDeltaTime();
-	temporary_velocity = velocity;
-	temporary_velocity.colwise() += delta_time * force;
-	temporary_position = position + delta_time * temporary_velocity;
-}
-
-void
-Particles::moveParticlesExplicitly(double delta_time, const Vector3d& force)
-{
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
 	temporary_position = position + delta_time * temporary_velocity;

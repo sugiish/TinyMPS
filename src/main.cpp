@@ -16,15 +16,14 @@ int main()
 {
 	Condition condition("./input/input.data");
 	Particles particles("./input/dambreak.grid", condition);
-	particles.timer.initialize(condition.initial_time, condition.finish_time, condition.delta_time);
-
+	Timer timer(condition.initial_time, condition.finish_time, condition.delta_time);
 	
-	while(particles.timer.hasNextLoop())
+	while(timer.hasNextLoop())
 	{
-		particles.moveParticlesExplicitly(condition.gravity);
+		particles.moveParticlesExplicitly(condition.gravity, timer);
 		
 
-		particles.timer.update();
+		timer.update();
 		//std::cout << particles.timer.getCurrentTime() << std::endl;
 	}
 

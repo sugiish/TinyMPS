@@ -47,5 +47,4 @@ private:
 
 };
 
-	
 #endif //MPS_DIFFERENTIAL_H_INCLUDED

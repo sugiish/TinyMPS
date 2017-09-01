@@ -31,15 +31,12 @@ public:
 	VectorXi particles_type;
 	VectorXi particles_valid;
 
-	Timer timer;
-
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
 	void updateParticleNumberDensity();
 	
-	void moveParticlesExplicitly(const Vector3d& force);
-	void moveParticlesExplicitly(double delta_time, const Vector3d& force);
+	void moveParticlesExplicitly(const Vector3d& force, Timer timer);
 
 	inline int getParticlesNumber() const
 	{
