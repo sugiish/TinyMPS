@@ -61,7 +61,6 @@ public:
 private:
 	Condition& condition;
 	int particles_number;
-	Grid first_grid;
 
 	void initialize(int particles_number);
 	int readGridFile(const string& path, int dimension);
