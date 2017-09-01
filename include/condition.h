@@ -12,33 +12,6 @@ class Condition
 public:
 	Condition(std::string path) : reader(path)
 	{
-		initialize();
-	}
-
-	virtual ~Condition(){}
-
-	Reader reader;
-
-	double average_distance;
-	int dimension;
-	double initial_particle_number_density;
-
-	Vector3d gravity;
-	double temperature;
-	double head_pressure;
-
-	bool viscosity_calculation;
-	double kinematic_viscosity;
-
-	double courant_number;
-	double diffusion_number;
-
-	double pnd_influence;
-	double gradient_influence;
-	double laplacian_influence;
-private:
-	inline void initialize()
-	{
 		reader.getValue("average_distance",  average_distance);
 		reader.getValue("dimension", dimension);
 		if(dimension != 2 && dimension != 3)
@@ -70,6 +43,30 @@ private:
 		reader.getValue("gradient_influence", gradient_influence);
 		reader.getValue("laplacian_influence", laplacian_influence);
 	}
+
+	virtual ~Condition(){}
+
+	Reader reader;
+
+	double average_distance;
+	int dimension;
+	double initial_particle_number_density;
+
+	Vector3d gravity;
+	double temperature;
+	double head_pressure;
+
+	bool viscosity_calculation;
+	double kinematic_viscosity;
+
+	double courant_number;
+	double diffusion_number;
+
+	double pnd_influence;
+	double gradient_influence;
+	double laplacian_influence;
+private:
+
 };
 
 
