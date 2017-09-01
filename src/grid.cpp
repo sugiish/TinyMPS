@@ -36,10 +36,10 @@ Grid::getNeighbors(int hash, int& begin, int& end)
 	end = begin_hash[hash].second;
 }
 
-double
-Grid::sumAllNeighbors(std::function<double(int, int)> interaction)
+void
+Grid::sumNeighborScalars(VectorXd& output, std::function<double(int, int)> interaction)
 {
-	double ans = 0;
+	output = VectorXd::Zero(size);
 	for(int i_particle = 0; i_particle < size; i_particle++)
 	{
 		if(isValidCoordinates(i_particle) == 0) continue;
@@ -59,6 +59,7 @@ Grid::sumAllNeighbors(std::function<double(int, int)> interaction)
 			z_end = 0;
 		}
 
+		double ans = 0;
 		for(int i = z_begin; i <= z_end; i++)
 		{
 			for(int j = y_begin; j <= y_end; j++)
@@ -83,14 +84,14 @@ Grid::sumAllNeighbors(std::function<double(int, int)> interaction)
 				}
 			}
 		}
+		output(i_particle) = ans;
 	}
-	return ans;
 }
 
 void 
-Grid::sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vector3d&)> interaction)
+Grid::sumNeighborVectors(MatrixXd& output, std::function<void(int, int, const Vector3d&)> interaction)
 {
-	Vector3d ans;
+	output = MatrixXd::Zero(3, size);
 	for(int i_particle = 0; i_particle < size; i_particle++)
 	{
 		if(isValidCoordinates(i_particle) == 0) continue;
@@ -110,6 +111,7 @@ Grid::sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vecto
 			z_end = 0;
 		}
 
+		Vector3d ans;
 		for(int i = z_begin; i <= z_end; i++)
 		{
 			for(int j = y_begin; j <= y_end; j++)
@@ -136,9 +138,8 @@ Grid::sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vecto
 				}
 			}
 		}
+		output.col(i_particle) = ans;
 	}
-
-	output = ans;
 }
 
 void
@@ -158,7 +159,7 @@ Grid::resetHash()
 	if(getDimension() == 2) diff(2) = 0;
 	for(int i = 0; i < 3; i++)
 	{
-		grid_number[i] = std::ceil(diff(i) / grid_width);
+		grid_number[i] = std::ceil(diff(i) / grid_width) + 1;
 	}
 
 	for(int i = 0; i < pt_num; i++)

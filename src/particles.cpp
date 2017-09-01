@@ -178,13 +178,8 @@ Particles::writeVtkFile(const string& path, const string& title)
 void
 Particles::updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight)
 {
-	for(int i = 0; i < particles_number; i++)
-	{
-		if(particles_type(i) == ParticleType::GHOST) continue;
-		double n_i = grid.sumAllNeighbors(weight);
-		particle_number_density(i) = n_i;
-		cout << i << ":" << n_i << endl;
-	}
+	grid.sumNeighborScalars(particle_number_density, weight);
+	
 }
 
 void
