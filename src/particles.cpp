@@ -32,6 +32,7 @@ Particles::initialize(int particles_number)
 	position = MatrixXd::Zero(3, particles_number);
 	velocity = MatrixXd::Zero(3, particles_number);
 	pressure = VectorXd::Zero(particles_number);
+	particle_number_density = VectorXd::Zero(particles_number);
 
 	temporary_position = MatrixXd::Zero(3, particles_number);
 	temporary_velocity = MatrixXd::Zero(3, particles_number);
@@ -159,6 +160,12 @@ Particles::writeVtkFile(const string& path, const string& title)
 }
 
 void
+Particles::updateParticleNumberDensity()
+{
+	
+}
+
+void
 Particles::moveParticlesExplicitly(const Vector3d& force)
 {
 	double delta_time = timer.getCurrentDeltaTime();
@@ -173,4 +180,11 @@ Particles::moveParticlesExplicitly(double delta_time, const Vector3d& force)
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
 	temporary_position = position + delta_time * temporary_velocity;
+}
+
+void 
+Particles::laplacianVelocity(int i, int j, Vector3d & output)
+{
+	Vector3d r_ji = position.col(j) - position.col(i);
+	output = (velocity.col(j) - velocity.col(i)) * weightFunction(r_ji.norm(), condition.laplacian_influence) * 2 * condition.dimension;
 }

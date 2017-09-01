@@ -23,6 +23,7 @@ public:
 	Matrix<double, 3, Dynamic> position;
 	Matrix<double, 3, Dynamic> velocity;
 	VectorXd pressure;
+	VectorXd particle_number_density;
 
 	Matrix<double, 3, Dynamic> temporary_position;
 	Matrix<double, 3, Dynamic> temporary_velocity;
@@ -35,6 +36,8 @@ public:
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
+	void updateParticleNumberDensity();
+	
 	void moveParticlesExplicitly(const Vector3d& force);
 	void moveParticlesExplicitly(double delta_time, const Vector3d& force);
 
@@ -62,6 +65,15 @@ private:
 
 	void initialize(int particles_number);
 	int readGridFile(const string& path, int dimension);
+
+	void laplacianVelocity(int i_particle, int j_particle, Vector3d& output);
+
+	inline double weightFunction(double r, double r_e)
+	{
+		return (0 <= r && r < r_e) ? 
+			r / r_e - 1
+			: 0;
+	}
 
 };
 

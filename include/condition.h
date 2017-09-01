@@ -33,6 +33,7 @@ public:
 	double courant_number;
 	double diffusion_number;
 
+	double pnd_influence;
 	double gradient_influence;
 	double laplacian_influence;
 private:
@@ -65,6 +66,7 @@ private:
 		reader.getValue("courant_number", courant_number);
 		reader.getValue("diffusion_number", diffusion_number);
 
+		reader.getValue("pnd_influence", pnd_influence);
 		reader.getValue("gradient_influence", gradient_influence);
 		reader.getValue("laplacian_influence", laplacian_influence);
 	}
