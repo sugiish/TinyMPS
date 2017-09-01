@@ -5,7 +5,6 @@
 #include "condition.h"
 #include "grid.h"
 #include "particles.h"
-#include "reader.h"
 
 using namespace Eigen;
 using namespace std;
@@ -17,6 +16,7 @@ int main()
 {
 	Condition condition("./input/input.data");
 	Particles particles("./input/dambreak.grid", condition);
+	particles.timer.initialize(condition.initial_time, condition.finish_time, condition.delta_time);
 
 	
 	while(particles.timer.hasNextLoop())

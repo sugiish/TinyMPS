@@ -12,17 +12,6 @@ public:
 		initialize(initial_time, finish_time, delta_time);
 	}
 
-	virtual ~Timer(){}
-
-	inline void initialize(Condition& condition)
-	{
-		double initial, finish, delta;
-		condition.reader.getValue("initial_time", initial);
-		condition.reader.getValue("finish_time", finish);
-		condition.reader.getValue("delta_time", delta);
-		initialize(initial, finish, delta);
-	}
-
 	inline void initialize(double initial_time, double finish_time, double delta_time)
 	{
 		this->current_time = initial_time;
@@ -34,6 +23,8 @@ public:
 
 		this->loop_count = 0;
 	}
+
+	virtual ~Timer(){}
 
 	inline bool hasNextLoop()
 	{

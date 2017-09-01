@@ -16,7 +16,7 @@ Particles::Particles(const string& path, Condition& condition):
 condition(condition), first_grid(condition.gradient_influence, position, particles_valid, condition.dimension)
 {
 	readGridFile(path, condition.dimension);
-	timer.initialize(condition);
+	//timer.initialize(condition);
 }
 
 Particles::~Particles()
