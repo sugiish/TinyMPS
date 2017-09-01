@@ -28,7 +28,7 @@ grid_file								./input/input.grid
 
 #--------------------------------------------------------------------
 #	We can use parenthesis "()" to describe their units.
-average_distance(m)						0.0002
+average_distance(m)						0.012
 
 #	These parenthesis including units are ignored when we retrieve variables.
 #	e.g.)

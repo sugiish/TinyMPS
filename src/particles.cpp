@@ -46,13 +46,13 @@ Particles::readGridFile(const string& path, int dimension)
 {
 	ifstream ifs(path);
 	
-    if(ifs.fail())
-    {
-        std::cerr << "Error: in readGridFile()" << std::endl;
-        std::cerr << "Failed to read files: " << path << std::endl;
+	if(ifs.fail())
+	{
+		std::cerr << "Error: in readGridFile()" << std::endl;
+		std::cerr << "Failed to read files: " << path << std::endl;
 
 		return 1;
-    }
+	}
 
 	string tmp_str;
 
@@ -98,7 +98,15 @@ Particles::readGridFile(const string& path, int dimension)
 		ss >> pressure(i_counter);
 
 		i_counter++;
-    }
+	}
+	
+	for(int i_particle = 0; i_particle < particles_number; i_particle++)
+	{
+		// if(particles_type(i_particle) == ParticleType::NORMAL
+		// || particles_type(i_particle) == ParticleType::WALL )particles_valid(i_particle) = 1;
+		// else particles_valid(i_particle) = 0;
+		particles_valid(i_particle) = 1;
+	}
 
 	return 0;
 }
@@ -155,14 +163,28 @@ Particles::writeVtkFile(const string& path, const string& title)
 	{
 		ofs << particles_type(i) << endl;
 	}
+	ofs << endl;
+
+	ofs << "SCALARS ParticleNumberDensity double" << endl;
+	ofs << "LOOKUP_TABLE default" << endl;
+	for(int i = 0; i < particles_number; i++)
+	{
+		ofs << particle_number_density(i) << endl;
+	}
 	
 	return 0;
 }
 
 void
-Particles::updateParticleNumberDensity()
+Particles::updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight)
 {
-	
+	for(int i = 0; i < particles_number; i++)
+	{
+		if(particles_type(i) == ParticleType::GHOST) continue;
+		double n_i = grid.sumAllNeighbors(weight);
+		particle_number_density(i) = n_i;
+		cout << i << ":" << n_i << endl;
+	}
 }
 
 void

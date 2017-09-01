@@ -14,7 +14,10 @@ using namespace std;
 
 enum ParticleType
 {
-	
+	NORMAL = 0,
+	WALL = 2,
+	DUMMY_WALL = 3,
+	GHOST = -1
 };
 
 class Particles
@@ -34,7 +37,7 @@ public:
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
-	void updateParticleNumberDensity();
+	void updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight);
 	
 	void moveParticlesExplicitly(const Vector3d& force, Timer timer);
 

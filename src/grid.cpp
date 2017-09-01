@@ -9,7 +9,7 @@ Grid::Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid
 {
 	this->grid_width = grid_width;
 	this->dimension = dimension;
-	size = coordinates.size();
+	size = coordinates.cols();
 
 	resetHash();
 }
@@ -73,6 +73,7 @@ Grid::sumAllNeighbors(std::function<double(int, int)> interaction)
 					for(int n = begin; n <= end; n++)
 					{
 						int j_particle = grid_hash[n].second;
+						if(i_particle == j_particle) continue;
 						Vector3d r_j = coordinates.col(j_particle);
 						Vector3d r_ji = r_j - r_i;
 						if(r_ji.norm() > grid_width) continue;
@@ -123,6 +124,7 @@ Grid::sumAllNeighbors(Vector3d& output, std::function<void(int, int, const Vecto
 					for(int n = begin; n <= end; n++)
 					{
 						int j_particle = grid_hash[n].second;
+						if(i_particle == j_particle) continue;						
 						Vector3d r_j = coordinates.col(j_particle);
 						Vector3d r_ji = r_j - r_i;
 						if(r_ji.norm() > grid_width) continue;
@@ -145,7 +147,7 @@ Grid::resetHash()
 	if(!begin_hash.empty()) begin_hash.clear();
 	if(!grid_hash.empty()) grid_hash.clear();
 
-	int pt_num = coordinates.size();
+	int pt_num = coordinates.cols();
 	if(pt_num == 0) return;
 
 	grid_hash.resize(pt_num);
