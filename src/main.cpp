@@ -32,7 +32,7 @@ int main()
 		if(r < re) return 1;
 		else return 0;
 	};
-	particles.updateParticleNumberDensity(grid, number);
+	particles.updateParticleNumberDensity(grid, weight);
 
 	while(timer.hasNextLoop())
 	{
