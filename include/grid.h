@@ -44,7 +44,6 @@ public:
 		if (dimension == 2) return toHash(index_x, index_y);
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
-
 	inline void toIndex(const Eigen::Vector3d& coordinates, int& dx, int& dy, int& dz) const {
 		dx = std::ceil((coordinates(0) - lower_bounds(0)) / grid_width);
 		dy = std::ceil((coordinates(1) - lower_bounds(1)) / grid_width);
@@ -86,9 +85,9 @@ private:
 	double grid_width;
 	int grid_number[3];
 
-	// hash, index
+	/// hash, index
 	std::vector<std::pair<int, int> > grid_hash;
-	// index, begin(order) end(order)
+	/// index, begin(order) end(order)
 	std::unordered_map<int, std::pair<int, int> > begin_hash;
 };
 
