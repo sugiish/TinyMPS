@@ -6,9 +6,6 @@
 #include "grid.h"
 #include "particles.h"
 
-using namespace Eigen;
-using namespace std;
-
 /**
  * This is a sample code using mps library.
  */
@@ -17,11 +14,11 @@ int main()
 	tiny_mps::Condition condition("./input/input.data");
 	tiny_mps::Particles particles("./input/dambreak.grid", condition);
 	tiny_mps::Timer timer(condition);
-	Matrix<bool, Dynamic, 1> valid = particles.particle_types.array() != tiny_mps::ParticleType::GHOST;
+	Eigen::Matrix<bool, Eigen::Dynamic, 1> valid = particles.particle_types.array() != tiny_mps::ParticleType::GHOST;
 	double re = condition.pnd_influence * condition.average_distance;
 	tiny_mps::Grid grid(re, particles.position, valid, condition.dimension);
 	auto weight = [&particles, re](int i,int j){
-		Vector3d v = particles.position.col(j) - particles.position.col(i);
+		Eigen::Vector3d v = particles.position.col(j) - particles.position.col(i);
 		double r = v.norm();
 		if(r < re) return (re/r - 1.0);
 		else return 0.0;
@@ -44,5 +41,4 @@ int main()
 	}
 
 	particles.writeVtkFile("out.vtk", "test");
-	
 }
