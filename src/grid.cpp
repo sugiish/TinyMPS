@@ -7,7 +7,8 @@
 namespace tiny_mps
 {
 
-Grid::Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension) : coordinates(coordinates), valid_coordinates(valid_coordinates)
+Grid::Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1> & valid_coordinates, int dimension) 
+	: coordinates(coordinates), valid_coordinates(valid_coordinates)
 {
 	this->grid_width = grid_width;
 	this->dimension = dimension;
@@ -39,9 +40,9 @@ Grid::getNeighbors(int hash, int& begin, int& end)
 }
 
 void
-Grid::sumNeighborScalars(VectorXd& output, std::function<double(int, int)> interaction)
+Grid::sumNeighborScalars(Eigen::VectorXd& output, std::function<double(int, int)> interaction)
 {
-	output = VectorXd::Zero(size);
+	output = Eigen::VectorXd::Zero(size);
 	for(int i_particle = 0; i_particle < size; i_particle++)
 	{
 		if(isValidCoordinates(i_particle) == 0) continue;
@@ -72,13 +73,13 @@ Grid::sumNeighborScalars(VectorXd& output, std::function<double(int, int)> inter
 					getNeighbors(toHash(k, j, i), begin, end);
 					if(begin == -1 || end == -1) continue;
 
-					Vector3d r_i = coordinates.col(i_particle);
+					Eigen::Vector3d r_i = coordinates.col(i_particle);
 					for(int n = begin; n <= end; n++)
 					{
 						int j_particle = grid_hash[n].second;
 						if(i_particle == j_particle) continue;
-						Vector3d r_j = coordinates.col(j_particle);
-						Vector3d r_ji = r_j - r_i;
+						Eigen::Vector3d r_j = coordinates.col(j_particle);
+						Eigen::Vector3d r_ji = r_j - r_i;
 						if(r_ji.norm() > grid_width) continue;
 
 						ans += interaction(i_particle, j_particle);						
@@ -91,9 +92,9 @@ Grid::sumNeighborScalars(VectorXd& output, std::function<double(int, int)> inter
 }
 
 void 
-Grid::sumNeighborVectors(MatrixXd& output, std::function<void(int, int, const Vector3d&)> interaction)
+Grid::sumNeighborVectors(Eigen::MatrixXd& output, std::function<void(int, int, const Eigen::Vector3d&)> interaction)
 {
-	output = MatrixXd::Zero(3, size);
+	output = Eigen::MatrixXd::Zero(3, size);
 	for(int i_particle = 0; i_particle < size; i_particle++)
 	{
 		if(isValidCoordinates(i_particle) == 0) continue;
@@ -113,7 +114,7 @@ Grid::sumNeighborVectors(MatrixXd& output, std::function<void(int, int, const Ve
 			z_end = 0;
 		}
 
-		Vector3d ans;
+		Eigen::Vector3d ans;
 		for(int i = z_begin; i <= z_end; i++)
 		{
 			for(int j = y_begin; j <= y_end; j++)
@@ -124,16 +125,16 @@ Grid::sumNeighborVectors(MatrixXd& output, std::function<void(int, int, const Ve
 					getNeighbors(toHash(k, j, i), begin, end);
 					if(begin == -1 || end == -1) continue;
 
-					Vector3d r_i = coordinates.col(i_particle);
+					Eigen::Vector3d r_i = coordinates.col(i_particle);
 					for(int n = begin; n <= end; n++)
 					{
 						int j_particle = grid_hash[n].second;
 						if(i_particle == j_particle) continue;						
-						Vector3d r_j = coordinates.col(j_particle);
-						Vector3d r_ji = r_j - r_i;
+						Eigen::Vector3d r_j = coordinates.col(j_particle);
+						Eigen::Vector3d r_ji = r_j - r_i;
 						if(r_ji.norm() > grid_width) continue;
 
-						Vector3d tmp;
+						Eigen::Vector3d tmp;
 						interaction(i_particle, j_particle, tmp);
 						ans += tmp;
 					}
@@ -157,7 +158,7 @@ Grid::resetHash()
 
 	getMaxCoordinates(higher_bounds);
 	getMinCoordinates(lower_bounds);
-	Vector3d diff = higher_bounds - lower_bounds;
+	Eigen::Vector3d diff = higher_bounds - lower_bounds;
 	if(getDimension() == 2) diff(2) = 0;
 	for(int i = 0; i < 3; i++)
 	{

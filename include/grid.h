@@ -6,8 +6,6 @@
 
 #include <Eigen/Dense>
 
-using namespace Eigen;
-
 namespace tiny_mps
 {
 
@@ -17,13 +15,13 @@ namespace tiny_mps
 class Grid
 {
 public:
-	Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension);
+	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1> & valid_coordinates, int dimension);
 	virtual ~Grid();
 
 	void getNeighbors(int hash, int& begin, int& end);
 
-	void sumNeighborScalars(VectorXd& output,std::function<double(int, int)> interaction);
-	void sumNeighborVectors(MatrixXd& output, std::function<void(int, int, const Vector3d&)> interaction);
+	void sumNeighborScalars(Eigen::VectorXd& output, std::function<double(int, int)> interaction);
+	void sumNeighborVectors(Eigen::MatrixXd& output, std::function<void(int, int, const Eigen::Vector3d&)> interaction);
 
 	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const
 	{
@@ -58,12 +56,12 @@ public:
 		return grid_number[2];
 	}
 	
-	inline void getMaxCoordinates(Vector3d& answer) const
+	inline void getMaxCoordinates(Eigen::Vector3d& answer) const
 	{
 		answer = coordinates.rowwise().maxCoeff();
 	}
 
-	inline void getMinCoordinates(Vector3d& answer) const
+	inline void getMinCoordinates(Eigen::Vector3d& answer) const
 	{
 		answer = coordinates.rowwise().minCoeff();
 	}	
@@ -73,7 +71,7 @@ public:
 		return valid_coordinates(index);
 	}
 
-	inline int toHash(const Vector3d& coordinates) const
+	inline int toHash(const Eigen::Vector3d& coordinates) const
 	{
 		int dx, dy, dz;
 		toIndex(coordinates, dx, dy, dz);
@@ -91,7 +89,7 @@ public:
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
 	
-	inline void toIndex(const Vector3d& coordinates, int& dx, int& dy, int& dz) const
+	inline void toIndex(const Eigen::Vector3d& coordinates, int& dx, int& dy, int& dz) const
 	{
 		dx = std::ceil((coordinates(0) - lower_bounds(0)) / grid_width);
 		dy = std::ceil((coordinates(1) - lower_bounds(1)) / grid_width);
@@ -122,13 +120,13 @@ public:
 
 
 private:
-	const MatrixXd& coordinates;
-	const Matrix<bool, Dynamic, 1>& valid_coordinates;
+	const Eigen::MatrixXd& coordinates;
+	const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates;
 	int dimension;
 	int size;
 
-	Vector3d lower_bounds;
-	Vector3d higher_bounds;
+	Eigen::Vector3d lower_bounds;
+	Eigen::Vector3d higher_bounds;
 
 	double grid_width;
 	int grid_number[3];

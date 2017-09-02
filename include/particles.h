@@ -9,8 +9,6 @@
 #include "timer.h"
 #include "grid.h"
 
-using namespace Eigen;
-
 namespace tiny_mps
 {
 
@@ -25,15 +23,15 @@ enum ParticleType
 class Particles
 {
 public:
-	Matrix<double, 3, Dynamic> position;
-	Matrix<double, 3, Dynamic> velocity;
-	VectorXd pressure;
-	VectorXd particle_number_density;
+	Eigen::Matrix<double, 3, Eigen::Dynamic> position;
+	Eigen::Matrix<double, 3, Eigen::Dynamic> velocity;
+	Eigen::VectorXd pressure;
+	Eigen::VectorXd particle_number_density;
 
-	Matrix<double, 3, Dynamic> temporary_position;
-	Matrix<double, 3, Dynamic> temporary_velocity;
+	Eigen::Matrix<double, 3, Eigen::Dynamic> temporary_position;
+	Eigen::Matrix<double, 3, Eigen::Dynamic> temporary_velocity;
 
-	VectorXi particle_types;
+	Eigen::VectorXi particle_types;
 
 	Particles(const std::string& path, Condition& condition);
 	virtual ~Particles();
@@ -41,19 +39,19 @@ public:
 	void updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight);
 	void setInitialParticleNumberDensity(int index);
 	
-	void moveParticlesExplicitly(const Vector3d& force, Timer timer);
+	void moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer);
 
 	inline int getSize() const
 	{
 		return size;
 	}
 
-	inline void getMaxPosition(Vector3d& answer) const
+	inline void getMaxPosition(Eigen::Vector3d& answer) const
 	{
 		answer = position.rowwise().maxCoeff();
 	}
 
-	inline void getMinPosition(Vector3d& answer) const
+	inline void getMinPosition(Eigen::Vector3d& answer) const
 	{
 		answer = position.rowwise().minCoeff();
 	}
@@ -68,7 +66,7 @@ private:
 	void initialize(int particles_number);
 	int readGridFile(const std::string& path, int dimension);
 
-	void laplacianVelocity(int i_particle, int j_particle, Vector3d& output);
+	void laplacianVelocity(int i_particle, int j_particle, Eigen::Vector3d& output);
 
 	inline double weightFunction(double r, double r_e)
 	{

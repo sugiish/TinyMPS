@@ -26,15 +26,15 @@ Particles::initialize(int size)
 {
 	this->size = size;
 	
-	position = MatrixXd::Zero(3, size);
-	velocity = MatrixXd::Zero(3, size);
-	pressure = VectorXd::Zero(size);
-	particle_number_density = VectorXd::Zero(size);
+	position = Eigen::MatrixXd::Zero(3, size);
+	velocity = Eigen::MatrixXd::Zero(3, size);
+	pressure = Eigen::VectorXd::Zero(size);
+	particle_number_density = Eigen::VectorXd::Zero(size);
 
-	temporary_position = MatrixXd::Zero(3, size);
-	temporary_velocity = MatrixXd::Zero(3, size);
+	temporary_position = Eigen::MatrixXd::Zero(3, size);
+	temporary_velocity = Eigen::MatrixXd::Zero(3, size);
 
-	particle_types = VectorXi::Zero(size);
+	particle_types = Eigen::VectorXi::Zero(size);
 }
 
 int
@@ -174,7 +174,7 @@ Particles::setInitialParticleNumberDensity(int index){
 }
 
 void
-Particles::moveParticlesExplicitly(const Vector3d& force, Timer timer)
+Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer)
 {
 	double delta_time = timer.getCurrentDeltaTime();
 	
@@ -184,9 +184,9 @@ Particles::moveParticlesExplicitly(const Vector3d& force, Timer timer)
 }
 
 void 
-Particles::laplacianVelocity(int i, int j, Vector3d & output)
+Particles::laplacianVelocity(int i, int j, Eigen::Vector3d & output)
 {
-	Vector3d r_ji = position.col(j) - position.col(i);
+	Eigen::Vector3d r_ji = position.col(j) - position.col(i);
 	output = (velocity.col(j) - velocity.col(i)) * weightFunction(r_ji.norm(), condition.laplacian_influence) * 2 * condition.dimension;
 }
 

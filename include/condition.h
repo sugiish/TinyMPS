@@ -10,8 +10,6 @@
 
 #include <Eigen/Dense>
 
-using namespace Eigen;
-
 namespace tiny_mps
 {
 
@@ -61,7 +59,7 @@ public:
 	double average_distance;
 	int dimension;
 
-	Vector3d gravity;
+	Eigen::Vector3d gravity;
 	double temperature;
 	double head_pressure;
 
