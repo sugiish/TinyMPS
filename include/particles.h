@@ -41,9 +41,9 @@ public:
 	
 	void moveParticlesExplicitly(const Vector3d& force, Timer timer);
 
-	inline int getParticlesNumber() const
+	inline int getSize() const
 	{
-		return particles_number;
+		return size;
 	}
 
 	inline void getMaxPosition(Vector3d& answer) const
@@ -60,7 +60,7 @@ public:
 
 private:
 	Condition& condition;
-	int particles_number;
+	int size;
 	double initial_particle_number_density;
 
 	void initialize(int particles_number);

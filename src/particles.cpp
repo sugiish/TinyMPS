@@ -24,19 +24,19 @@ Particles::~Particles()
 }
 
 void
-Particles::initialize(int particles_number)
+Particles::initialize(int size)
 {
-	this->particles_number = particles_number;
+	this->size = size;
 	
-	position = MatrixXd::Zero(3, particles_number);
-	velocity = MatrixXd::Zero(3, particles_number);
-	pressure = VectorXd::Zero(particles_number);
-	particle_number_density = VectorXd::Zero(particles_number);
+	position = MatrixXd::Zero(3, size);
+	velocity = MatrixXd::Zero(3, size);
+	pressure = VectorXd::Zero(size);
+	particle_number_density = VectorXd::Zero(size);
 
-	temporary_position = MatrixXd::Zero(3, particles_number);
-	temporary_velocity = MatrixXd::Zero(3, particles_number);
+	temporary_position = MatrixXd::Zero(3, size);
+	temporary_velocity = MatrixXd::Zero(3, size);
 
-	particle_types = VectorXi::Zero(particles_number);
+	particle_types = VectorXi::Zero(size);
 }
 
 int
@@ -116,31 +116,31 @@ Particles::writeVtkFile(const string& path, const string& title)
 	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
 	ofs << endl;
 
-	ofs << "POINTS " << particles_number << " double" << endl;
-	for(int i = 0; i < particles_number; i++)
+	ofs << "POINTS " << size << " double" << endl;
+	for(int i = 0; i < size; i++)
 	{
 		ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << endl;
 	}
 	ofs << endl;
 
-	ofs << "CELL_TYPES " << particles_number << endl;
-	for(int i = 0; i < particles_number; i++)
+	ofs << "CELL_TYPES " << size << endl;
+	for(int i = 0; i < size; i++)
 	{
 		ofs << 1 << endl;
 	}
 	ofs << endl;
 
-	ofs << "POINT_DATA " << particles_number << endl;
+	ofs << "POINT_DATA " << size << endl;
 	ofs << "SCALARS Pressure double" << endl;
 	ofs << "LOOKUP_TABLE default" << endl;
-	for(int i = 0; i < particles_number; i++)
+	for(int i = 0; i < size; i++)
 	{
 		ofs << pressure(i) << endl;
 	}
 	ofs << endl;
 
 	ofs << "VECTORS Velocity double" << endl;
-	for(int i = 0; i < particles_number; i++)
+	for(int i = 0; i < size; i++)
 	{
 		ofs << velocity(0, i) << " " << velocity(1, i) << " " << velocity(2, i) << endl;
 	}
@@ -148,7 +148,7 @@ Particles::writeVtkFile(const string& path, const string& title)
 
 	ofs << "SCALARS Type int" << endl;
 	ofs << "LOOKUP_TABLE default" << endl;
-	for(int i = 0; i < particles_number; i++)
+	for(int i = 0; i < size; i++)
 	{
 		ofs << particle_types(i) << endl;
 	}
@@ -156,7 +156,7 @@ Particles::writeVtkFile(const string& path, const string& title)
 
 	ofs << "SCALARS ParticleNumberDensity double" << endl;
 	ofs << "LOOKUP_TABLE default" << endl;
-	for(int i = 0; i < particles_number; i++)
+	for(int i = 0; i < size; i++)
 	{
 		ofs << particle_number_density(i) << endl;
 	}
@@ -179,6 +179,7 @@ void
 Particles::moveParticlesExplicitly(const Vector3d& force, Timer timer)
 {
 	double delta_time = timer.getCurrentDeltaTime();
+	
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
 	temporary_position = position + delta_time * temporary_velocity;
