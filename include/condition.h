@@ -10,19 +10,15 @@
 
 #include <Eigen/Dense>
 
-namespace tiny_mps
-{
+namespace tiny_mps {
 
-class Condition
-{
+class Condition {
 public:
-	Condition(std::string path)
-	{
+	Condition(std::string path) {
 		readDataFile(path);
 		getValue("average_distance",  average_distance);
 		getValue("dimension", dimension);
-		if(dimension != 2 && dimension != 3)
-		{
+		if(dimension != 2 && dimension != 3) {
 			std::cerr << "Error: " << dimension << "-dimension is not supported." << std::endl;
 		}
 
@@ -32,8 +28,8 @@ public:
 		getValue("gravity_z", gz);
 		gravity(0) = gx;
 		gravity(1) = gy;
-		if(dimension == 3) gravity(2) = gz;
-		else gravity(2) = gz;
+		gravity(2) = gz;
+		if (dimension == 2) gravity(2) = 0;
 
 		getValue("temperature", temperature);
 		getValue("head_pressure", head_pressure);
@@ -79,67 +75,46 @@ public:
 
 	int initial_pnd_index;
 
-	inline int getValue(const std::string& item, int& value)
-	{
-		if(data.find(item) == data.end())
-		{
-			return 1;
-		}
+	inline int getValue(const std::string& item, int& value) {
+		if(data.find(item) == data.end()) return 1;
 		std::stringstream ss;
 		ss << data[item];
 		ss >> value;
 		return 0;
 	}
 
-	inline int getValue(const std::string& item, double& value)
-	{
-		if(data.find(item) == data.end())
-		{
-			return 1;
-		}
+	inline int getValue(const std::string& item, double& value) {
+		if(data.find(item) == data.end()) return 1;
 		std::stringstream ss;
 		ss << data[item];
 		ss >> value;
 		return 0;
 	}
 
-	inline int getValue(const std::string& item, bool& value)
-	{
-		if(data.find(item) == data.end())
-		{
-			return 1;
-		}
+	inline int getValue(const std::string& item, bool& value) {
+		if(data.find(item) == data.end()) return 1;
 		std::string tmp = data[item];
 		std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
-		if(tmp == "on" || tmp == "true")
-		{
+		if(tmp == "on" || tmp == "true") {
 			value = true;
-		}
-		else
-		{
+		} else {
 			value = false;
 		}
 		return 0;
 	}
 	
-	inline int getValue(const std::string& item, std::string& value)
-	{
-		if(data.find(item) == data.end())
-		{
-			return 1;
-		}
+	inline int getValue(const std::string& item, std::string& value) {
+		if(data.find(item) == data.end()) return 1;
 		value = data[item];
 		return 0;
 	}
+
 private:
 	std::unordered_map<std::string, std::string> data;
 
-	inline int readDataFile(std::string path)
-	{
+	inline int readDataFile(std::string path) {
 		std::ifstream ifs(path);
-		
-		if(ifs.fail())
-		{
+		if(ifs.fail()) {
 			std::cerr << "Error: in Reader()" << std::endl;
 			std::cerr << "Failed to read files: " << path << std::endl;
 			return 1;
@@ -148,8 +123,7 @@ private:
 		std::string tmp_str;
 		std::regex re("\\(.*\\)"); // For removing (**)
 		std::regex re2("-+\\w+-+");// For removing like --**--
-		while(getline(ifs, tmp_str))
-		{
+		while(getline(ifs, tmp_str)) {
 			if(tmp_str.empty()) continue;
 			std::stringstream ss;
 			ss.str(tmp_str);

@@ -9,8 +9,7 @@
 /**
  * This is a sample code using mps library.
  */
-int main()
-{
+int main() {
 	tiny_mps::Condition condition("./input/input.data");
 	tiny_mps::Particles particles("./input/dambreak.grid", condition);
 	tiny_mps::Timer timer(condition);

@@ -6,120 +6,78 @@
 
 #include <Eigen/Dense>
 
-namespace tiny_mps
-{
+namespace tiny_mps {
 
 /**
  * Class for neighbor searching. 
  */
-class Grid
-{
+class Grid {
 public:
-	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1> & valid_coordinates, int dimension);
+	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
 	virtual ~Grid();
-
-	void getNeighbors(int hash, int& begin, int& end);
 
 	void sumNeighborScalars(Eigen::VectorXd& output, std::function<double(int, int)> interaction);
 	void sumNeighborVectors(Eigen::MatrixXd& output, std::function<void(int, int, const Eigen::Vector3d&)> interaction);
+	void resetHash();	
 
-	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const
-	{
+	inline void getGridHash(std::vector<std::pair<int, int> >& ghash) const {
 		ghash = grid_hash;
-	}
-
-	void resetHash();
-	
-	inline int getSize() const
-	{
-		return size;
-	}
-
-	inline int getDimension() const
-	{
-		return dimension;
-	}
-
-	inline int getGridNumberX() const
-	{
-		return grid_number[0];
-	}
-
-	inline int getGridNumberY() const
-	{
-		return grid_number[1];
-	}
-
-	inline int getGridNumberZ() const
-	{
+	}	
+	inline int getSize() const { return size; }
+	inline int getDimension() const { return dimension; }
+	inline int getGridNumberX() const { return grid_number[0]; }
+	inline int getGridNumberY() const { return grid_number[1]; }
+	inline int getGridNumberZ() const {
 		if(dimension == 2) return 0;
 		return grid_number[2];
 	}
-	
-	inline void getMaxCoordinates(Eigen::Vector3d& answer) const
-	{
+	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
 		answer = coordinates.rowwise().maxCoeff();
 	}
-
-	inline void getMinCoordinates(Eigen::Vector3d& answer) const
-	{
+	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
 		answer = coordinates.rowwise().minCoeff();
-	}	
-
-	inline int isValidCoordinates(int index)
-	{
+	}
+	inline int isValidCoordinates(int index) const {
 		return valid_coordinates(index);
 	}
 
-	inline int toHash(const Eigen::Vector3d& coordinates) const
-	{
+	inline int toHash(const Eigen::Vector3d& coordinates) const {
 		int dx, dy, dz;
 		toIndex(coordinates, dx, dy, dz);
 		return toHash(dx, dy, dz);
 	}
-
-	inline int toHash(int index_x, int index_y) const
-	{
+	inline int toHash(int index_x, int index_y) const {
 		return index_x + index_y * grid_number[0];
 	}
-
-	inline int toHash(int index_x, int index_y, int index_z) const
-	{
-		if(dimension == 2) return toHash(index_x, index_y);
+	inline int toHash(int index_x, int index_y, int index_z) const {
+		if (dimension == 2) return toHash(index_x, index_y);
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
-	
-	inline void toIndex(const Eigen::Vector3d& coordinates, int& dx, int& dy, int& dz) const
-	{
+
+	inline void toIndex(const Eigen::Vector3d& coordinates, int& dx, int& dy, int& dz) const {
 		dx = std::ceil((coordinates(0) - lower_bounds(0)) / grid_width);
 		dy = std::ceil((coordinates(1) - lower_bounds(1)) / grid_width);
-		if(dimension == 3) dz = std::ceil((coordinates(2) - lower_bounds(2)) / grid_width);
+		if (dimension == 3) dz = std::ceil((coordinates(2) - lower_bounds(2)) / grid_width);
 		else dz = 0;
 	}
-
-	inline void toIndex(int hash, int& dx, int& dy) const
-	{
+	inline void toIndex(int hash, int& dx, int& dy) const {
 		dy = hash / grid_number[0];
 		dx = hash % grid_number[0];
 	}
-
-	inline void toIndex(int hash, int& dx, int& dy, int& dz) const
-	{
-		if(dimension == 2)
-		{
+	inline void toIndex(int hash, int& dx, int& dy, int& dz) const {
+		if (dimension == 2) {
 			 toIndex(hash, dx, dy);
 			 dz = 0;
-		}
-		else
-		{
+		} else {
 			dz = hash / (grid_number[1] * grid_number[0]);
 			dy = (hash % (grid_number[1] * grid_number[0])) / grid_number[0];
 			dx = (hash % (grid_number[1] * grid_number[0])) % grid_number[0];
 		}
 	}
 
-
 private:
+	void getNeighbors(int hash, int& begin, int& end);	
+
 	const Eigen::MatrixXd& coordinates;
 	const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates;
 	int dimension;
@@ -133,11 +91,9 @@ private:
 
 	// hash, index
 	std::vector<std::pair<int, int> > grid_hash;
-	
 	// index, begin(order) end(order)
 	std::unordered_map<int, std::pair<int, int> > begin_hash;
 };
 
-}
-
+} // namespace tiny_mps
 #endif //MPS_GRID_H_INCLUDED
