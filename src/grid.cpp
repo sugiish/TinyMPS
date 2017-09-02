@@ -1,9 +1,10 @@
 #include "grid.h"
-#include "particles.h"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+
+#include "particles.h"
 
 Grid::Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension) : coordinates(coordinates), valid_coordinates(valid_coordinates)
 {

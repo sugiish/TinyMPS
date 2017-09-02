@@ -10,7 +10,6 @@
 #include "grid.h"
 
 using namespace Eigen;
-using namespace std;
 
 enum ParticleType
 {
@@ -33,7 +32,7 @@ public:
 
 	VectorXi particle_types;
 
-	Particles(const string& path, Condition& condition);
+	Particles(const std::string& path, Condition& condition);
 	virtual ~Particles();
 
 	void updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight);
@@ -56,7 +55,7 @@ public:
 		answer = position.rowwise().minCoeff();
 	}
 
-	int writeVtkFile(const string& path, const string& title);
+	int writeVtkFile(const std::string& path, const std::string& title);
 
 private:
 	Condition& condition;
@@ -64,7 +63,7 @@ private:
 	double initial_particle_number_density;
 
 	void initialize(int particles_number);
-	int readGridFile(const string& path, int dimension);
+	int readGridFile(const std::string& path, int dimension);
 
 	void laplacianVelocity(int i_particle, int j_particle, Vector3d& output);
 

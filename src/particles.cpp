@@ -4,15 +4,10 @@
 #include <iostream>
 #include <sstream>
 
-#include <Eigen/Dense>
-
-#include "timer.h"
-
-
 /**
  * Class for describing particles status.
  */
-Particles::Particles(const string& path, Condition& condition): condition(condition)
+Particles::Particles(const std::string& path, Condition& condition): condition(condition)
 {
 	readGridFile(path, condition.dimension);
 	//timer.initialize(condition);
@@ -40,9 +35,9 @@ Particles::initialize(int size)
 }
 
 int
-Particles::readGridFile(const string& path, int dimension)
+Particles::readGridFile(const std::string& path, int dimension)
 {
-	ifstream ifs(path);
+	std::ifstream ifs(path);
 	
 	if(ifs.fail())
 	{
@@ -52,7 +47,7 @@ Particles::readGridFile(const string& path, int dimension)
 		return 1;
 	}
 
-	string tmp_str;
+	std::string tmp_str;
 
 	//Line 0: Start time
 	getline(ifs, tmp_str);
@@ -61,7 +56,7 @@ Particles::readGridFile(const string& path, int dimension)
 	getline(ifs, tmp_str);
 
 	{
-		stringstream ss;
+		std::stringstream ss;
 		int ptcl_num = 0;
 
 		ss.str(tmp_str);
@@ -72,7 +67,7 @@ Particles::readGridFile(const string& path, int dimension)
 	int i_counter = 0;
 	while(getline(ifs, tmp_str))
 	{
-		stringstream ss;
+		std::stringstream ss;
 		ss.str(tmp_str);
 
 		ss >> particle_types(i_counter);
@@ -101,64 +96,64 @@ Particles::readGridFile(const string& path, int dimension)
 }
 
 int
-Particles::writeVtkFile(const string& path, const string& title)
+Particles::writeVtkFile(const std::string& path, const std::string& title)
 {
-	ofstream ofs(path);
+	std::ofstream ofs(path);
 	if(ofs.fail())
 	{
 		std::cerr << "Error: in writeVtkFile()" << std::endl;
 		return 1;
 	}
 
-	ofs << "# vtk DataFile Version 2.0" << endl;
-	ofs << title << endl;
-	ofs << "ASCII" << endl;
-	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
-	ofs << endl;
+	ofs << "# vtk DataFile Version 2.0" << std::endl;
+	ofs << title << std::endl;
+	ofs << "ASCII" << std::endl;
+	ofs << "DATASET UNSTRUCTURED_GRID" << std::endl;
+	ofs << std::endl;
 
-	ofs << "POINTS " << size << " double" << endl;
+	ofs << "POINTS " << size << " double" << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << endl;
+		ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
 	}
-	ofs << endl;
+	ofs << std::endl;
 
-	ofs << "CELL_TYPES " << size << endl;
+	ofs << "CELL_TYPES " << size << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << 1 << endl;
+		ofs << 1 << std::endl;
 	}
-	ofs << endl;
+	ofs << std::endl;
 
-	ofs << "POINT_DATA " << size << endl;
-	ofs << "SCALARS Pressure double" << endl;
-	ofs << "LOOKUP_TABLE default" << endl;
+	ofs << "POINT_DATA " << size << std::endl;
+	ofs << "SCALARS Pressure double" << std::endl;
+	ofs << "LOOKUP_TABLE default" << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << pressure(i) << endl;
+		ofs << pressure(i) << std::endl;
 	}
-	ofs << endl;
+	ofs << std::endl;
 
-	ofs << "VECTORS Velocity double" << endl;
+	ofs << "VECTORS Velocity double" << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << velocity(0, i) << " " << velocity(1, i) << " " << velocity(2, i) << endl;
+		ofs << velocity(0, i) << " " << velocity(1, i) << " " << velocity(2, i) << std::endl;
 	}
-	ofs << endl;
+	ofs << std::endl;
 
-	ofs << "SCALARS Type int" << endl;
-	ofs << "LOOKUP_TABLE default" << endl;
+	ofs << "SCALARS Type int" << std::endl;
+	ofs << "LOOKUP_TABLE default" << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << particle_types(i) << endl;
+		ofs << particle_types(i) << std::endl;
 	}
-	ofs << endl;
+	ofs << std::endl;
 
-	ofs << "SCALARS ParticleNumberDensity double" << endl;
-	ofs << "LOOKUP_TABLE default" << endl;
+	ofs << "SCALARS ParticleNumberDensity double" << std::endl;
+	ofs << "LOOKUP_TABLE default" << std::endl;
 	for(int i = 0; i < size; i++)
 	{
-		ofs << particle_number_density(i) << endl;
+		ofs << particle_number_density(i) << std::endl;
 	}
 	
 	return 0;
