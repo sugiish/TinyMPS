@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-Grid::Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid_coordinates, int dimension) : coordinates(coordinates), valid_coordinates(valid_coordinates)
+Grid::Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension) : coordinates(coordinates), valid_coordinates(valid_coordinates)
 {
 	this->grid_width = grid_width;
 	this->dimension = dimension;

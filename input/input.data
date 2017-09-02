@@ -16,7 +16,7 @@ grid_file								./input/input.grid
 #	Variable types of int, double, bool and string are available.
 #	We can assign "on" / "off" or "true" / "false" for bool type values.
 
-#	We can get variables via "getValue" function in "reader.h".
+#	We can get variables via "getValue" function in "condition.h".
 #	Usage:	int getValue(const std::string& name, int& value);
 #			int getValue(const std::string& name, double& value);
 #			int getValue(const std::string& name, bool& value);
@@ -79,3 +79,5 @@ compressibility							1.0e-7
 head_pressure(Pa)						101325.0
 temperature(K)							292.0
 gas_constant(J/K*mol)					8.3144621
+
+initiaL_pnd_index						460

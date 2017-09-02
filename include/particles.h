@@ -31,13 +31,13 @@ public:
 	Matrix<double, 3, Dynamic> temporary_position;
 	Matrix<double, 3, Dynamic> temporary_velocity;
 
-	VectorXi particles_type;
-	VectorXi particles_valid;
+	VectorXi particle_types;
 
 	Particles(const string& path, Condition& condition);
 	virtual ~Particles();
 
 	void updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight);
+	void setInitialParticleNumberDensity(int index);
 	
 	void moveParticlesExplicitly(const Vector3d& force, Timer timer);
 
@@ -61,6 +61,7 @@ public:
 private:
 	Condition& condition;
 	int particles_number;
+	double initial_particle_number_density;
 
 	void initialize(int particles_number);
 	int readGridFile(const string& path, int dimension);

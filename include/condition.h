@@ -25,8 +25,6 @@ public:
 			std::cerr << "Error: " << dimension << "-dimension is not supported." << std::endl;
 		}
 
-		initial_particle_number_density = 0;
-
 		double gx, gy, gz;
 		getValue("gravity_x", gx);
 		getValue("gravity_y", gy);
@@ -52,13 +50,13 @@ public:
 		getValue("initial_time", initial_time);
 		getValue("delta_time", delta_time);
 		getValue("finish_time", finish_time);
+		getValue("initial_pnd_index", initial_pnd_index);
 	}
 
 	virtual ~Condition(){}
 
 	double average_distance;
 	int dimension;
-	double initial_particle_number_density;
 
 	Vector3d gravity;
 	double temperature;
@@ -77,45 +75,8 @@ public:
 	double initial_time;
 	double finish_time;
 	double delta_time;
-private:
-	std::unordered_map<std::string, std::string> data;
 
-	inline int readDataFile(std::string path)
-	{
-		std::ifstream ifs(path);
-		
-		if(ifs.fail())
-		{
-			std::cerr << "Error: in Reader()" << std::endl;
-			std::cerr << "Failed to read files: " << path << std::endl;
-			return 1;
-		}
-
-		std::string tmp_str;
-		std::regex re("\\(.*\\)"); // For removing (**)
-		std::regex re2("-+\\w+-+");// For removing like --**--
-		while(getline(ifs, tmp_str))
-		{
-			if(tmp_str.empty()) continue;
-			std::stringstream ss;
-			ss.str(tmp_str);
-
-			std::string item, value;
-			ss >> item;
-			{
-				// Lines that begin with '#' are comments
-				char first = item.at(0);
-				if(first == '#') continue;
-			}
-
-			item = std::regex_replace(item, re, "");
-			item = std::regex_replace(item, re2, "");
-			
-			ss >> value;
-			data[item] = value;
-		}
-		return 0;
-	}
+	int initial_pnd_index;
 
 	inline int getValue(const std::string& item, int& value)
 	{
@@ -167,6 +128,45 @@ private:
 			return 1;
 		}
 		value = data[item];
+		return 0;
+	}
+private:
+	std::unordered_map<std::string, std::string> data;
+
+	inline int readDataFile(std::string path)
+	{
+		std::ifstream ifs(path);
+		
+		if(ifs.fail())
+		{
+			std::cerr << "Error: in Reader()" << std::endl;
+			std::cerr << "Failed to read files: " << path << std::endl;
+			return 1;
+		}
+
+		std::string tmp_str;
+		std::regex re("\\(.*\\)"); // For removing (**)
+		std::regex re2("-+\\w+-+");// For removing like --**--
+		while(getline(ifs, tmp_str))
+		{
+			if(tmp_str.empty()) continue;
+			std::stringstream ss;
+			ss.str(tmp_str);
+
+			std::string item, value;
+			ss >> item;
+			{
+				// Lines that begin with '#' are comments
+				char first = item.at(0);
+				if(first == '#') continue;
+			}
+
+			item = std::regex_replace(item, re, "");
+			item = std::regex_replace(item, re2, "");
+			
+			ss >> value;
+			data[item] = value;
+		}
 		return 0;
 	}
 };

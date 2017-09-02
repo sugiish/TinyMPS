@@ -36,8 +36,7 @@ Particles::initialize(int particles_number)
 	temporary_position = MatrixXd::Zero(3, particles_number);
 	temporary_velocity = MatrixXd::Zero(3, particles_number);
 
-	particles_type = VectorXi::Zero(particles_number);
-	particles_valid = VectorXi::Zero(particles_number);
+	particle_types = VectorXi::Zero(particles_number);
 }
 
 int
@@ -57,7 +56,6 @@ Particles::readGridFile(const string& path, int dimension)
 
 	//Line 0: Start time
 	getline(ifs, tmp_str);
-	
 
 	//Line 1: particles_number
 	getline(ifs, tmp_str);
@@ -72,12 +70,12 @@ Particles::readGridFile(const string& path, int dimension)
 	}
 
 	int i_counter = 0;
-    while(getline(ifs, tmp_str))
-    {
+	while(getline(ifs, tmp_str))
+	{
 		stringstream ss;
 		ss.str(tmp_str);
-        
-		ss >> particles_type(i_counter);
+
+		ss >> particle_types(i_counter);
 
 		for(int i_dim = 0; i_dim < 3; i_dim++)
 		{
@@ -97,14 +95,6 @@ Particles::readGridFile(const string& path, int dimension)
 		ss >> pressure(i_counter);
 
 		i_counter++;
-	}
-	
-	for(int i_particle = 0; i_particle < particles_number; i_particle++)
-	{
-		// if(particles_type(i_particle) == ParticleType::NORMAL
-		// || particles_type(i_particle) == ParticleType::WALL )particles_valid(i_particle) = 1;
-		// else particles_valid(i_particle) = 0;
-		particles_valid(i_particle) = 1;
 	}
 
 	return 0;
@@ -160,7 +150,7 @@ Particles::writeVtkFile(const string& path, const string& title)
 	ofs << "LOOKUP_TABLE default" << endl;
 	for(int i = 0; i < particles_number; i++)
 	{
-		ofs << particles_type(i) << endl;
+		ofs << particle_types(i) << endl;
 	}
 	ofs << endl;
 
@@ -177,8 +167,12 @@ Particles::writeVtkFile(const string& path, const string& title)
 void
 Particles::updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight)
 {
-	grid.sumNeighborScalars(particle_number_density, weight);
-	
+	grid.sumNeighborScalars(particle_number_density, weight);	
+}
+
+void
+Particles::setInitialParticleNumberDensity(int index){
+	initial_particle_number_density = particle_number_density(index);
 }
 
 void

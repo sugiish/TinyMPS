@@ -16,7 +16,7 @@ class Particles;
 class Grid
 {
 public:
-	Grid(double grid_width, const MatrixXd& coordinates, const VectorXi& valid_coordinates, int dimension);
+	Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension);
 	virtual ~Grid();
 
 	void getNeighbors(int hash, int& begin, int& end);
@@ -122,7 +122,7 @@ public:
 
 private:
 	const MatrixXd& coordinates;
-	const VectorXi& valid_coordinates;
+	const Matrix<bool, Dynamic, 1>& valid_coordinates;
 	int dimension;
 	int size;
 

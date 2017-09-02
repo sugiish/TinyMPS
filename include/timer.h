@@ -8,6 +8,11 @@ public:
 		initialize(0, 0, 0);
 	}
 
+	Timer(Condition & condition)
+	{
+		initialize(condition.initial_time, condition.finish_time, condition.delta_time);
+	}
+
 	Timer(double initial_time, double finish_time, double delta_time){
 		initialize(initial_time, finish_time, delta_time);
 	}
