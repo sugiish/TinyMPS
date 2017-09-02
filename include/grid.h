@@ -31,15 +31,6 @@ public:
 		if(dimension == 2) return 0;
 		return grid_number[2];
 	}
-	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().maxCoeff();
-	}
-	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().minCoeff();
-	}
-	inline int isValidCoordinates(int index) const {
-		return valid_coordinates(index);
-	}
 
 	inline int toHash(const Eigen::Vector3d& coordinates) const {
 		int dx, dy, dz;
@@ -76,7 +67,13 @@ public:
 	}
 
 private:
-	void getNeighbors(int hash, int& begin, int& end);	
+	void getNeighbors(int hash, int& begin, int& end);
+	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
+		answer = coordinates.rowwise().maxCoeff();
+	}
+	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
+		answer = coordinates.rowwise().minCoeff();
+	}
 
 	const Eigen::MatrixXd& coordinates;
 	const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates;

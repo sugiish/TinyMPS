@@ -7,7 +7,7 @@
 namespace tiny_mps {
 
 Grid::Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension) 
-	: coordinates(coordinates), valid_coordinates(valid_coordinates) {
+	: coordinates(coordinates), valid_coordinates(valid_coordinates), grid_hash(coordinates.cols()) {
 	this->grid_width = grid_width;
 	this->dimension = dimension;
 	size = coordinates.cols();
@@ -32,7 +32,7 @@ void Grid::getNeighbors(int hash, int& begin, int& end) {
 void Grid::sumNeighborScalars(Eigen::VectorXd& output, std::function<double(int, int)> interaction) {
 	output = Eigen::VectorXd::Zero(size);
 	for (int i_particle = 0; i_particle < size; i_particle++) {
-		if(isValidCoordinates(i_particle) == 0) continue;
+		if(valid_coordinates(i_particle) == 0) continue;
 
 		int ix, iy, iz;
 		toIndex(coordinates.col(i_particle), ix, iy, iz);
@@ -76,7 +76,7 @@ void Grid::sumNeighborScalars(Eigen::VectorXd& output, std::function<double(int,
 void Grid::sumNeighborVectors(Eigen::MatrixXd& output, std::function<void(int, int, const Eigen::Vector3d&)> interaction) {
 	output = Eigen::MatrixXd::Zero(3, size);
 	for (int i_particle = 0; i_particle < size; i_particle++) {
-		if (isValidCoordinates(i_particle) == 0) continue;
+		if (valid_coordinates(i_particle) == 0) continue;
 
 		int ix, iy, iz;
 		toIndex(coordinates.col(i_particle), ix, iy, iz);
@@ -121,11 +121,11 @@ void Grid::sumNeighborVectors(Eigen::MatrixXd& output, std::function<void(int, i
 
 void Grid::resetHash() {
 	if (!begin_hash.empty()) begin_hash.clear();
-	if (!grid_hash.empty()) grid_hash.clear();
-
-	size = coordinates.cols();
-	if (size == 0) return;
-	grid_hash.resize(size);
+	if (size != coordinates.cols()) {
+		size = coordinates.cols();
+		grid_hash.resize(size);
+		if (size == 0) return;
+	}
 
 	getMaxCoordinates(higher_bounds);
 	getMinCoordinates(lower_bounds);
@@ -148,10 +148,10 @@ void Grid::resetHash() {
 			start_value = grid_hash[i].first;
 		}
 
-		if(i == size - 1) {
+		if (i == size - 1) {
 			begin_hash[start_value] = std::make_pair(start_i, i);
 		}
 	}
 }
 
-}
+} // namespace tiny_mps
