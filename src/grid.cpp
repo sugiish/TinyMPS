@@ -4,7 +4,8 @@
 #include <cmath>
 #include <iostream>
 
-#include "particles.h"
+namespace tiny_mps
+{
 
 Grid::Grid(double grid_width, const MatrixXd& coordinates, const Matrix<bool, Dynamic, 1> & valid_coordinates, int dimension) : coordinates(coordinates), valid_coordinates(valid_coordinates)
 {
@@ -186,4 +187,6 @@ Grid::resetHash()
 			begin_hash[start_value] = std::make_pair(start_i, i);
 		}
 	}
+}
+
 }

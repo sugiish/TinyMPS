@@ -11,6 +11,9 @@
 
 using namespace Eigen;
 
+namespace tiny_mps
+{
+
 enum ParticleType
 {
 	NORMAL = 0,
@@ -76,4 +79,5 @@ private:
 
 };
 
+}
 #endif // MPS_PARTICLES_H_INCLUDED

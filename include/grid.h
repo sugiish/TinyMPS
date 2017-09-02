@@ -8,7 +8,8 @@
 
 using namespace Eigen;
 
-class Particles;
+namespace tiny_mps
+{
 
 /**
  * Class for neighbor searching. 
@@ -139,5 +140,6 @@ private:
 	std::unordered_map<int, std::pair<int, int> > begin_hash;
 };
 
+}
 
 #endif //MPS_GRID_H_INCLUDED

@@ -4,6 +4,9 @@
 #include <iostream>
 #include <sstream>
 
+namespace tiny_mps
+{
+
 /**
  * Class for describing particles status.
  */
@@ -185,4 +188,6 @@ Particles::laplacianVelocity(int i, int j, Vector3d & output)
 {
 	Vector3d r_ji = position.col(j) - position.col(i);
 	output = (velocity.col(j) - velocity.col(i)) * weightFunction(r_ji.norm(), condition.laplacian_influence) * 2 * condition.dimension;
+}
+
 }

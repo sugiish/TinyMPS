@@ -14,12 +14,12 @@ using namespace std;
  */
 int main()
 {
-	Condition condition("./input/input.data");
-	Particles particles("./input/dambreak.grid", condition);
-	Timer timer(condition);
-	Matrix<bool, Dynamic, 1> valid = particles.particle_types.array() != ParticleType::GHOST;
+	tiny_mps::Condition condition("./input/input.data");
+	tiny_mps::Particles particles("./input/dambreak.grid", condition);
+	tiny_mps::Timer timer(condition);
+	Matrix<bool, Dynamic, 1> valid = particles.particle_types.array() != tiny_mps::ParticleType::GHOST;
 	double re = condition.pnd_influence * condition.average_distance;
-	Grid grid(re, particles.position, valid, condition.dimension);
+	tiny_mps::Grid grid(re, particles.position, valid, condition.dimension);
 	auto weight = [&particles, re](int i,int j){
 		Vector3d v = particles.position.col(j) - particles.position.col(i);
 		double r = v.norm();

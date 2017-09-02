@@ -1,6 +1,9 @@
 #ifndef MPS_TIMER_H_INCLUDED
 #define MPS_TIMER_H_INCLUDED
 
+namespace tiny_mps
+{
+
 class Timer
 {
 public:
@@ -106,4 +109,5 @@ private:
 	int loop_count;
 };
 
+}
 #endif //MPS_TIMER_H_INCLUDED

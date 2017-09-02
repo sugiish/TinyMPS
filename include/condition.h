@@ -12,6 +12,9 @@
 
 using namespace Eigen;
 
+namespace tiny_mps
+{
+
 class Condition
 {
 public:
@@ -171,5 +174,6 @@ private:
 	}
 };
 
+}
 
 #endif //MPS_CONDITION_H_INCLUDED
