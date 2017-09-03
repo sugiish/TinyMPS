@@ -11,6 +11,12 @@ namespace tiny_mps {
  */
 Particles::Particles(const std::string& path, const Condition& condition) {
 	readGridFile(path, condition.dimension);
+	VectorXb valid = particle_types.array() != ParticleType::GHOST;
+	weight_function = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2);
+	weight_function_radius = condition.pnd_influence * condition.average_distance;
+	Grid tmp_grid(weight_function_radius, position, valid, condition.dimension);
+	updateParticleNumberDensity(tmp_grid);
+	calculateInitialParticleNumberDensity(condition.initial_pnd_index);
 }
 
 Particles::~Particles() {}
@@ -126,12 +132,20 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
 	return 0;
 }
 
-void Particles::updateParticleNumberDensity(Grid & grid, std::function<double(int, int)> weight) {
-	grid.sumNeighborScalars(particle_number_density, weight);
+void Particles::updateParticleNumberDensity(Grid& grid) {
+	grid.sumAllNeighborScalars(weight_function, particle_number_density);
 }
 
-void Particles::setInitialParticleNumberDensity(int index) {
+void Particles::updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight) {
+	grid.sumAllNeighborScalars(weight, particle_number_density);
+}
+
+void Particles::calculateInitialParticleNumberDensity(int index) {
 	initial_particle_number_density = particle_number_density(index);
+}
+
+void Particles::calculateLaplacianLambda(int index, Grid& grid) {
+
 }
 
 void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer) {
@@ -139,6 +153,13 @@ void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer time
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
 	temporary_position = position + delta_time * temporary_velocity;
+}
+
+double Particles::weightFunction(int i_particle, int j_particle) {
+	Eigen::Vector3d v = position.col(j_particle) - position.col(i_particle);
+	double r = v.norm();
+	if(r < weight_function_radius) return (weight_function_radius / r - 1.0);
+	else return 0.0;
 }
 
 } // namespace tiny_mps
