@@ -18,8 +18,8 @@ Particles::Particles(const std::string& path, const Condition& condition) {
 	Grid pnd_grid(pnd_weight_radius, position, valid, condition.dimension);
 	Grid lap_grid(laplacian_pressure_weight_radius, position, valid, condition.dimension);
 	updateParticleNumberDensity(pnd_grid);
-	calculateInitialParticleNumberDensity(condition.initial_pnd_index);
-	calculateLaplacianLambda(condition.initial_pnd_index, lap_grid);
+	calculateInitialParticleNumberDensity(condition.inner_particle_index);
+	calculateLaplacianLambda(condition.inner_particle_index, lap_grid);
 }
 
 Particles::~Particles() {}
@@ -148,7 +148,11 @@ void Particles::calculateInitialParticleNumberDensity(int index) {
 }
 
 void Particles::calculateLaplacianLambda(int index, Grid& grid) {
-	
+	auto lap_weight = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2, laplacian_pressure_weight_radius);
+	double sum_weight = grid.sumNeighborScalars(index, lap_weight);
+	auto lap_weight_norm2 = std::bind(&Particles::laplacianWeightWithNorm2, this, std::placeholders::_1, std::placeholders::_2);
+	double sum_weight_norm2 = grid.sumNeighborScalars(index, lap_weight_norm2);
+	laplacian_lambda = sum_weight_norm2 / sum_weight;
 }
 
 void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer) {
@@ -162,6 +166,13 @@ double Particles::weightFunction(int i_particle, int j_particle, double influenc
 	Eigen::Vector3d v = position.col(j_particle) - position.col(i_particle);
 	double r = v.norm();
 	if(r < influence_radius) return (influence_radius / r - 1.0);
+	else return 0.0;
+}
+
+double Particles::laplacianWeightWithNorm2(int i_particle, int j_particle) {
+	Eigen::Vector3d v = position.col(j_particle) - position.col(i_particle);
+	double r = v.norm();
+	if(r < laplacian_pressure_weight_radius) return r * r * (laplacian_pressure_weight_radius / r - 1.0);
 	else return 0.0;
 }
 

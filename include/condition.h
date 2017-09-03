@@ -48,7 +48,7 @@ public:
 		getValue("initial_time", initial_time);
 		getValue("delta_time", delta_time);
 		getValue("finish_time", finish_time);
-		getValue("initial_pnd_index", initial_pnd_index);
+		getValue("inner_particle_index", inner_particle_index);
 	}
 
 	virtual ~Condition(){}
@@ -75,7 +75,7 @@ public:
 	double finish_time;
 	double delta_time;
 
-	int initial_pnd_index;
+	int inner_particle_index;
 
 	inline int getValue(const std::string& item, int& value) {
 		if(data.find(item) == data.end()) return 1;

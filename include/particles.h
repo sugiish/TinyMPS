@@ -24,8 +24,6 @@ public:
 	virtual ~Particles();
 	void updateParticleNumberDensity(Grid& grid);
 	void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
-	void calculateInitialParticleNumberDensity(int index);
-	void calculateLaplacianLambda(int index, Grid& grid);
 	void moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer);
 	int writeVtkFile(const std::string& path, const std::string& title);	
 	inline int getSize() const { return size; }
@@ -43,7 +41,11 @@ private:
 
 	void initialize(int particles_number);
 	int readGridFile(const std::string& path, int dimension);
+	void calculateInitialParticleNumberDensity(int index);
+	void calculateLaplacianLambda(int index, Grid& grid);
+
 	double weightFunction(int i_particle, int j_particle, double influence_radius);
+	double laplacianWeightWithNorm2(int i_particle, int j_particle);
 
 	std::function<double(int, int)> pnd_weight;
 	int size;
