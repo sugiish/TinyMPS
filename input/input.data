@@ -63,7 +63,8 @@ diffusion_number						0.2
 #	INFLUENCE RATIO
 pnd_influence(ratio)					2.1
 gradient_influence(ratio)				2.1
-laplacian_influence(ratio)				3.1
+laplacian_pressure_influence(ratio)		3.1
+laplacian_viscosity_influence(ratio)	3.1
 
 #	GRAVITY
 gravity_x(m/s^2)						0.0
@@ -80,4 +81,4 @@ head_pressure(Pa)						101325.0
 temperature(K)							292.0
 gas_constant(J/K*mol)					8.3144621
 
-initiaL_pnd_index						460
+initial_pnd_index						460

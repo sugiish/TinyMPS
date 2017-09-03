@@ -12,11 +12,14 @@ namespace tiny_mps {
 Particles::Particles(const std::string& path, const Condition& condition) {
 	readGridFile(path, condition.dimension);
 	VectorXb valid = particle_types.array() != ParticleType::GHOST;
-	weight_function = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2);
-	weight_function_radius = condition.pnd_influence * condition.average_distance;
-	Grid tmp_grid(weight_function_radius, position, valid, condition.dimension);
-	updateParticleNumberDensity(tmp_grid);
+	pnd_weight_radius = condition.pnd_influence * condition.average_distance;
+	pnd_weight = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2, pnd_weight_radius);
+	laplacian_pressure_weight_radius = condition.laplacian_pressure_influence * condition.average_distance;
+	Grid pnd_grid(pnd_weight_radius, position, valid, condition.dimension);
+	Grid lap_grid(laplacian_pressure_weight_radius, position, valid, condition.dimension);
+	updateParticleNumberDensity(pnd_grid);
 	calculateInitialParticleNumberDensity(condition.initial_pnd_index);
+	calculateLaplacianLambda(condition.initial_pnd_index, lap_grid);
 }
 
 Particles::~Particles() {}
@@ -133,7 +136,7 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
 }
 
 void Particles::updateParticleNumberDensity(Grid& grid) {
-	grid.sumAllNeighborScalars(weight_function, particle_number_density);
+	grid.sumAllNeighborScalars(pnd_weight, particle_number_density);
 }
 
 void Particles::updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight) {
@@ -145,7 +148,7 @@ void Particles::calculateInitialParticleNumberDensity(int index) {
 }
 
 void Particles::calculateLaplacianLambda(int index, Grid& grid) {
-
+	
 }
 
 void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer) {
@@ -155,10 +158,10 @@ void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer time
 	temporary_position = position + delta_time * temporary_velocity;
 }
 
-double Particles::weightFunction(int i_particle, int j_particle) {
+double Particles::weightFunction(int i_particle, int j_particle, double influence_radius) {
 	Eigen::Vector3d v = position.col(j_particle) - position.col(i_particle);
 	double r = v.norm();
-	if(r < weight_function_radius) return (weight_function_radius / r - 1.0);
+	if(r < influence_radius) return (influence_radius / r - 1.0);
 	else return 0.0;
 }
 

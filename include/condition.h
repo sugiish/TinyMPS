@@ -42,7 +42,8 @@ public:
 
 		getValue("pnd_influence", pnd_influence);
 		getValue("gradient_influence", gradient_influence);
-		getValue("laplacian_influence", laplacian_influence);
+		getValue("laplacian_pressure_influence", laplacian_pressure_influence);
+		getValue("laplacian_viscosity_influence", laplacian_viscosity_influence);
 
 		getValue("initial_time", initial_time);
 		getValue("delta_time", delta_time);
@@ -67,7 +68,8 @@ public:
 
 	double pnd_influence;
 	double gradient_influence;
-	double laplacian_influence;
+	double laplacian_pressure_influence;
+	double laplacian_viscosity_influence;
 
 	double initial_time;
 	double finish_time;

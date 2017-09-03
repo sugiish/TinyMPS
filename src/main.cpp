@@ -13,8 +13,7 @@ int main() {
 	tiny_mps::Condition condition("./input/input.data");
 	tiny_mps::Particles particles("./input/dambreak.grid", condition);
 	tiny_mps::Timer timer(condition);
-	while(timer.hasNextLoop())
-	{
+	while(timer.hasNextLoop()) {
 		particles.moveParticlesExplicitly(condition.gravity, timer);
 		timer.update();
 	}

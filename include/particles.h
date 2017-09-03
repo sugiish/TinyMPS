@@ -43,11 +43,12 @@ private:
 
 	void initialize(int particles_number);
 	int readGridFile(const std::string& path, int dimension);
-	double weightFunction(int i_particle, int j_particle);
+	double weightFunction(int i_particle, int j_particle, double influence_radius);
 
-	std::function<double(int, int)> weight_function;
+	std::function<double(int, int)> pnd_weight;
 	int size;
-	double weight_function_radius;
+	double pnd_weight_radius;
+	double laplacian_pressure_weight_radius;
 	double initial_particle_number_density;
 	double laplacian_lambda;
 };
