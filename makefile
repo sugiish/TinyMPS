@@ -5,7 +5,8 @@ INCLUDE_DIR := include
 
 CC := g++
 CXX := g++
-CXXFLAGS := -g -O0 -Wall -Wextra -MP -MMD -std=c++11
+DEBUGFLAGS := -g -O0
+CXXFLAGS := $(DEBUGFLAGS) -std=c++11 -Wall -Wextra -MP -MMD
 CPPFLAGS := -I $(INCLUDE_DIR)
 
 MKDIR := mkdir -p

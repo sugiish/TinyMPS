@@ -24,7 +24,7 @@ public:
 	virtual ~Particles();
 	void updateParticleNumberDensity(Grid& grid);
 	void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
-	void moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer);
+	void moveParticlesExplicitly(const Eigen::Vector3d& force, Grid& grid, Timer& timer, Condition& condition);
 	int writeVtkFile(const std::string& path, const std::string& title);	
 	inline int getSize() const { return size; }
 
@@ -36,6 +36,9 @@ public:
 	Eigen::Matrix3Xd temporary_velocity;
 	Eigen::VectorXi particle_types;
 
+	double laplacian_pressure_weight_radius;
+	
+
 private:
 	using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
 
@@ -46,11 +49,12 @@ private:
 
 	double weightFunction(int i_particle, int j_particle, double influence_radius);
 	double laplacianWeightWithNorm2(int i_particle, int j_particle);
+	void laplacianViscosity(int i_particle, int j_particle, Eigen::Vector3d& output);
 
 	std::function<double(int, int)> pnd_weight;
 	int size;
+	int dimension;
 	double pnd_weight_radius;
-	double laplacian_pressure_weight_radius;
 	double initial_particle_number_density;
 	double laplacian_lambda;
 };

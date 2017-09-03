@@ -11,6 +11,7 @@ namespace tiny_mps {
  */
 Particles::Particles(const std::string& path, const Condition& condition) {
 	readGridFile(path, condition.dimension);
+	dimension = condition.dimension;
 	VectorXb valid = particle_types.array() != ParticleType::GHOST;
 	pnd_weight_radius = condition.pnd_influence * condition.average_distance;
 	pnd_weight = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2, pnd_weight_radius);
@@ -131,7 +132,6 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
 	for(int i = 0; i < size; i++) {
 		ofs << particle_number_density(i) << std::endl;
 	}
-	
 	return 0;
 }
 
@@ -155,10 +155,18 @@ void Particles::calculateLaplacianLambda(int index, Grid& grid) {
 	laplacian_lambda = sum_weight_norm2 / sum_weight;
 }
 
-void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Timer timer) {
+void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Grid& grid, Timer& timer, Condition& condition) {
 	double delta_time = timer.getCurrentDeltaTime();
+	Eigen::VectorXd active_indices = (particle_types.array() == ParticleType::NORMAL).cast<double>();
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
+	if (condition.kinematic_viscosity) {
+		Eigen::Matrix3Xd lap_vel;
+		auto lap_vel_func = std::bind(&Particles::laplacianViscosity, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		grid.sumAllNeighborVectors(lap_vel_func, lap_vel);	
+		temporary_velocity += lap_vel * condition.kinematic_viscosity * delta_time;
+	}
+	temporary_velocity.array().rowwise() *= active_indices.transpose().array();
 	temporary_position = position + delta_time * temporary_velocity;
 }
 
@@ -174,6 +182,12 @@ double Particles::laplacianWeightWithNorm2(int i_particle, int j_particle) {
 	double r = v.norm();
 	if(r < laplacian_pressure_weight_radius) return r * r * (laplacian_pressure_weight_radius / r - 1.0);
 	else return 0.0;
+}
+
+void Particles::laplacianViscosity(int i_particle, int j_particle, Eigen::Vector3d& output) {
+	Eigen::Vector3d vel = velocity.col(j_particle) - velocity.col(i_particle);
+	double w = weightFunction(i_particle, j_particle, laplacian_pressure_weight_radius);
+	output = vel * (w * 2 * dimension / (laplacian_lambda * initial_particle_number_density));
 }
 
 } // namespace tiny_mps

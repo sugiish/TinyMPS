@@ -68,8 +68,8 @@ double Grid::sumNeighborScalars(int index, std::function<double(int, int)> inter
 	}
 	return ans;
 }
-void Grid::sumNeighborVectors(int index, std::function<void(int, int, const Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) {
-	output = Eigen::VectorXd::Zero(3);
+void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) {
+	output << 0.0, 0.0, 0.0;
 	if (valid_coordinates(index) == 0) return;
 	int ix, iy, iz;
 	toIndex(coordinates.col(index), ix, iy, iz);
@@ -116,7 +116,7 @@ void Grid::sumAllNeighborScalars(std::function<double(int, int)> interaction, Ei
 	}
 }
 
-void Grid::sumAllNeighborVectors(std::function<void(int, int, const Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) {
+void Grid::sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) {
 	output = Eigen::MatrixXd::Zero(3, size);
 	for (int i_particle = 0; i_particle < size; i_particle++) {
 		Eigen::Vector3d ans;
