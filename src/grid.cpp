@@ -18,6 +18,44 @@ Grid::~Grid() {
 	begin_hash.clear();
 }
 
+void Grid::getNeighbors(int index, std::vector<int>& neighbors) {
+	neighbors.clear();
+	if(valid_coordinates(index) == 0) return;
+	int ix, iy, iz;
+	toIndex(coordinates.col(index), ix, iy, iz);
+	int x_begin, x_end, y_begin, y_end, z_begin, z_end;
+	x_begin = std::max(ix - 1, 0);
+	y_begin = std::max(iy - 1, 0);
+	z_begin = std::max(iz - 1, 0);
+	x_end = std::min(ix + 1, getGridNumberX() - 1);
+	y_end = std::min(iy + 1, getGridNumberY() - 1);
+	z_end = std::min(iz + 1, getGridNumberZ() - 1);
+	if(dimension == 2) {
+		z_begin = 0;
+		z_end = 0;
+	}
+	
+	for (int i = z_begin; i <= z_end; i++) {
+		for (int j = y_begin; j <= y_end; j++) {
+			for (int k = x_begin; k <= x_end; k++) {
+				int begin, end;
+				getGridHashBegin(toHash(k, j, i), begin, end);
+				if (begin == -1 || end == -1) continue;
+
+				Eigen::Vector3d r_i = coordinates.col(index);
+				for (int n = begin; n <= end; n++) {
+					int j_particle = grid_hash[n].second;
+					if(index == j_particle) continue;
+					Eigen::Vector3d r_j = coordinates.col(j_particle);
+					Eigen::Vector3d r_ji = r_j - r_i;
+					if(r_ji.norm() > grid_width) continue;
+					neighbors.push_back(j_particle);
+				}
+			}
+		}
+	}
+}
+
 void Grid::getGridHashBegin(int hash, int& begin, int& end) {
 	if (begin_hash.empty()) {
 		begin = -1; end = -1; return;
@@ -61,7 +99,7 @@ double Grid::sumNeighborScalars(int index, std::function<double(int, int)> inter
 					Eigen::Vector3d r_ji = r_j - r_i;
 					if(r_ji.norm() > grid_width) continue;
 
-					ans += interaction(index, j_particle);						
+					ans += interaction(index, j_particle);
 				}
 			}
 		}
@@ -95,7 +133,7 @@ void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vec
 				Eigen::Vector3d r_i = coordinates.col(index);
 				for (int n = begin; n <= end; n++) {
 					int j_particle = grid_hash[n].second;
-					if (index == j_particle) continue;						
+					if (index == j_particle) continue;
 					Eigen::Vector3d r_j = coordinates.col(j_particle);
 					Eigen::Vector3d r_ji = r_j - r_i;
 					if (r_ji.norm() > grid_width) continue;

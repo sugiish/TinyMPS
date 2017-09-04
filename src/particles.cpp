@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <Eigen/Sparse>
+
 namespace tiny_mps {
 
 /**
@@ -21,6 +23,7 @@ Particles::Particles(const std::string& path, const Condition& condition) {
 	updateParticleNumberDensity(pnd_grid);
 	calculateInitialParticleNumberDensity(condition.inner_particle_index);
 	calculateLaplacianLambda(condition.inner_particle_index, lap_grid);
+	checkSurfaceParticles(condition.surface_parameter);
 }
 
 Particles::~Particles() {}
@@ -34,6 +37,7 @@ void Particles::initialize(int size) {
 	temporary_position = Eigen::MatrixXd::Zero(3, size);
 	temporary_velocity = Eigen::MatrixXd::Zero(3, size);
 	particle_types = Eigen::VectorXi::Zero(size);
+	boundary_types = Eigen::VectorXi::Zero(size);
 }
 
 int Particles::readGridFile(const std::string& path, int dimension) {
@@ -132,6 +136,13 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
 	for(int i = 0; i < size; i++) {
 		ofs << particle_number_density(i) << std::endl;
 	}
+	ofs << std::endl;
+	
+	ofs << "SCALARS BoundaryCondition int" << std::endl;
+	ofs << "LOOKUP_TABLE default" << std::endl;
+	for(int i = 0; i < size; i++) {
+		ofs << boundary_types(i) << std::endl;
+	}
 	return 0;
 }
 
@@ -155,7 +166,7 @@ void Particles::calculateLaplacianLambda(int index, Grid& grid) {
 	laplacian_lambda = sum_weight_norm2 / sum_weight;
 }
 
-void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Grid& grid, Timer& timer, Condition& condition) {
+void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition) {
 	double delta_time = timer.getCurrentDeltaTime();
 	Eigen::VectorXd active_indices = (particle_types.array() == ParticleType::NORMAL).cast<double>();
 	temporary_velocity = velocity;
@@ -163,11 +174,30 @@ void Particles::moveParticlesExplicitly(const Eigen::Vector3d& force, Grid& grid
 	if (condition.kinematic_viscosity) {
 		Eigen::Matrix3Xd lap_vel;
 		auto lap_vel_func = std::bind(&Particles::laplacianViscosity, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		grid.sumAllNeighborVectors(lap_vel_func, lap_vel);	
+		grid.sumAllNeighborVectors(lap_vel_func, lap_vel);
 		temporary_velocity += lap_vel * condition.kinematic_viscosity * delta_time;
 	}
 	temporary_velocity.array().rowwise() *= active_indices.transpose().array();
 	temporary_position = position + delta_time * temporary_velocity;
+}
+
+void Particles::moveExplicitly() {
+	velocity = temporary_velocity;
+	position = temporary_position;
+}
+
+void Particles::solvePressurePoission() {
+	Eigen::SparseMatrix<double> p_mat;
+	// for(int i_paticle = 0; i_particle < size; i_particle++) {
+		// if(boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+
+
+	// }
+}
+
+void Particles::checkSurfaceParticles(double surface_parameter) {
+	boundary_types = -(particle_types.array() == NORMAL || particle_types.array() == WALL).cast<int>();
+	boundary_types = (particle_number_density.array() < surface_parameter * initial_particle_number_density).cast<int>();
 }
 
 double Particles::weightFunction(int i_particle, int j_particle, double influence_radius) {
@@ -189,5 +219,9 @@ void Particles::laplacianViscosity(int i_particle, int j_particle, Eigen::Vector
 	double w = weightFunction(i_particle, j_particle, laplacian_pressure_weight_radius);
 	output = vel * (w * 2 * dimension / (laplacian_lambda * initial_particle_number_density));
 }
+/*
+double Particles::laplacianPressure(int i_particle, int j_particle) {
+
+}*/
 
 } // namespace tiny_mps

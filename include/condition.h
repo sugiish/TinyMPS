@@ -49,6 +49,7 @@ public:
 		getValue("delta_time", delta_time);
 		getValue("finish_time", finish_time);
 		getValue("inner_particle_index", inner_particle_index);
+		getValue("surface_parameter", surface_parameter);
 	}
 
 	virtual ~Condition(){}
@@ -76,6 +77,7 @@ public:
 	double delta_time;
 
 	int inner_particle_index;
+	double surface_parameter;
 
 	inline int getValue(const std::string& item, int& value) {
 		if(data.find(item) == data.end()) return 1;

@@ -16,6 +16,8 @@ public:
 	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
 	virtual ~Grid();
 
+	void getNeighbors(int index, std::vector<int>& neighbors);
+
 	double sumNeighborScalars(int index, std::function<double(int, int)> interaction);
 	void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output);
 	void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output);

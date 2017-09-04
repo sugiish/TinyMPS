@@ -18,14 +18,26 @@ enum ParticleType {
 	GHOST = -1
 };
 
+enum BoundaryType {
+	INNER = 0,
+	SURFACE = 1,
+	OTHERS = -1
+};
+
 class Particles {
 public:
 	Particles(const std::string& path, const Condition& condition);
 	virtual ~Particles();
 	void updateParticleNumberDensity(Grid& grid);
 	void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
-	void moveParticlesExplicitly(const Eigen::Vector3d& force, Grid& grid, Timer& timer, Condition& condition);
-	int writeVtkFile(const std::string& path, const std::string& title);	
+	void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
+	void moveExplicitly();
+	void solvePressurePoission();
+	void checkSurfaceParticles(double surface_parameter);
+	int writeVtkFile(const std::string& path, const std::string& title);
+	inline double getMaxSpeed() {
+		return velocity.colwise().norm().maxCoeff();
+	}
 	inline int getSize() const { return size; }
 
 	Eigen::Matrix3Xd position;
@@ -35,9 +47,10 @@ public:
 	Eigen::Matrix3Xd temporary_position;
 	Eigen::Matrix3Xd temporary_velocity;
 	Eigen::VectorXi particle_types;
+	Eigen::VectorXi boundary_types;
 
+	double pnd_weight_radius;
 	double laplacian_pressure_weight_radius;
-	
 
 private:
 	using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
@@ -54,7 +67,6 @@ private:
 	std::function<double(int, int)> pnd_weight;
 	int size;
 	int dimension;
-	double pnd_weight_radius;
 	double initial_particle_number_density;
 	double laplacian_lambda;
 };

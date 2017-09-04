@@ -81,4 +81,5 @@ head_pressure(Pa)						101325.0
 temperature(K)							292.0
 gas_constant(J/K*mol)					8.3144621
 
-inner_particle_index						460
+inner_particle_index					460
+surface_parameter						0.97
