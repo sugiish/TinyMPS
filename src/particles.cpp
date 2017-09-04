@@ -196,8 +196,8 @@ void Particles::solvePressurePoission() {
 }
 
 void Particles::checkSurfaceParticles(double surface_parameter) {
-	boundary_types = -(particle_types.array() == NORMAL || particle_types.array() == WALL).cast<int>();
-	boundary_types = (particle_number_density.array() < surface_parameter * initial_particle_number_density).cast<int>();
+	// boundary_types = -(particle_types.array() == NORMAL || particle_types.array() == WALL).cast<int>();
+	// boundary_types *= (particle_number_density.array() < surface_parameter * initial_particle_number_density).cast<int>();
 }
 
 double Particles::weightFunction(int i_particle, int j_particle, double influence_radius) {
