@@ -27,7 +27,7 @@ int main() {
 		tiny_mps::Grid pnd_grid(particles.pnd_weight_radius, particles.position, pnd_valid, condition.dimension);
 		// pnd_grid.resetHash();
 		particles.updateParticleNumberDensity(pnd_grid);
-		//particles.checkSurfaceParticles(condition.surface_parameter);
+		particles.checkSurfaceParticles(condition.surface_parameter);
 		timer.update();
 	}
 	particles.writeVtkFile("out.vtk", "test");

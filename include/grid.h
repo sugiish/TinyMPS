@@ -79,10 +79,11 @@ private:
 	/// index, begin(order) end(order)
 	std::unordered_map<int, std::pair<int, int> > begin_hash;
 
-	const Eigen::MatrixXd& coordinates;
-	const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates;
+	const Eigen::MatrixXd coordinates;
+	const Eigen::Matrix<bool, Eigen::Dynamic, 1> valid_coordinates;
 	int dimension;
 	int size;
+	int initial_neighbors_size;
 
 	Eigen::Vector3d higher_bounds;
 	Eigen::Vector3d lower_bounds;
