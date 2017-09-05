@@ -96,10 +96,11 @@ double Grid::sumNeighborScalars(int index, std::function<double(int, int)> inter
 				Eigen::Vector3d r_i = coordinates.col(index);
 				for (int n = begin; n <= end; n++) {
 					int j_particle = grid_hash[n].second;
-					if(index == j_particle) continue;
+					if (index == j_particle) continue;
+					if (valid_coordinates(j_particle) == 0) continue;
 					Eigen::Vector3d r_j = coordinates.col(j_particle);
 					Eigen::Vector3d r_ji = r_j - r_i;
-					if(r_ji.norm() > grid_width) continue;
+					if (r_ji.norm() > grid_width) continue;
 
 					ans += interaction(index, j_particle);
 				}

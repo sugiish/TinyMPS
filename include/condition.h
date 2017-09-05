@@ -33,7 +33,7 @@ public:
 
 		getValue("temperature", temperature);
 		getValue("head_pressure", head_pressure);
-
+		getValue("mass_density", mass_density);
 		getValue("viscosity_calculation", viscosity_calculation);
 		getValue("kinematic_viscosity", kinematic_viscosity);
 
@@ -58,6 +58,7 @@ public:
 	int dimension;
 
 	Eigen::Vector3d gravity;
+	double mass_density;
 	double temperature;
 	double head_pressure;
 

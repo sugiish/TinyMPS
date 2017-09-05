@@ -32,10 +32,12 @@ public:
 	void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
 	void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
 	void moveExplicitly();
-	void solvePressurePoission();
+	void solvePressurePoission(Grid& grid, const Timer& timer, const Condition& condition);
+	void advectVelocity(Grid& grid, const Timer& timer, const Condition& condition);
 	void checkSurfaceParticles(double surface_parameter);
 	int writeVtkFile(const std::string& path, const std::string& title);
 	inline double getMaxSpeed() {
+		std::cout << "max_vel: " << velocity.colwise().norm().maxCoeff() << std::endl;
 		return velocity.colwise().norm().maxCoeff();
 	}
 	inline int getSize() const { return size; }
@@ -59,11 +61,11 @@ private:
 	int readGridFile(const std::string& path, int dimension);
 	void calculateInitialParticleNumberDensity(int index);
 	void calculateLaplacianLambda(int index, Grid& grid);
-
+	double weightFunc(Eigen::Vector3d& vec, double influence_radius);
 	double weightFunction(int i_particle, int j_particle, double influence_radius);
 	double laplacianWeightWithNorm2(int i_particle, int j_particle);
 	void laplacianViscosity(int i_particle, int j_particle, Eigen::Vector3d& output);
-
+	
 	std::function<double(int, int)> pnd_weight;
 	int size;
 	int dimension;

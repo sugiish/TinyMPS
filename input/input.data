@@ -52,7 +52,7 @@ dimension(2/3)							2
 
 #	TIME
 initial_time(sec)						0
-finish_time(sec)						1.0e-1
+finish_time(sec)						1.0e-2
 delta_time(sec)							1.0e-2
 
 output_interval(sec)					1.0e-2
@@ -63,8 +63,8 @@ diffusion_number						0.2
 #	INFLUENCE RATIO
 pnd_influence(ratio)					2.1
 gradient_influence(ratio)				2.1
-laplacian_pressure_influence(ratio)		3.1
-laplacian_viscosity_influence(ratio)	3.1
+laplacian_pressure_influence(ratio)		4.0
+laplacian_viscosity_influence(ratio)	4.0
 
 #	GRAVITY
 gravity_x(m/s^2)						0.0

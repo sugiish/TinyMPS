@@ -186,13 +186,67 @@ void Particles::moveExplicitly() {
 	position = temporary_position;
 }
 
-void Particles::solvePressurePoission() {
-	Eigen::SparseMatrix<double> p_mat;
-	// for(int i_paticle = 0; i_particle < size; i_particle++) {
-		// if(boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+void Particles::solvePressurePoission(Grid& grid, const Timer& timer, const Condition& condition) {
+	using T = Eigen::Triplet<double>;
+	double lap_r = condition.laplacian_pressure_influence * condition.average_distance;
+	int n_size = (int)(std::pow(lap_r * 2, condition.dimension));
+	double delta_time = timer.getCurrentDeltaTime();
+	Eigen::SparseMatrix<double> p_mat(size, size);
+	Eigen::VectorXd source(size);
+	std::vector<T> coeffs(size * n_size);
+	std::vector<int> neighbors(n_size * 2);
+	for (int i_particle = 0; i_particle < size; i_particle++) {
+		if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+			continue;
+		} else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+			coeffs.push_back(T(i_particle, i_particle, 1.0));
+			continue;
+		}
+		grid.getNeighbors(i_particle, neighbors);
+		double sum = 0.0;
+		for (int j_particle : neighbors) {
+			if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+			Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
+			double mat_ij = weightFunc(r_ji, lap_r) * 2 * condition.dimension
+				/ (laplacian_lambda * initial_particle_number_density);
+			sum -= mat_ij;
+			if (boundary_types(j_particle) == BoundaryType::INNER) {
+				coeffs.push_back(T(i_particle, j_particle, mat_ij));
+			}
+		}
+		coeffs.push_back(T(i_particle, i_particle, sum));
+		source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
+					/ (delta_time * delta_time * initial_particle_number_density);
+	}
+	p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+	
+	// Solving a problem
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cg;
+	cg.compute(p_mat);
+	pressure = cg.solve(source);
+	std::cout << "#iterations:     " << cg.iterations() << std::endl;
+	std::cout << "estimated error: " << cg.error()      << std::endl;
+}
 
-
-	// }
+void Particles::advectVelocity(Grid& grid, const Timer& timer, const Condition& condition) {
+	// int n_size = (int)(std::pow(condition.gradient_influence * 2, condition.dimension));
+	std::vector<int> neighbors(30);
+	for (int i_particle = 0; i_particle < size; i_particle++) {
+		if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+		grid.getNeighbors(i_particle, neighbors);
+		double p_min = pressure(i_particle);
+		for (int j_particle : neighbors) {
+			p_min = std::min(pressure(j_particle), p_min);
+		}
+		Eigen::Vector3d adv_v;
+		for (int j_particle : neighbors) {
+			Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+			adv_v += r_ji * (pressure(j_particle) - p_min) * weightFunc(r_ji, condition.gradient_influence * condition.average_distance) / r_ji.squaredNorm();
+		}
+		if (condition.dimension == 2) adv_v(2) = 0;
+		velocity.col(i_particle) += adv_v;
+		position.col(i_particle) += adv_v * timer.getCurrentDeltaTime();
+	}
 }
 
 void Particles::checkSurfaceParticles(double surface_parameter) {
@@ -204,6 +258,12 @@ void Particles::checkSurfaceParticles(double surface_parameter) {
 			boundary_types(i) = BoundaryType::OTHERS;
 		}
 	}
+}
+
+double Particles::weightFunc(Eigen::Vector3d& vec, double influence_radius) {
+	double r = vec.norm();
+	if(r < influence_radius) return (influence_radius / r - 1.0);
+	else return 0.0;
 }
 
 double Particles::weightFunction(int i_particle, int j_particle, double influence_radius) {
@@ -225,9 +285,5 @@ void Particles::laplacianViscosity(int i_particle, int j_particle, Eigen::Vector
 	double w = weightFunction(i_particle, j_particle, laplacian_pressure_weight_radius);
 	output = vel * (w * 2 * dimension / (laplacian_lambda * initial_particle_number_density));
 }
-/*
-double Particles::laplacianPressure(int i_particle, int j_particle) {
-
-}*/
 
 } // namespace tiny_mps
