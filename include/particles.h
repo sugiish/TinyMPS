@@ -4,6 +4,7 @@
 #include <string>
 
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "condition.h"
 #include "timer.h"
@@ -61,6 +62,7 @@ private:
 	int readGridFile(const std::string& path, int dimension);
 	void calculateInitialParticleNumberDensity(int index);
 	void calculateLaplacianLambda(int index, Grid& grid);
+	void solveConjugateGradient (const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, int itr, double eps);
 	double weightFunc(Eigen::Vector3d& vec, double influence_radius);
 	double weightFunction(int i_particle, int j_particle, double influence_radius);
 	double laplacianWeightWithNorm2(int i_particle, int j_particle);

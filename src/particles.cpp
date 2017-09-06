@@ -4,8 +4,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <Eigen/Sparse>
-
 namespace tiny_mps {
 
 /**
@@ -171,7 +169,7 @@ void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& g
 	Eigen::VectorXd active_indices = (particle_types.array() == ParticleType::NORMAL).cast<double>();
 	temporary_velocity = velocity;
 	temporary_velocity.colwise() += delta_time * force;
-	if (condition.kinematic_viscosity) {
+	if (condition.viscosity_calculation) {
 		Eigen::Matrix3Xd lap_vel;
 		auto lap_vel_func = std::bind(&Particles::laplacianViscosity, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 		grid.sumAllNeighborVectors(lap_vel_func, lap_vel);
@@ -217,15 +215,44 @@ void Particles::solvePressurePoission(Grid& grid, const Timer& timer, const Cond
 		coeffs.push_back(T(i_particle, i_particle, sum));
 		source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
 					/ (delta_time * delta_time * initial_particle_number_density);
+		// std::cout << boundary_types(i_particle) << source(i_particle) << ", " << particle_number_density(i_particle) << ", " << initial_particle_number_density << std::endl;
 	}
 	p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
 	
 	// Solving a problem
-	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cg;
-	cg.compute(p_mat);
-	pressure = cg.solve(source);
-	std::cout << "#iterations:     " << cg.iterations() << std::endl;
-	std::cout << "estimated error: " << cg.error()      << std::endl;
+	// Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+	// cg.compute(p_mat);
+	// pressure = cg.solve(source);
+	// std::cout << "#iterations:     " << cg.iterations() << std::endl;
+	// std::cout << "estimated error: " << cg.error()      << std::endl;
+	solveConjugateGradient(p_mat, source, pressure, 2000, 10e-9);
+	for (int i = 0; i < size; i++) {
+		if (pressure(i) < 0) pressure(i) = 0;
+	}
+}
+
+/// solve Ax = b
+void Particles::solveConjugateGradient (const Eigen::SparseMatrix<double> & A, const Eigen::VectorXd& b, Eigen::VectorXd& x, int itr, double eps) {
+	x = Eigen::VectorXd::Zero(b.size());
+	Eigen::VectorXd r;
+	Eigen::VectorXd p;	
+	r = b - A * x;
+	p = r;
+	int k;
+	for (k = 0; k < itr; ++k) {
+		Eigen::VectorXd y = A * p;
+		double alpha = r.squaredNorm() / p.dot(y);
+		x += alpha * p;
+		Eigen::VectorXd r_next = r - alpha * y;
+		if (r.norm() < eps) {	
+			break;
+		}
+		double beta = r_next.squaredNorm() / r.squaredNorm();
+		p *= beta;
+		p += r_next;
+	}
+	std::cout << "it: " << k << std::endl;
+	std::cout << "err: " << r.norm() << std::endl;
 }
 
 void Particles::advectVelocity(Grid& grid, const Timer& timer, const Condition& condition) {
@@ -236,17 +263,22 @@ void Particles::advectVelocity(Grid& grid, const Timer& timer, const Condition& 
 		grid.getNeighbors(i_particle, neighbors);
 		double p_min = pressure(i_particle);
 		for (int j_particle : neighbors) {
+			if (particle_types(j_particle) != ParticleType::NORMAL) continue;
 			p_min = std::min(pressure(j_particle), p_min);
 		}
 		Eigen::Vector3d adv_v;
 		for (int j_particle : neighbors) {
-			Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+			if (particle_types(j_particle) != ParticleType::NORMAL) continue;
+			Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
 			adv_v += r_ji * (pressure(j_particle) - p_min) * weightFunc(r_ji, condition.gradient_influence * condition.average_distance) / r_ji.squaredNorm();
 		}
 		if (condition.dimension == 2) adv_v(2) = 0;
-		velocity.col(i_particle) += adv_v;
-		position.col(i_particle) += adv_v * timer.getCurrentDeltaTime();
+		temporary_velocity.col(i_particle) += -adv_v * condition.dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.kinematic_viscosity);
+		std::cout << adv_v.norm() << std::endl;
+		temporary_position.col(i_particle) += adv_v * timer.getCurrentDeltaTime();
 	}
+	velocity = temporary_velocity;
+	position = temporary_position;
 }
 
 void Particles::checkSurfaceParticles(double surface_parameter) {
