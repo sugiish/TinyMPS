@@ -15,17 +15,23 @@ class Grid {
 public:
 	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
 	virtual ~Grid();
-
 	void getNeighbors(int index, std::vector<int>& neighbors);
-
 	double sumNeighborScalars(int index, std::function<double(int, int)> interaction);
 	void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output);
 	void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output);
 	void sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output);
 	void resetHash();
-
 	inline int getSize() const { return size; }
 	inline int getDimension() const { return dimension; }
+
+private:
+	void getGridHashBegin(int hash, int& begin, int& end);
+	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
+		answer = coordinates.rowwise().maxCoeff();
+	}
+	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
+		answer = coordinates.rowwise().minCoeff();
+	}
 	inline int getGridNumberX() const { return grid_number[0]; }
 	inline int getGridNumberY() const { return grid_number[1]; }
 	inline int getGridNumberZ() const {
@@ -65,29 +71,17 @@ public:
 		}
 	}
 
-private:
-	void getGridHashBegin(int hash, int& begin, int& end);
-	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().maxCoeff();
-	}
-	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().minCoeff();
-	}
-
 	/// hash, index
 	std::vector<std::pair<int, int> > grid_hash;
 	/// index, begin(order) end(order)
 	std::unordered_map<int, std::pair<int, int> > begin_hash;
-
 	const Eigen::MatrixXd coordinates;
 	const Eigen::Matrix<bool, Eigen::Dynamic, 1> valid_coordinates;
 	int dimension;
 	int size;
 	int initial_neighbors_size;
-
 	Eigen::Vector3d higher_bounds;
 	Eigen::Vector3d lower_bounds;
-
 	double grid_width;
 	int grid_number[3];
 };

@@ -29,11 +29,13 @@ class Particles {
 public:
 	Particles(const std::string& path, const Condition& condition);
 	virtual ~Particles();
+	bool checkNeedlessCalculation();
 	void updateParticleNumberDensity(Grid& grid);
 	void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
 	void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
 	void moveExplicitly();
 	void solvePressurePoission(Grid& grid, const Timer& timer, const Condition& condition);
+	void solvePressurePoission2(Grid& grid, const Timer& timer, const Condition& condition);
 	void advectVelocity(Grid& grid, const Timer& timer, const Condition& condition);
 	void checkSurfaceParticles(double surface_parameter);
 	int writeVtkFile(const std::string& path, const std::string& title);

@@ -22,36 +22,37 @@ Grid::~Grid() {
 
 void Grid::getNeighbors(int index, std::vector<int>& neighbors) {
 	neighbors.clear();
-	if(valid_coordinates(index) == 0) return;
-	int ix, iy, iz;
-	toIndex(coordinates.col(index), ix, iy, iz);
+	if(valid_coordinates(index) == false) return;
 	int x_begin, x_end, y_begin, y_end, z_begin, z_end;
-	x_begin = std::max(ix - 1, 0);
-	y_begin = std::max(iy - 1, 0);
-	z_begin = std::max(iz - 1, 0);
-	x_end = std::min(ix + 1, getGridNumberX() - 1);
-	y_end = std::min(iy + 1, getGridNumberY() - 1);
-	z_end = std::min(iz + 1, getGridNumberZ() - 1);
-	if(dimension == 2) {
-		z_begin = 0;
-		z_end = 0;
+	{
+		int ix, iy, iz;
+		toIndex(coordinates.col(index), ix, iy, iz);
+		x_begin = std::max(ix - 1, 0);
+		y_begin = std::max(iy - 1, 0);
+		z_begin = std::max(iz - 1, 0);
+		x_end = std::min(ix + 1, getGridNumberX() - 1);
+		y_end = std::min(iy + 1, getGridNumberY() - 1);
+		z_end = std::min(iz + 1, getGridNumberZ() - 1);
+		if(dimension == 2) {
+			z_begin = 0;
+			z_end = 0;
+		}
 	}
-	
-	for (int i = z_begin; i <= z_end; i++) {
-		for (int j = y_begin; j <= y_end; j++) {
-			for (int k = x_begin; k <= x_end; k++) {
+	for (int gz = z_begin; gz <= z_end; ++gz) {
+		for (int gy = y_begin; gy <= y_end; ++gy) {
+			for (int gx = x_begin; gx <= x_end; ++gx) {
 				int begin, end;
-				getGridHashBegin(toHash(k, j, i), begin, end);
+				getGridHashBegin(toHash(gx, gy, gz), begin, end);
 				if (begin == -1 || end == -1) continue;
 
 				Eigen::Vector3d r_i = coordinates.col(index);
-				for (int n = begin; n <= end; n++) {
+				for (int n = begin; n <= end; ++n) {
 					int j_particle = grid_hash[n].second;
-					if(index == j_particle) continue;
-					Eigen::Vector3d r_j = coordinates.col(j_particle);
-					Eigen::Vector3d r_ji = r_j - r_i;
-					if(r_ji.norm() > grid_width) continue;
-					neighbors.push_back(j_particle);
+					if (index == j_particle) continue;
+					if (valid_coordinates(j_particle) == false) continue;
+					Eigen::Vector3d r_ji = coordinates.col(j_particle);
+					r_ji -= r_i;
+					if(r_ji.norm() < grid_width) neighbors.push_back(j_particle);
 				}
 			}
 		}
@@ -70,83 +71,26 @@ void Grid::getGridHashBegin(int hash, int& begin, int& end) {
 }
 
 double Grid::sumNeighborScalars(int index, std::function<double(int, int)> interaction) {
-	if(valid_coordinates(index) == 0) return 0;	
-	int ix, iy, iz;
-	toIndex(coordinates.col(index), ix, iy, iz);
-	int x_begin, x_end, y_begin, y_end, z_begin, z_end;
-	x_begin = std::max(ix - 1, 0);
-	y_begin = std::max(iy - 1, 0);
-	z_begin = std::max(iz - 1, 0);
-	x_end = std::min(ix + 1, getGridNumberX() - 1);
-	y_end = std::min(iy + 1, getGridNumberY() - 1);
-	z_end = std::min(iz + 1, getGridNumberZ() - 1);
-	if(dimension == 2) {
-		z_begin = 0;
-		z_end = 0;
+	if(valid_coordinates(index) == false) return 0;	
+	std::vector<int> neighbors;
+	getNeighbors(index, neighbors);
+	double result = 0.0;
+	for (int j_particle : neighbors) {
+		if (valid_coordinates(j_particle) == false) continue;
+		result += interaction(index, j_particle);
 	}
-	
-	double ans = 0;
-	for (int i = z_begin; i <= z_end; i++) {
-		for (int j = y_begin; j <= y_end; j++) {
-			for (int k = x_begin; k <= x_end; k++) {
-				int begin, end;
-				getGridHashBegin(toHash(k, j, i), begin, end);
-				if (begin == -1 || end == -1) continue;
-
-				Eigen::Vector3d r_i = coordinates.col(index);
-				for (int n = begin; n <= end; n++) {
-					int j_particle = grid_hash[n].second;
-					if (index == j_particle) continue;
-					if (valid_coordinates(j_particle) == 0) continue;
-					Eigen::Vector3d r_j = coordinates.col(j_particle);
-					Eigen::Vector3d r_ji = r_j - r_i;
-					if (r_ji.norm() > grid_width) continue;
-
-					ans += interaction(index, j_particle);
-				}
-			}
-		}
-	}
-	return ans;
+	return result;
 }
 void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) {
 	output << 0.0, 0.0, 0.0;
-	if (valid_coordinates(index) == 0) return;
-	int ix, iy, iz;
-	toIndex(coordinates.col(index), ix, iy, iz);
-	int x_begin, x_end, y_begin, y_end, z_begin, z_end;
-	x_begin = std::max(ix - 1, 0);
-	y_begin = std::max(iy - 1, 0);
-	z_begin = std::max(iz - 1, 0);
-	x_end = std::min(ix + 1, getGridNumberX() - 1);
-	y_end = std::min(iy + 1, getGridNumberY() - 1);
-	z_end = std::min(iz + 1, getGridNumberZ() - 1);
-	if (dimension == 2) {
-		z_begin = 0;
-		z_end = 0;
-	}
-
-	for (int i = z_begin; i <= z_end; i++) {
-		for (int j = y_begin; j <= y_end; j++) {
-			for (int k = x_begin; k <= x_end; k++) {
-				int begin, end;
-				getGridHashBegin(toHash(k, j, i), begin, end);
-				if (begin == -1 || end == -1) continue;
-
-				Eigen::Vector3d r_i = coordinates.col(index);
-				for (int n = begin; n <= end; n++) {
-					int j_particle = grid_hash[n].second;
-					if (index == j_particle) continue;
-					Eigen::Vector3d r_j = coordinates.col(j_particle);
-					Eigen::Vector3d r_ji = r_j - r_i;
-					if (r_ji.norm() > grid_width) continue;
-
-					Eigen::Vector3d tmp;
-					interaction(index, j_particle, tmp);
-					output += tmp;
-				}
-			}
-		}
+	if(valid_coordinates(index) == false) return;
+	std::vector<int> neighbors;
+	getNeighbors(index, neighbors);
+	for (int j_particle : neighbors) {
+		if (valid_coordinates(j_particle) == false) continue;
+		Eigen::Vector3d tmp_vec;
+		interaction(index, j_particle, tmp_vec);
+		output += tmp_vec;
 	}
 }
 
@@ -154,11 +98,7 @@ void Grid::sumAllNeighborScalars(std::function<double(int, int)> interaction, Ei
 	output = Eigen::VectorXd::Zero(size);
 	std::vector<int> v(initial_neighbors_size);
 	for (int i_particle = 0; i_particle < size; i_particle++) {
-		// output(i_particle) = sumNeighborScalars(i_particle, interaction);
-		getNeighbors(i_particle, v);
-		for(int j_particle : v) {
-			output(i_particle) += interaction(i_particle, j_particle);
-		}
+		output(i_particle) = sumNeighborScalars(i_particle, interaction);
 	}
 }
 

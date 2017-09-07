@@ -144,8 +144,29 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
 	return 0;
 }
 
+bool Particles::checkNeedlessCalculation() {
+	for (int i_particle = 0; i_particle < size; ++i_particle) {
+		if (particle_types(i_particle) == ParticleType::NORMAL) return false;
+	}
+	return true;
+}
+
 void Particles::updateParticleNumberDensity(Grid& grid) {
 	grid.sumAllNeighborScalars(pnd_weight, particle_number_density);
+	/*std::vector<int> neighbors(initial_neighbors_size);
+	for (int i_particle = 0; i_particle < size; ++i_particle) {
+		if (particle_types(i_particle) == ParticleType::GHOST) {
+			particle_number_density(i_particle) = 0.0;
+			continue;
+		}
+		grid.getNeighbors(i_particle, neighbors);
+		double pnd = 0.0;
+		for (int j_particle : neighbors) {
+			if (particle_types(i_particle) == ParticleType::GHOST) continue;
+			Eigen::Vector3d r_ji = particle.position.col(j_particle) - particle.position.col(i_particle);
+
+		}
+	}*/
 }
 
 void Particles::updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight) {
@@ -220,12 +241,77 @@ void Particles::solvePressurePoission(Grid& grid, const Timer& timer, const Cond
 	p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
 	
 	// Solving a problem
+	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+	cg.compute(p_mat);
+	pressure = cg.solve(source);
+	std::cout << "#iterations:     " << cg.iterations() << std::endl;
+	std::cout << "estimated error: " << cg.error()      << std::endl;
+	// solveConjugateGradient(p_mat, source, pressure, 2000, 10e-9);
+	for (int i = 0; i < size; i++) {
+		if (pressure(i) < 0) pressure(i) = 0;
+	}
+}
+
+void Particles::solvePressurePoission2(Grid& grid, const Timer& timer, const Condition& condition) {
+	using T = Eigen::Triplet<double>;
+	double lap_r = condition.laplacian_pressure_influence * condition.average_distance;
+	int mat_size = 0;
+	std::vector<int> map(size);
+	std::vector<int> toJ(size);
+	for (int i_particle = 0; i_particle < size; i_particle++) {
+		if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+			continue;
+		}
+		map.push_back(i_particle);
+		toJ[i_particle] = mat_size++;
+		mat_size++;
+	}
+	int n_size = (int)(std::pow(lap_r * 2, condition.dimension));
+	double delta_time = timer.getCurrentDeltaTime();
+	Eigen::SparseMatrix<double> p_mat(mat_size, mat_size);
+	Eigen::VectorXd source(mat_size);
+	std::vector<T> coeffs(size * n_size);
+	std::vector<int> neighbors(n_size * 2);
+	int count = 0;
+	for (int i_particle = 0; i_particle < size; i_particle++) {
+		if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+			continue;
+		} else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+			coeffs.push_back(T(i_particle, i_particle, 1.0));
+			count++;
+			continue;
+		}
+		grid.getNeighbors(i_particle, neighbors);
+		double sum = 0.0;
+		for (int j_particle : neighbors) {
+			if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+			Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
+			double mat_ij = weightFunc(r_ji, lap_r) * 2 * condition.dimension
+				/ (laplacian_lambda * initial_particle_number_density);
+			sum -= mat_ij;
+			if (boundary_types(j_particle) == BoundaryType::INNER) {
+				coeffs.push_back(T(toJ[i_particle], toJ[j_particle], mat_ij));
+			}
+		}
+		coeffs.push_back(T(toJ[i_particle], toJ[i_particle], sum));
+		source(toJ[i_particle]) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
+					/ (delta_time * delta_time * initial_particle_number_density);
+		// std::cout << boundary_types(i_particle) << source(i_particle) << ", " << particle_number_density(i_particle) << ", " << initial_particle_number_density << std::endl;
+		count++;
+	}
+	p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+	
+	// Solving a problem
 	// Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
 	// cg.compute(p_mat);
 	// pressure = cg.solve(source);
 	// std::cout << "#iterations:     " << cg.iterations() << std::endl;
 	// std::cout << "estimated error: " << cg.error()      << std::endl;
-	solveConjugateGradient(p_mat, source, pressure, 2000, 10e-9);
+	Eigen::VectorXd x;
+	solveConjugateGradient(p_mat, source, x, 2000, 10e-9);
+	for (int i = 0; i < mat_size; i++) { 
+		pressure(map[i]) = x(i);
+	}
 	for (int i = 0; i < size; i++) {
 		if (pressure(i) < 0) pressure(i) = 0;
 	}

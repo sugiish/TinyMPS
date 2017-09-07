@@ -41,6 +41,7 @@
 		"__tree": "cpp",
 		"map": "cpp",
 		"utility": "cpp",
-		"complex": "cpp"
+		"complex": "cpp",
+		"chrono": "cpp"
 	}
 }
