@@ -13,14 +13,14 @@ Grid::Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::M
 	this->dimension = dimension;
 	size = coordinates.cols();
 	initial_neighbors_size = (int)(std::pow(grid_width, dimension) * 2);
-	resetHash();
+	setHash();
 }
 
 Grid::~Grid() {
 	begin_hash.clear();
 }
 
-void Grid::getNeighbors(int index, std::vector<int>& neighbors) {
+void Grid::getNeighbors(int index, std::vector<int>& neighbors) const {
 	neighbors.clear();
 	if(valid_coordinates(index) == false) return;
 	int x_begin, x_end, y_begin, y_end, z_begin, z_end;
@@ -59,59 +59,47 @@ void Grid::getNeighbors(int index, std::vector<int>& neighbors) {
 	}
 }
 
-void Grid::getGridHashBegin(int hash, int& begin, int& end) {
-	if (begin_hash.empty()) {
-		begin = -1; end = -1; return;
-	}
-	if (begin_hash.find(hash) == begin_hash.end()) {
-		begin = -1; end = -1; return;
-	}
-	begin = begin_hash[hash].first;
-	end = begin_hash[hash].second;
-}
-
-double Grid::sumNeighborScalars(int index, std::function<double(int, int)> interaction) {
+double Grid::sumNeighborScalars(int index, std::function<double(int, int)> interaction) const {
 	if(valid_coordinates(index) == false) return 0;	
 	std::vector<int> neighbors;
 	getNeighbors(index, neighbors);
 	double result = 0.0;
 	for (int j_particle : neighbors) {
-		if (valid_coordinates(j_particle) == false) continue;
 		result += interaction(index, j_particle);
 	}
 	return result;
 }
-void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) {
+
+void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) const {
 	output << 0.0, 0.0, 0.0;
 	if(valid_coordinates(index) == false) return;
 	std::vector<int> neighbors;
 	getNeighbors(index, neighbors);
 	for (int j_particle : neighbors) {
-		if (valid_coordinates(j_particle) == false) continue;
 		Eigen::Vector3d tmp_vec;
 		interaction(index, j_particle, tmp_vec);
 		output += tmp_vec;
 	}
 }
 
-void Grid::sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) {
+void Grid::sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) const {
 	output = Eigen::VectorXd::Zero(size);
 	std::vector<int> v(initial_neighbors_size);
-	for (int i_particle = 0; i_particle < size; i_particle++) {
+	for (int i_particle = 0; i_particle < size; ++i_particle) {
 		output(i_particle) = sumNeighborScalars(i_particle, interaction);
 	}
 }
 
-void Grid::sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) {
+void Grid::sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) const {
 	output = Eigen::MatrixXd::Zero(3, size);
-	for (int i_particle = 0; i_particle < size; i_particle++) {
+	for (int i_particle = 0; i_particle < size; ++i_particle) {
 		Eigen::Vector3d ans;
 		sumNeighborVectors(i_particle, interaction, ans);
 		output.col(i_particle) = ans;
 	}
 }
 
-void Grid::resetHash() {
+void Grid::setHash() {
 	if (!begin_hash.empty()) begin_hash.clear();
 	if (size != coordinates.cols()) {
 		size = coordinates.cols();
@@ -123,23 +111,22 @@ void Grid::resetHash() {
 	getMinCoordinates(lower_bounds);
 	Eigen::Vector3d diff = higher_bounds - lower_bounds;
 	if (getDimension() == 2) diff(2) = 0;
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; ++i) {
 		grid_number[i] = std::ceil(diff(i) / grid_width) + 1;
 	}
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; ++i) {
 		grid_hash[i] = std::make_pair(toHash(coordinates.col(i)), i);
 	}
 	std::sort(grid_hash.begin(), grid_hash.end());
 
 	int start_i = 0;
 	int start_value = grid_hash[0].first;
-	for (int i = 1; i < size; i++) {
+	for (int i = 1; i < size; ++i) {
 		if (start_value != grid_hash[i].first) {
 			begin_hash[start_value] = std::make_pair(start_i, i - 1);
 			start_i = i;
 			start_value = grid_hash[i].first;
 		}
-
 		if (i == size - 1) {
 			begin_hash[start_value] = std::make_pair(start_i, i);
 		}

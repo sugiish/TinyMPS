@@ -42,6 +42,18 @@
 		"map": "cpp",
 		"utility": "cpp",
 		"complex": "cpp",
-		"chrono": "cpp"
+		"chrono": "cpp",
+		"*.tcc": "cpp",
+		"cctype": "cpp",
+		"cstdint": "cpp",
+		"cstdio": "cpp",
+		"cstdlib": "cpp",
+		"cstring": "cpp",
+		"ctime": "cpp",
+		"cwchar": "cpp",
+		"cwctype": "cpp",
+		"limits": "cpp",
+		"ratio": "cpp",
+		"streambuf": "cpp"
 	}
 }

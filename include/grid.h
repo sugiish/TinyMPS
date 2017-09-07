@@ -1,6 +1,7 @@
 #ifndef MPS_GRID_H_INCLUDED
 #define MPS_GRID_H_INCLUDED
 
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 
@@ -15,22 +16,33 @@ class Grid {
 public:
 	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
 	virtual ~Grid();
-	void getNeighbors(int index, std::vector<int>& neighbors);
-	double sumNeighborScalars(int index, std::function<double(int, int)> interaction);
-	void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output);
-	void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output);
-	void sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output);
-	void resetHash();
+	void getNeighbors(int index, std::vector<int>& neighbors) const;
+	double sumNeighborScalars(int index, std::function<double(int, int)> interaction) const;
+	void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) const;
+	void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) const;
+	void sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) const;
 	inline int getSize() const { return size; }
 	inline int getDimension() const { return dimension; }
-
+	
 private:
-	void getGridHashBegin(int hash, int& begin, int& end);
+	void setHash();
+	inline void getGridHashBegin(int hash, int& begin, int& end) const {
+		if (begin_hash.empty()) {
+			begin = -1; end = -1; return;
+		}
+		if (begin_hash.find(hash) == begin_hash.end()) {
+			begin = -1; end = -1; return;
+		}
+		begin = begin_hash.at(hash).first;
+		end = begin_hash.at(hash).second;
+	}
 	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
 		answer = coordinates.rowwise().maxCoeff();
 	}
 	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().minCoeff();
+		// answer = coordinates.rowwise().minCoeff();
+		std::cout << (coordinates.array() * valid_coordinates.cast<double>().transpose().array()) << std::endl;
+		answer = (coordinates.array() * valid_coordinates.cast<double>().transpose().array()).rowwise().minCoeff();
 	}
 	inline int getGridNumberX() const { return grid_number[0]; }
 	inline int getGridNumberY() const { return grid_number[1]; }

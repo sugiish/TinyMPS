@@ -55,7 +55,9 @@ public:
 	Eigen::VectorXi boundary_types;
 
 	double pnd_weight_radius;
+	double gradient_radius;
 	double laplacian_pressure_weight_radius;
+	double laplacian_viscosity_weight_radius;
 
 private:
 	using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;

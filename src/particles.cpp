@@ -14,8 +14,10 @@ Particles::Particles(const std::string& path, const Condition& condition) {
 	dimension = condition.dimension;
 	VectorXb valid = particle_types.array() != ParticleType::GHOST;
 	pnd_weight_radius = condition.pnd_influence * condition.average_distance;
-	pnd_weight = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2, pnd_weight_radius);
+	gradient_radius = condition.gradient_influence * condition.average_distance;
 	laplacian_pressure_weight_radius = condition.laplacian_pressure_influence * condition.average_distance;
+	laplacian_viscosity_weight_radius = condition.laplacian_viscosity_influence * condition.average_distance;
+	pnd_weight = std::bind(&Particles::weightFunction, this, std::placeholders::_1, std::placeholders::_2, pnd_weight_radius);
 	Grid pnd_grid(pnd_weight_radius, position, valid, condition.dimension);
 	Grid lap_grid(laplacian_pressure_weight_radius, position, valid, condition.dimension);
 	updateParticleNumberDensity(pnd_grid);
