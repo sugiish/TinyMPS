@@ -275,6 +275,7 @@ void Particles::solvePressurePoission2(Grid& grid, const Timer& timer, const Con
 	int count = 0;
 	for (int i_particle = 0; i_particle < size; i_particle++) {
 		if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+			coeffs.push_back(T(i_particle, i_particle, 1.0));
 			continue;
 		} else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
 			coeffs.push_back(T(i_particle, i_particle, 1.0));
