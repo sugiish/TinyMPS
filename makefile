@@ -27,10 +27,10 @@ TEST := test
 # Creates an object directory if it does not exist.
 to_create_dir := $(OBJECT_DIR)
 create-object-directory :=                  \
-	$(shell for f in $(to_create_dir);      \
-		do                                  \
-			$(TEST) -d $$f | $(MKDIR) $$f;  \
-		done)
+    $(shell for f in $(to_create_dir);      \
+        do                                  \
+            $(TEST) -d $$f | $(MKDIR) $$f;  \
+        done)
 
 sources := $(wildcard $(SOURCE_DIR)/*.cpp)
 objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
