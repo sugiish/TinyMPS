@@ -14,9 +14,12 @@ namespace tiny_mps {
  */
 class Grid {
 public:
+	// Used for describing containers of neighbor particles.
+	using Neighbors = std::vector<int>;
+
 	Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
 	virtual ~Grid();
-	void getNeighbors(int index, std::vector<int>& neighbors) const;
+	void getNeighbors(int index, Neighbors& neighbors) const;
 	double sumNeighborScalars(int index, std::function<double(int, int)> interaction) const;
 	void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) const;
 	void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) const;
@@ -37,12 +40,10 @@ private:
 		end = begin_hash.at(hash).second;
 	}
 	inline void getMaxCoordinates(Eigen::Vector3d& answer) const {
-		answer = coordinates.rowwise().maxCoeff();
+		answer = (coordinates.array().rowwise() * valid_coordinates.cast<double>().transpose().array()).rowwise().maxCoeff();
 	}
 	inline void getMinCoordinates(Eigen::Vector3d& answer) const {
-		// answer = coordinates.rowwise().minCoeff();
-		std::cout << (coordinates.array() * valid_coordinates.cast<double>().transpose().array()) << std::endl;
-		answer = (coordinates.array() * valid_coordinates.cast<double>().transpose().array()).rowwise().minCoeff();
+		answer = (coordinates.array().rowwise() * valid_coordinates.cast<double>().transpose().array()).rowwise().minCoeff();
 	}
 	inline int getGridNumberX() const { return grid_number[0]; }
 	inline int getGridNumberY() const { return grid_number[1]; }
@@ -50,9 +51,9 @@ private:
 		if(dimension == 2) return 0;
 		return grid_number[2];
 	}
-	inline int toHash(const Eigen::Vector3d& coordinates) const {
+	inline int toHash(const Eigen::Vector3d& vec) const {
 		int dx, dy, dz;
-		toIndex(coordinates, dx, dy, dz);
+		toIndex(vec, dx, dy, dz);
 		return toHash(dx, dy, dz);
 	}
 	inline int toHash(int index_x, int index_y) const {
@@ -62,10 +63,10 @@ private:
 		if (dimension == 2) return toHash(index_x, index_y);
 		return index_x + index_y * grid_number[0] + index_z * grid_number[1] * grid_number[0];
 	}
-	inline void toIndex(const Eigen::Vector3d& coordinates, int& dx, int& dy, int& dz) const {
-		dx = std::ceil((coordinates(0) - lower_bounds(0)) / grid_width);
-		dy = std::ceil((coordinates(1) - lower_bounds(1)) / grid_width);
-		if (dimension == 3) dz = std::ceil((coordinates(2) - lower_bounds(2)) / grid_width);
+	inline void toIndex(const Eigen::Vector3d& vec, int& dx, int& dy, int& dz) const {
+		dx = std::ceil((vec(0) - lower_bounds(0)) / grid_width);
+		dy = std::ceil((vec(1) - lower_bounds(1)) / grid_width);
+		if (dimension == 3) dz = std::ceil((vec(2) - lower_bounds(2)) / grid_width);
 		else dz = 0;
 	}
 	inline void toIndex(int hash, int& dx, int& dy) const {

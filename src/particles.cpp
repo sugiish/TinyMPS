@@ -21,7 +21,7 @@ Particles::Particles(const std::string& path, const Condition& condition) {
 	Grid pnd_grid(pnd_weight_radius, position, valid, condition.dimension);
 	Grid lap_grid(laplacian_pressure_weight_radius, position, valid, condition.dimension);
 	updateParticleNumberDensity(pnd_grid);
-	calculateInitialParticleNumberDensity(condition.inner_particle_index);
+	setInitialParticleNumberDensity(condition.inner_particle_index);
 	calculateLaplacianLambda(condition.inner_particle_index, lap_grid);
 	checkSurfaceParticles(condition.surface_parameter);
 }
@@ -68,7 +68,6 @@ int Particles::readGridFile(const std::string& path, int dimension) {
 		std::stringstream ss;
 		ss.str(tmp_str);
 		ss >> particle_types(i_counter);
-
 		for(int i_dim = 0; i_dim < 3; i_dim++) {
 			double tmp;
 			ss >> tmp;
@@ -175,7 +174,7 @@ void Particles::updateParticleNumberDensity(Grid& grid, std::function<double(int
 	grid.sumAllNeighborScalars(weight, particle_number_density);
 }
 
-void Particles::calculateInitialParticleNumberDensity(int index) {
+void Particles::setInitialParticleNumberDensity(int index) {
 	initial_particle_number_density = particle_number_density(index);
 }
 

@@ -41,9 +41,12 @@ public:
 	int writeVtkFile(const std::string& path, const std::string& title);
 	inline double getMaxSpeed() {
 		std::cout << "max_vel: " << velocity.colwise().norm().maxCoeff() << std::endl;
-		return velocity.colwise().norm().maxCoeff();
+		Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
+		Eigen::VectorXd norms = velocity.colwise().norm();
+		return  (norms.array() * moving.array()).maxCoeff();
 	}
 	inline int getSize() const { return size; }
+	inline int getDimension() const { return dimension; }
 
 	Eigen::Matrix3Xd position;
 	Eigen::Matrix3Xd velocity;
@@ -64,7 +67,7 @@ private:
 
 	void initialize(int particles_number);
 	int readGridFile(const std::string& path, int dimension);
-	void calculateInitialParticleNumberDensity(int index);
+	void setInitialParticleNumberDensity(int index);
 	void calculateLaplacianLambda(int index, Grid& grid);
 	void solveConjugateGradient (const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, int itr, double eps);
 	double weightFunc(Eigen::Vector3d& vec, double influence_radius);
