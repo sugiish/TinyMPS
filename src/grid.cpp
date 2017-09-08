@@ -60,45 +60,6 @@ void Grid::getNeighbors(int index, Neighbors& neighbors) const {
     }
 }
 
-double Grid::sumNeighborScalars(int index, std::function<double(int, int)> interaction) const {
-    if(valid_coordinates(index) == false) return 0;    
-    Neighbors neighbors;
-    getNeighbors(index, neighbors);
-    double result = 0.0;
-    for (int j_particle : neighbors) {
-        result += interaction(index, j_particle);
-    }
-    return result;
-}
-
-void Grid::sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) const {
-    output << 0.0, 0.0, 0.0;
-    if(valid_coordinates(index) == false) return;
-    Neighbors neighbors;
-    getNeighbors(index, neighbors);
-    for (int j_particle : neighbors) {
-        Eigen::Vector3d tmp_vec;
-        interaction(index, j_particle, tmp_vec);
-        output += tmp_vec;
-    }
-}
-
-void Grid::sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) const {
-    output = Eigen::VectorXd::Zero(size);
-    for (int i_particle = 0; i_particle < size; ++i_particle) {
-        output(i_particle) = sumNeighborScalars(i_particle, interaction);
-    }
-}
-
-void Grid::sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) const {
-    output = Eigen::MatrixXd::Zero(3, size);
-    for (int i_particle = 0; i_particle < size; ++i_particle) {
-        Eigen::Vector3d ans;
-        sumNeighborVectors(i_particle, interaction, ans);
-        output.col(i_particle) = ans;
-    }
-}
-
 void Grid::setHash() {
     if (!begin_hash.empty()) begin_hash.clear();
     if (size != coordinates.cols()) {

@@ -19,12 +19,9 @@ public:
     Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension);
     virtual ~Grid();
     void getNeighbors(int index, Neighbors& neighbors) const;
-    double sumNeighborScalars(int index, std::function<double(int, int)> interaction) const;
-    void sumNeighborVectors(int index, std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Vector3d& output) const;
-    void sumAllNeighborScalars(std::function<double(int, int)> interaction, Eigen::VectorXd& output) const;
-    void sumAllNeighborVectors(std::function<void(int, int, Eigen::Vector3d&)> interaction, Eigen::Matrix3Xd& output) const;
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
+    inline int getGridWidth() const { return grid_width; }
     
 private:
     void setHash();

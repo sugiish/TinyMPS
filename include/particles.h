@@ -34,7 +34,6 @@ public:
     virtual ~Particles();
     bool checkNeedlessCalculation();
     void updateParticleNumberDensity(Grid& grid);
-    void updateParticleNumberDensity(Grid& grid, std::function<double(int, int)> weight);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
     void moveExplicitly();
     void solvePressurePoission(Grid& grid, const Timer& timer, const Condition& condition);
@@ -67,18 +66,12 @@ public:
 
 private:
     using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-
     void initialize(int particles_number);
     int readGridFile(const std::string& path, int dimension);
     void setInitialParticleNumberDensity(int index);
     void calculateLaplacianLambda(int index, Grid& grid);
     void solveConjugateGradient (const Eigen::SparseMatrix<double>& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, int itr, double eps);
-    double weightFunc(Eigen::Vector3d& vec, double influence_radius);
-    double weightFunction(int i_particle, int j_particle, double influence_radius);
-    double laplacianWeightWithNorm2(int i_particle, int j_particle);
-    void laplacianViscosity(int i_particle, int j_particle, Eigen::Vector3d& output);
-    
-    std::function<double(int, int)> pnd_weight;
+    double weightFunction(Eigen::Vector3d& vec, double influence_radius) const;
     int size;
     int dimension;
     double initial_particle_number_density;
