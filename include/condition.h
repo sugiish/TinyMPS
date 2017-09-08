@@ -56,32 +56,6 @@ public:
 
     virtual ~Condition(){}
 
-    double average_distance;
-    int dimension;
-
-    Eigen::Vector3d gravity;
-    double mass_density;
-    double temperature;
-    double head_pressure;
-
-    bool viscosity_calculation;
-    double kinematic_viscosity;
-
-    double courant_number;
-    double diffusion_number;
-
-    double pnd_influence;
-    double gradient_influence;
-    double laplacian_pressure_influence;
-    double laplacian_viscosity_influence;
-
-    double initial_time;
-    double finish_time;
-    double delta_time;
-
-    int inner_particle_index;
-    double surface_parameter;
-
     inline int getValue(const std::string& item, int& value) {
         if(data.find(item) == data.end()) return 1;
         std::stringstream ss;
@@ -115,6 +89,32 @@ public:
         value = data[item];
         return 0;
     }
+
+    double average_distance;
+    int dimension;
+
+    Eigen::Vector3d gravity;
+    double mass_density;
+    double temperature;
+    double head_pressure;
+
+    bool viscosity_calculation;
+    double kinematic_viscosity;
+
+    double courant_number;
+    double diffusion_number;
+
+    double pnd_influence;
+    double gradient_influence;
+    double laplacian_pressure_influence;
+    double laplacian_viscosity_influence;
+
+    double initial_time;
+    double finish_time;
+    double delta_time;
+
+    int inner_particle_index;
+    double surface_parameter;
 
 private:
     std::unordered_map<std::string, std::string> data;

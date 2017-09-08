@@ -11,11 +11,11 @@ int main() {
     tiny_mps::Condition condition("./input/input.data");
     tiny_mps::Particles particles("./input/dam.grid", condition);
     tiny_mps::Timer timer(condition);
-    Eigen::Matrix<bool, 1, Eigen::Dynamic> lap_valid = particles.particle_types.array() == tiny_mps::ParticleType::NORMAL;
     particles.writeVtkFile("first.vtk", "test");
     while(timer.hasNextLoop()) {
         std::cout << timer.getCurrentTime() << std::endl;
         timer.limitCurrentDeltaTime(particles.getMaxSpeed(), condition);
+        Eigen::Matrix<bool, 1, Eigen::Dynamic> lap_valid = particles.particle_types.array() == tiny_mps::ParticleType::NORMAL;
         tiny_mps::Grid lap_grid(particles.laplacian_viscosity_weight_radius, particles.position, lap_valid, condition.dimension);
         particles.calculateTemporaryVelocity(condition.gravity, lap_grid, timer, condition);
         particles.moveExplicitly();

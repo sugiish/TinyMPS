@@ -2,6 +2,29 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/mps.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true,
+            "linux": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/bin/gdb"
+            },
+            "osx": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/local/bin/gdb"
+            },
+            "windows": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
+            }
+        },
+        {
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",

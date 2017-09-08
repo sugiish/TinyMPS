@@ -21,7 +21,7 @@ public:
     void getNeighbors(int index, Neighbors& neighbors) const;
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
-    inline int getGridWidth() const { return grid_width; }
+    inline double getGridWidth() const { return grid_width; }
     
 private:
     void setHash();
