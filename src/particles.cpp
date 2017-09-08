@@ -1,14 +1,12 @@
+// Copyright (c) 2017 Shota SUGIHARA
+// Distributed under the MIT License.
 #include "particles.h"
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
 namespace tiny_mps {
 
-/**
- * Class for describing particles status.
- */
 Particles::Particles(const std::string& path, const Condition& condition) {
 	readGridFile(path, condition.dimension);
 	dimension = condition.dimension;
@@ -238,29 +236,14 @@ void Particles::solvePressurePoission(Grid& grid, const Timer& timer, const Cond
 			}
 		}
 		coeffs.push_back(T(i_particle, i_particle, sum));
-<<<<<<< .merge_file_N55Z8T
 		source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
 					/ (delta_time * delta_time * initial_particle_number_density);
 		// std::cout << boundary_types(i_particle) << source(i_particle) << ", " << particle_number_density(i_particle) << ", " << initial_particle_number_density << std::endl;
-=======
-		// double tmp_source = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
-		// / (delta_time * delta_time * initial_particle_number_density);
-		double tmp_source = (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density * laplacian_lambda
-		/ (delta_time * delta_time * 2 * dimension);
-		if (particle_number_density(i_particle) - initial_particle_number_density > 1.0e-9) source(i_particle) = tmp_source;
-		// std::cout << i_particle << ": " <<  particle_number_density(i_particle) - initial_particle_number_density << ", " << source(i_particle) << std::endl;
->>>>>>> .merge_file_wXslES
 	}
 	p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
 	
 	// Solving a problem
-<<<<<<< .merge_file_N55Z8T
 	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-=======
-	Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::UpLoType::Lower> cg;
-	cg.setMaxIterations(60);
-	cg.setTolerance(1.0e-9);
->>>>>>> .merge_file_wXslES
 	cg.compute(p_mat);
 	if (cg.info() != Eigen::ComputationInfo::Success) std::cout << "decompostion failed." << std::endl;
 	x = cg.solve(source);

@@ -1,3 +1,12 @@
+# Build all source files.
+#
+# Targets in this file are:
+# all     Compiles and links all source files
+# clean   Removes all intermediate files
+#
+# Copyright (c) 2017 Shota SUGIHARA
+# Distributed under the MIT License.
+
 TARGET := mps.out
 SOURCE_DIR := src
 OBJECT_DIR := obj
@@ -15,17 +24,17 @@ RM := rm -f
 SED := sed
 TEST := test
 
+# Creates an object directory if it does not exist.
 to_create_dir := $(OBJECT_DIR)
-create-object-directory :=					\
-	$(shell for f in $(to_create_dir);			\
-		do									\
-			$(TEST) -d $$f | $(MKDIR) $$f;	\
+create-object-directory :=                  \
+	$(shell for f in $(to_create_dir);      \
+		do                                  \
+			$(TEST) -d $$f | $(MKDIR) $$f;  \
 		done)
 
 sources := $(wildcard $(SOURCE_DIR)/*.cpp)
 objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
 dependencies := $(objects:.o=.d)
-
 
 .PHONY: all
 all: $(TARGET)

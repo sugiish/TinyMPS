@@ -1,17 +1,16 @@
+// Copyright (c) 2017 Shota SUGIHARA
+// Distributed under the MIT License.
 #ifndef MPS_GRID_H_INCLUDED
 #define MPS_GRID_H_INCLUDED
 
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-
 #include <Eigen/Dense>
 
 namespace tiny_mps {
 
-/**
- * Class for neighbor searching. 
- */
+// Searches neighbor particles.
 class Grid {
 public:
 	// Used for describing containers of neighbor particles.

@@ -1,85 +1,88 @@
 #--------------------------------------------------------------------
-#	This is an example input file.
-#	This file can be read by "reader.h".
+#   This is an example input file.
+#   This file can be read by "reader.h".
+#
+#   Copyright (c) 2017 Shota SUGIHARA
+#   Distributed under the MIT License.
 #--------------------------------------------------------------------
 
 #--------------------------------------------------------------------
-#	Lines that begin with '#' are comments.
-#	All comments are ignored.
+#   Lines that begin with '#' are comments.
+#   All comments are ignored.
 
 #--------------------------------------------------------------------
-#	Each input variable is defined as follows.
-#	variable_name						variable_value
-grid_file								./input/input.grid
+#   Each input variable is defined as follows.
+#   variable_name                      variable_value
+grid_file                              ./input/input.grid
 
-#	It doesn't matter how many tabs and spaces between name and value.
-#	Variable types of int, double, bool and string are available.
-#	We can assign "on" / "off" or "true" / "false" for bool type values.
+#   It doesn't matter how many tabs and spaces between name and value.
+#   Variable types of int, double, bool and string are available.
+#   We can assign "on" / "off" or "true" / "false" for bool type values.
 
-#	We can get variables via "getValue" function in "condition.h".
-#	Usage:	int getValue(const std::string& name, int& value);
-#			int getValue(const std::string& name, double& value);
-#			int getValue(const std::string& name, bool& value);
-#			int getValue(const std::string& name, string& value);
-#	Return: returns 1 if error occurs.
-#	e.g.)
-#	std::string path;
-#	getValue("grid_file", path);
-
-#--------------------------------------------------------------------
-#	We can use parenthesis "()" to describe their units.
-average_distance(m)						0.012
-
-#	These parenthesis including units are ignored when we retrieve variables.
-#	e.g.)
-#	std::string path;
-#	getValue("average_distance", path);
+#   We can get variables via "getValue" function in "condition.h".
+#   Usage:  int getValue(const std::string& name, int& value);
+#           int getValue(const std::string& name, double& value);
+#           int getValue(const std::string& name, bool& value);
+#           int getValue(const std::string& name, string& value);
+#   Return: returns 1 if error occurs.
+#   Example:
+#   std::string path;
+#   getValue("grid_file", path);
 
 #--------------------------------------------------------------------
-#	Parts between hyphens are also ignored.
-#	e.g.)
-#	double viscosity;
-#	getValue("kinematic_viscosity", viscosity);
-viscosity_calculation					on
---on--kinematic_viscosity(m^2/s)		1.0e-6
+#   We can use parenthesis "()" to describe their units.
+average_distance(m)                     0.012
+
+#   These parenthesis including units are ignored when we retrieve variables.
+#   Example:
+#   std::string path;
+#   getValue("average_distance", path);
+
+#--------------------------------------------------------------------
+#   Parts between hyphens are also ignored.
+#   Example:
+#   double viscosity;
+#   getValue("kinematic_viscosity", viscosity);
+viscosity_calculation                   on
+--on--kinematic_viscosity(m^2/s)        1.0e-6
 
 
 #--------------------------------------------------------------------
-#	All definitions are shown below.
-#	You can modify them as needed.
+#   All definitions are shown below.
+#   You can modify them as needed.
 #--------------------------------------------------------------------
-dimension(2/3)							2
+dimension(2/3)                          2
 
-#	TIME
-initial_time(sec)						0
-finish_time(sec)						2.0e-2
-delta_time(sec)							1.0e-2
+#    TIME
+initial_time(sec)                       0
+finish_time(sec)                        2.0e-2
+delta_time(sec)                         1.0e-2
 
-output_interval(sec)					1.0e-2
+output_interval(sec)                    1.0e-2
 
-courant_number							0.2
-diffusion_number						0.2
+courant_number                          0.2
+diffusion_number                        0.2
 
-#	INFLUENCE RATIO
-pnd_influence(ratio)					2.1
-gradient_influence(ratio)				2.1
-laplacian_pressure_influence(ratio)		4.0
-laplacian_viscosity_influence(ratio)	4.0
+#    INFLUENCE RATIO
+pnd_influence(ratio)                    2.1
+gradient_influence(ratio)               2.1
+laplacian_pressure_influence(ratio)     4.0
+laplacian_viscosity_influence(ratio)    4.0
 
-#	GRAVITY
-gravity_x(m/s^2)						0.0
-gravity_y(m/s^2)						-9.81
-gravity_z(m/s^2)						0.0
+#    GRAVITY
+gravity_x(m/s^2)                        0.0
+gravity_y(m/s^2)                        -9.81
+gravity_z(m/s^2)                        0.0
 
-#	SURFACE CONDITION
-surface_threshold						0.97
+#    SURFACE CONDITION
+surface_threshold                       0.97
 
 
-mass_density(kg/m^3)					1000.0
-compressibility							1.0e-7
-head_pressure(Pa)						101325.0
-temperature(K)							292.0
-gas_constant(J/K*mol)					8.3144621
+mass_density(kg/m^3)                    1000.0
+compressibility                         1.0e-7
+head_pressure(Pa)                       101325.0
+temperature(K)                          292.0
+gas_constant(J/K*mol)                   8.3144621
 
-inner_particle_index					460
-surface_parameter						0.97
+inner_particle_index                    460
+surface_parameter                       0.97
