@@ -9,7 +9,7 @@
 // Sample code using TinyMPS library.
 int main() {
     tiny_mps::Condition condition("./input/input.data");
-    tiny_mps::Particles particles("./input/dambreak.grid", condition);
+    tiny_mps::Particles particles("./input/dam.grid", condition);
     tiny_mps::Timer timer(condition);
     Eigen::Matrix<bool, 1, Eigen::Dynamic> lap_valid = particles.particle_types.array() == tiny_mps::ParticleType::NORMAL;
     // tiny_mps::Grid pnd_grid(particles.pnd_weight_radius, particles.position, pnd_valid, condition.dimension);

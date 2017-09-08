@@ -31,7 +31,7 @@ grid_file                              ./input/input.grid
 
 #--------------------------------------------------------------------
 #   We can use parenthesis "()" to describe their units.
-average_distance(m)                     0.012
+average_distance(m)                     0.008
 
 #   These parenthesis including units are ignored when we retrieve variables.
 #   Example:
@@ -76,7 +76,6 @@ gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
 surface_threshold                       0.97
-
 
 mass_density(kg/m^3)                    1000.0
 compressibility                         1.0e-7

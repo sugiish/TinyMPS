@@ -1,8 +1,9 @@
 # Build all source files.
 #
 # Targets in this file are:
-# all     Compiles and links all source files
-# clean   Removes all intermediate files
+# all     Compile and link all source files.
+# clean   Remove all intermediate files.
+# help    Display this information.
 #
 # Copyright (c) 2017 Shota SUGIHARA
 # Distributed under the MIT License.
@@ -26,11 +27,7 @@ TEST := test
 
 # Creates an object directory if it does not exist.
 to_create_dir := $(OBJECT_DIR)
-create-object-directory :=                  \
-    $(shell for f in $(to_create_dir);      \
-        do                                  \
-            $(TEST) -d $$f | $(MKDIR) $$f;  \
-        done)
+create-object-directory := $(shell for f in $(to_create_dir); do $(TEST) -d $$f | $(MKDIR) $$f; done)
 
 sources := $(wildcard $(SOURCE_DIR)/*.cpp)
 objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
@@ -52,3 +49,15 @@ clean:
 ifneq "$(MAKECMDGOALS)" "clean"
 	-include $(dependencies)
 endif
+
+.PHONY: help
+help:
+	@echo 'Build all source files.'
+	@echo
+	@echo 'Targets in this file are:'
+	@echo 'all     Compile and link all source files.'
+	@echo 'clean   Remove all intermediate files.'
+	@echo 'help    Display this information.'
+	@echo
+	@echo 'Copyright (c) 2017 Shota SUGIHARA'
+	@echo 'Distributed under the MIT License.'
