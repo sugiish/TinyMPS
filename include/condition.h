@@ -52,6 +52,11 @@ public:
         getValue("finish_time", finish_time);
         getValue("inner_particle_index", inner_particle_index);
         getValue("surface_parameter", surface_parameter);
+
+        pnd_weight_radius = pnd_influence * average_distance;
+        gradient_radius = gradient_influence * average_distance;
+        laplacian_pressure_weight_radius = laplacian_pressure_influence * average_distance;
+        laplacian_viscosity_weight_radius = laplacian_viscosity_influence * average_distance;
     }
 
     virtual ~Condition(){}
@@ -104,11 +109,6 @@ public:
     double courant_number;
     double diffusion_number;
 
-    double pnd_influence;
-    double gradient_influence;
-    double laplacian_pressure_influence;
-    double laplacian_viscosity_influence;
-
     double initial_time;
     double finish_time;
     double delta_time;
@@ -116,9 +116,12 @@ public:
     int inner_particle_index;
     double surface_parameter;
 
-private:
-    std::unordered_map<std::string, std::string> data;
+    double pnd_weight_radius;
+    double gradient_radius;
+    double laplacian_pressure_weight_radius;
+    double laplacian_viscosity_weight_radius;
 
+private:
     inline int readDataFile(std::string path) {
         std::ifstream ifs(path);
         if(ifs.fail()) {
@@ -126,7 +129,7 @@ private:
             std::cerr << "Failed to read files: " << path << std::endl;
             return 1;
         }
-
+        
         std::string tmp_str;
         std::regex re("\\(.*\\)"); // For removing (**)
         std::regex re2("-+\\w+-+");// For removing like --**--
@@ -134,7 +137,7 @@ private:
             if(tmp_str.empty()) continue;
             std::stringstream ss;
             ss.str(tmp_str);
-
+            
             std::string item, value;
             ss >> item;
             {
@@ -142,7 +145,7 @@ private:
                 char first = item.at(0);
                 if(first == '#') continue;
             }
-
+            
             item = std::regex_replace(item, re, "");
             item = std::regex_replace(item, re2, "");
             
@@ -151,6 +154,12 @@ private:
         }
         return 0;
     }
+    
+    std::unordered_map<std::string, std::string> data;
+    double pnd_influence;
+    double gradient_influence;
+    double laplacian_pressure_influence;
+    double laplacian_viscosity_influence;
 };
 
 }

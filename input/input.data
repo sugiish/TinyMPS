@@ -55,7 +55,7 @@ dimension(2/3)                          2
 
 #    TIME
 initial_time(sec)                       0
-finish_time(sec)                        2.0e-2
+finish_time(sec)                        3.0e-2
 delta_time(sec)                         1.0e-2
 
 output_interval(sec)                    1.0e-2
