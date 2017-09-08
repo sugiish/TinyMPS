@@ -38,7 +38,7 @@ public:
     void moveExplicitly();
     void solvePressurePoission(Grid& grid, const Timer& timer, const Condition& condition);
     void solvePressurePoission2(Grid& grid, const Timer& timer, const Condition& condition);
-    void advectVelocity(Grid& grid, const Timer& timer, const Condition& condition);
+    void correctVelocity(Grid& grid, const Timer& timer, const Condition& condition);
     void checkSurfaceParticles(double surface_parameter);
     int writeVtkFile(const std::string& path, const std::string& title);
     inline double getMaxSpeed() {

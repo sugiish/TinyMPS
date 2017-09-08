@@ -358,30 +358,33 @@ void Particles::solveConjugateGradient (const Eigen::SparseMatrix<double> & A, c
     std::cout << "err: " << r.norm() << std::endl;
 }
 
-void Particles::advectVelocity(Grid& grid, const Timer& timer, const Condition& condition) {
+void Particles::correctVelocity(Grid& grid, const Timer& timer, const Condition& condition) {
     // int n_size = (int)(std::pow(condition.gradient_influence * 2, condition.dimension));
-    Grid::Neighbors neighbors;
-    for (int i_particle = 0; i_particle < size; i_particle++) {
-        if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+    Eigen::Matrix3Xd crr_vel = Eigen::MatrixXd::Zero(3, size);
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+        if (particle_types(i_particle) != BoundaryType::INNER) continue;
+        Grid::Neighbors neighbors;
         grid.getNeighbors(i_particle, neighbors);
         double p_min = pressure(i_particle);
         for (int j_particle : neighbors) {
-            if (particle_types(j_particle) != ParticleType::NORMAL) continue;
+            if (boundary_types(j_particle) != BoundaryType::INNER) continue;
             p_min = std::min(pressure(j_particle), p_min);
         }
-        Eigen::Vector3d adv_v(0.0, 0.0, 0.0);
+        Eigen::Vector3d tmp(0.0, 0.0, 0.0);
         for (int j_particle : neighbors) {
-            if (particle_types(j_particle) != ParticleType::NORMAL) continue;
+            if (boundary_types(j_particle) != BoundaryType::INNER) continue;
             Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
-            adv_v += r_ji * (pressure(j_particle) - p_min) * weightFunction(r_ji, condition.gradient_influence * condition.average_distance) / r_ji.squaredNorm();
+            tmp += r_ji * (pressure(j_particle) - p_min) * weightFunction(r_ji, grid.getGridWidth()) / r_ji.squaredNorm();
         }
-        if (condition.dimension == 2) adv_v(2) = 0;
-        temporary_velocity.col(i_particle) += -adv_v * condition.dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.kinematic_viscosity);
-        std::cout << adv_v.norm() << std::endl;
-        temporary_position.col(i_particle) += adv_v * timer.getCurrentDeltaTime();
+        if (condition.dimension == 2) tmp(2) = 0;
+        crr_vel.col(i_particle) -= tmp * condition.dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
+        if (crr_vel.col(i_particle).norm() > 360) {
+            crr_vel.col(i_particle).setZero();
+            particle_types(i_particle) = ParticleType::GHOST;
+        }
     }
-    velocity = temporary_velocity;
-    position = temporary_position;
+    velocity = temporary_velocity + crr_vel;
+    position = temporary_position + crr_vel * timer.getCurrentDeltaTime();
 }
 
 void Particles::checkSurfaceParticles(double surface_parameter) {

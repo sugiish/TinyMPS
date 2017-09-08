@@ -28,7 +28,7 @@ int main() {
         tiny_mps::Grid solve_grid(particles.laplacian_pressure_weight_radius, particles.position, solve_valid, condition.dimension);
         particles.solvePressurePoission(solve_grid, timer, condition);
         tiny_mps::Grid grad_grid(condition.gradient_influence * condition.average_distance, particles.position, solve_valid, condition.dimension);
-        // particles.advectVelocity(solve_grid, timer, condition);
+        particles.correctVelocity(grad_grid, timer, condition);
         timer.update();
     }
     particles.writeVtkFile("out.vtk", "test");
