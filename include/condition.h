@@ -157,6 +157,7 @@ private:
             ss >> value;
             data[item] = value;
         }
+        std::cout << "Succeed in reading data file: " << path << std::endl;
         return 0;
     }
     

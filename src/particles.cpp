@@ -131,6 +131,7 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     for(int i = 0; i < size; ++i) {
         ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
     }
+    std::cout << "Succeed in writing vtk file: " << path << std::endl;
     return 0;
 }
 
@@ -140,9 +141,14 @@ void Particles::saveInterval(const std::string& path, const Timer& timer) {
 }
 
 bool Particles::checkNeedlessCalculation() {
+    if (pressure.hasNaN() || velocity.hasNaN() || position.hasNaN()) {
+        std::cerr << "Error: Data contains NaN." << std::endl;
+        return true;
+    }
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) == ParticleType::NORMAL) return false;
     }
+    std::cerr << "Error: No normal particles." << std::endl;
     return true;
 }
 
@@ -279,10 +285,14 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
     // Solving a problem
     Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
     cg.compute(p_mat);
-    if (cg.info() != Eigen::ComputationInfo::Success) std::cerr << "decompostion failed." << std::endl;
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed decompostion." << std::endl;
+    }
     pressure = cg.solve(source);
-    if (cg.info() != Eigen::ComputationInfo::Success) std::cerr << "solving failed." << std::endl;
-    std::cout << "#iterations:     " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed solving." << std::endl;
+    }
+    std::cout << "Solver - iterations: " << cg.iterations() << "- estimated error: " << cg.error() << std::endl;
     for (int i = 0; i < size; ++i) {
         if (pressure(i) < 0) pressure(i) = 0;
     }
