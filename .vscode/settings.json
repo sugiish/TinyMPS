@@ -54,6 +54,7 @@
         "cwctype": "cpp",
         "limits": "cpp",
         "ratio": "cpp",
-        "streambuf": "cpp"
+        "streambuf": "cpp",
+        "*.ipp": "cpp"
     }
 }

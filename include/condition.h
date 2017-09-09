@@ -22,6 +22,7 @@ public:
         getValue("dimension", dimension);
         if(dimension != 2 && dimension != 3) {
             std::cerr << "Error: " << dimension << "-dimension is not supported." << std::endl;
+            exit(EXIT_FAILURE);
         }
 
         double gx, gy, gz;
@@ -50,6 +51,8 @@ public:
         getValue("initial_time", initial_time);
         getValue("delta_time", delta_time);
         getValue("finish_time", finish_time);
+        getValue("min_delta_time", min_delta_time);
+        getValue("output_interval", output_interval);
         getValue("inner_particle_index", inner_particle_index);
         getValue("surface_parameter", surface_parameter);
 
@@ -112,6 +115,8 @@ public:
     double initial_time;
     double finish_time;
     double delta_time;
+    double min_delta_time;
+    double output_interval;
 
     int inner_particle_index;
     double surface_parameter;
@@ -125,11 +130,11 @@ private:
     inline int readDataFile(std::string path) {
         std::ifstream ifs(path);
         if(ifs.fail()) {
-            std::cerr << "Error: in Reader()" << std::endl;
+            std::cerr << "Error: in readDataFile() in condition.h" << std::endl;
             std::cerr << "Failed to read files: " << path << std::endl;
+            exit(EXIT_FAILURE);
             return 1;
         }
-        
         std::string tmp_str;
         std::regex re("\\(.*\\)"); // For removing (**)
         std::regex re2("-+\\w+-+");// For removing like --**--

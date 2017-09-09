@@ -9,26 +9,39 @@ namespace tiny_mps {
 class Timer {
 public:
     Timer() {
-        initialize(0, 0, 0);
+        initialize(0, 0, 0, 0);
     }
 
-    Timer(Condition & condition) {
-        initialize(condition.initial_time, condition.finish_time, condition.delta_time);
+    Timer(const Condition & condition) {
+        initialize(condition);
     }
 
-    Timer(double initial_time, double finish_time, double delta_time) {
-        initialize(initial_time, finish_time, delta_time);
+    Timer(double initial_time, double finish_time, double delta_time, double output_interval) {
+        initialize(initial_time, finish_time, delta_time, output_interval);
     }
 
     virtual ~Timer(){}
 
-    inline void initialize(double initial_time, double finish_time, double delta_time) {
+    inline void initialize(const Condition& condition) {
+        this->current_time = condition.initial_time;
+        this->initial_time = condition.initial_time;
+        this->finish_time = condition.finish_time;
+        this->current_delta_time = condition.delta_time;
+        this->initial_delta_time = condition.delta_time;
+        this->output_interval = condition.output_interval;
+        this->loop_count = 0;
+        this->output_count = 0;
+    }
+
+    inline void initialize(double initial_time, double finish_time, double delta_time, double output_interval) {
         this->current_time = initial_time;
         this->initial_time = initial_time;
         this->finish_time = finish_time;
         this->current_delta_time = delta_time;
         this->initial_delta_time = delta_time;
+        this->output_interval = output_interval;
         this->loop_count = 0;
+        this->output_count = 0;
     }
 
     inline bool hasNextLoop() const {
@@ -37,6 +50,10 @@ public:
     }
 
     inline void update() {
+        if (isOutputTime()) {
+            next_output_time += output_interval;
+            ++output_count;
+        }
         current_time += current_delta_time;
         ++loop_count;
     }
@@ -52,12 +69,17 @@ public:
         current_delta_time = std::min(dt, current_delta_time);
     }
 
+    inline bool isOutputTime() const {
+        return current_time >= next_output_time;
+    }
     inline double getCurrentTime() const { return current_time; }
     inline double getInitialTime() const { return initial_time; }
     inline double getFinishTime() const { return finish_time; }
     inline double getCurrentDeltaTime() const { return current_delta_time; }
     inline double getInitialDeltaTime() const { return initial_delta_time; }
     inline void setInitialDeltaTime(double delta_time) { initial_delta_time = delta_time; }
+    inline int getLoopCount() const { return loop_count; }
+    inline int getOutputCount() const { return output_count; }
 
 private:
     double current_time;
@@ -65,7 +87,10 @@ private:
     double finish_time;
     double current_delta_time;
     double initial_delta_time;
+    double output_interval;
+    double next_output_time;
     int loop_count;
+    int output_count;
 };
 
 } // namespace tiny_mps

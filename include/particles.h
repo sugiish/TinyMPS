@@ -45,6 +45,7 @@ public:
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
     int writeVtkFile(const std::string& path, const std::string& title);
+    void saveInterval(const std::string& path, const Timer& timer);
     inline double getMaxSpeed() const {
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();

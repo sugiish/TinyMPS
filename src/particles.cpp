@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <boost/format.hpp>
 
 namespace tiny_mps {
 
@@ -38,8 +39,9 @@ void Particles::initialize(int size) {
 int Particles::readGridFile(const std::string& path, int dimension) {
     std::ifstream ifs(path);
     if (ifs.fail()) {
-        std::cerr << "Error: in readGridFile()" << std::endl;
+        std::cerr << "Error: in readGridFile() in particles.cpp" << std::endl;
         std::cerr << "Failed to read files: " << path << std::endl;
+        exit(EXIT_FAILURE);
         return 1;
     }
     std::string tmp_str;
@@ -77,6 +79,7 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     std::ofstream ofs(path);
     if(ofs.fail()) {
         std::cerr << "Error: in writeVtkFile()" << std::endl;
+        exit(EXIT_FAILURE);
         return 1;
     }
     ofs << "# vtk DataFile Version 2.0" << std::endl;
@@ -129,6 +132,11 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
         ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
     }
     return 0;
+}
+
+void Particles::saveInterval(const std::string& path, const Timer& timer) {
+    if (!timer.isOutputTime()) return;
+    writeVtkFile((boost::format(path) % timer.getOutputCount()).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
 }
 
 bool Particles::checkNeedlessCalculation() {
