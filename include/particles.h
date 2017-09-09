@@ -55,15 +55,6 @@ public:
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
 
-    Eigen::Matrix3Xd position;
-    Eigen::Matrix3Xd velocity;
-    Eigen::VectorXd pressure;
-    Eigen::VectorXd particle_number_density;
-    Eigen::Matrix3Xd temporary_position;
-    Eigen::Matrix3Xd temporary_velocity;
-    Eigen::VectorXi particle_types;
-    Eigen::VectorXi boundary_types;
-
 private:
     using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
     void initialize(int particles_number);
@@ -75,6 +66,16 @@ private:
         if(r < influence_radius) return (influence_radius / r - 1.0);
         else return 0.0;
     }
+
+    Eigen::Matrix3Xd position;
+    Eigen::Matrix3Xd velocity;
+    Eigen::VectorXd pressure;
+    Eigen::VectorXd particle_number_density;
+    Eigen::Matrix3Xd temporary_position;
+    Eigen::Matrix3Xd temporary_velocity;
+    Eigen::Matrix3Xd correction_velocity;
+    Eigen::VectorXi particle_types;
+    Eigen::VectorXi boundary_types;
     int size;
     int dimension;
     double initial_particle_number_density;

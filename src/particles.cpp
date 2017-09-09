@@ -32,6 +32,7 @@ void Particles::initialize(int size) {
     temporary_velocity = Eigen::MatrixXd::Zero(3, size);
     particle_types = Eigen::VectorXi::Zero(size);
     boundary_types = Eigen::VectorXi::Zero(size);
+    correction_velocity = Eigen::MatrixXd::Zero(3, size);
 }
 
 int Particles::readGridFile(const std::string& path, int dimension) {
@@ -121,6 +122,11 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     ofs << "LOOKUP_TABLE default" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << boundary_types(i) << std::endl;
+    }
+    ofs << std::endl;
+    ofs << "VECTORS CorrectionVelocity double" << std::endl;
+    for(int i = 0; i < size; ++i) {
+        ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
     }
     return 0;
 }
@@ -285,7 +291,7 @@ void Particles::correctVelocity(const Timer& timer, const Condition& condition) 
 }
 
 void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition) {
-    Eigen::Matrix3Xd crr_vel = Eigen::MatrixXd::Zero(3, size);
+    correction_velocity.setZero();
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) != BoundaryType::INNER) continue;
         Grid::Neighbors neighbors;
@@ -302,10 +308,10 @@ void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Cond
             tmp += r_ji * (pressure(j_particle) - p_min) * weightFunction(r_ji, grid.getGridWidth()) / r_ji.squaredNorm();
         }
         if (dimension == 2) tmp(2) = 0;
-        crr_vel.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
+        correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
     }
-    velocity = temporary_velocity + crr_vel;
-    position = temporary_position + crr_vel * timer.getCurrentDeltaTime();
+    velocity = temporary_velocity + correction_velocity;
+    position = temporary_position + correction_velocity * timer.getCurrentDeltaTime();
 }
 
 void Particles::checkSurfaceParticles(const Condition& condition) {
