@@ -36,18 +36,16 @@ public:
     void calculateTemporaryParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Grid& grid);
-    void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, const Condition& condition);
+    void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
-    void moveExplicitly();
     void solvePressurePoission(const Grid& grid, const Timer& timer, const Condition& condition);
-    void solvePressurePoission(const Timer& timer, const Condition& condition);
-    void correctVelocity(const Timer& timer, const Condition& condition);
+    void solvePressurePoission(const Timer& timer);
+    void correctVelocity(const Timer& timer);
     void correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition);
-    void checkSurfaceParticles(const Condition& condition);
+    void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
     int writeVtkFile(const std::string& path, const std::string& title);
     inline double getMaxSpeed() const {
-        std::cout << "max_vel: " << velocity.colwise().norm().maxCoeff() << std::endl;
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();
         return (norms.array() * moving.array()).maxCoeff();
@@ -67,6 +65,7 @@ private:
         else return 0.0;
     }
 
+    const Condition& condition_;
     Eigen::Matrix3Xd position;
     Eigen::Matrix3Xd velocity;
     Eigen::VectorXd pressure;

@@ -15,11 +15,11 @@ int main() {
     while(timer.hasNextLoop()) {
         std::cout << timer.getCurrentTime() << std::endl;
         timer.limitCurrentDeltaTime(particles.getMaxSpeed(), condition);
-        particles.calculateTemporaryVelocity(condition.gravity, timer, condition);
+        particles.calculateTemporaryVelocity(condition.gravity, timer);
         particles.calculateTemporaryParticleNumberDensity(condition);
-        particles.checkSurfaceParticles(condition.surface_parameter);
-        particles.solvePressurePoission(timer, condition);
-        particles.correctVelocity(timer, condition);
+        particles.checkSurfaceParticles();
+        particles.solvePressurePoission(timer);
+        particles.correctVelocity(timer);
         timer.update();
     }
     particles.writeVtkFile("out.vtk", "test");

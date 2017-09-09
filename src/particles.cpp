@@ -7,7 +7,7 @@
 
 namespace tiny_mps {
 
-Particles::Particles(const std::string& path, const Condition& condition) {
+Particles::Particles(const std::string& path, const Condition& condition) : condition_(condition) {
     readGridFile(path, condition.dimension);
     dimension = condition.dimension;
     VectorXb valid = particle_types.array() != ParticleType::GHOST;
@@ -198,9 +198,9 @@ void Particles::calculateLaplacianLambda(int index, const Grid& grid) {
     laplacian_lambda = numerator / denominator;
 }
 
-void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, const Condition& condition) {
-    Grid grid(condition.laplacian_viscosity_weight_radius, position, particle_types.array() == ParticleType::NORMAL, condition.dimension);
-    calculateTemporaryVelocity(force, grid, timer, condition);
+void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer) {
+    Grid grid(condition_.laplacian_viscosity_weight_radius, position, particle_types.array() == ParticleType::NORMAL, condition_.dimension);
+    calculateTemporaryVelocity(force, grid, timer, condition_);
 }
 
 void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition) {
@@ -228,14 +228,9 @@ void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& g
     temporary_position = position + delta_time * temporary_velocity;
 }
 
-void Particles::moveExplicitly() {
-    velocity = temporary_velocity;
-    position = temporary_position;
-}
-
-void Particles::solvePressurePoission(const Timer& timer, const Condition& condition) {
-    Grid grid(condition.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition.dimension);
-    solvePressurePoission(grid, timer, condition);
+void Particles::solvePressurePoission(const Timer& timer) {
+    Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+    solvePressurePoission(grid, timer, condition_);
 }
 
 void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, const Condition& condition) {
@@ -285,25 +280,26 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
     }
 }
 
-void Particles::correctVelocity(const Timer& timer, const Condition& condition) {
-    Grid grid(condition.gradient_radius, temporary_position, boundary_types.array() == BoundaryType::INNER, condition.dimension);
-    correctVelocity(grid, timer, condition);
+void Particles::correctVelocity(const Timer& timer) {
+    Grid grid(condition_.gradient_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+    correctVelocity(grid, timer, condition_);
 }
 
 void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition) {
     correction_velocity.setZero();
     for (int i_particle = 0; i_particle < size; ++i_particle) {
-        if (particle_types(i_particle) != BoundaryType::INNER) continue;
+        if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+        if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
         Grid::Neighbors neighbors;
         grid.getNeighbors(i_particle, neighbors);
         double p_min = pressure(i_particle);
         for (int j_particle : neighbors) {
-            if (boundary_types(j_particle) != BoundaryType::INNER) continue;
+            if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
             p_min = std::min(pressure(j_particle), p_min);
         }
         Eigen::Vector3d tmp(0.0, 0.0, 0.0);
         for (int j_particle : neighbors) {
-            if (boundary_types(j_particle) != BoundaryType::INNER) continue;
+            if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
             Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
             tmp += r_ji * (pressure(j_particle) - p_min) * weightFunction(r_ji, grid.getGridWidth()) / r_ji.squaredNorm();
         }
@@ -314,8 +310,8 @@ void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Cond
     position = temporary_position + correction_velocity * timer.getCurrentDeltaTime();
 }
 
-void Particles::checkSurfaceParticles(const Condition& condition) {
-    checkSurfaceParticles(condition.surface_parameter);
+void Particles::checkSurfaceParticles() {
+    checkSurfaceParticles(condition_.surface_parameter);
 }
 
 void Particles::checkSurfaceParticles(double surface_parameter) {
