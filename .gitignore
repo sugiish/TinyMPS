@@ -59,7 +59,7 @@ $RECYCLE.BIN/
 
 # Debug files
 *.dSYM
-input/
+past_input.data
 
 # VTK files
 *.vtk
