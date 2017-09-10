@@ -3,21 +3,15 @@
 #ifndef MPS_TIMER_H_INCLUDED
 #define MPS_TIMER_H_INCLUDED
 
+#include <boost/format.hpp>
+
 namespace tiny_mps {
 
 // Holds data on time
 class Timer {
 public:
-    Timer() {
-        initialize(0, 0, 0, 0);
-    }
-
     Timer(const Condition & condition) {
         initialize(condition);
-    }
-
-    Timer(double initial_time, double finish_time, double delta_time, double output_interval) {
-        initialize(initial_time, finish_time, delta_time, output_interval);
     }
 
     virtual ~Timer(){}
@@ -28,18 +22,8 @@ public:
         this->finish_time = condition.finish_time;
         this->current_delta_time = condition.delta_time;
         this->initial_delta_time = condition.delta_time;
+        this->min_delta_time = condition.min_delta_time * condition.delta_time;
         this->output_interval = condition.output_interval;
-        this->loop_count = 0;
-        this->output_count = 0;
-    }
-
-    inline void initialize(double initial_time, double finish_time, double delta_time, double output_interval) {
-        this->current_time = initial_time;
-        this->initial_time = initial_time;
-        this->finish_time = finish_time;
-        this->current_delta_time = delta_time;
-        this->initial_delta_time = delta_time;
-        this->output_interval = output_interval;
         this->loop_count = 0;
         this->output_count = 0;
     }
@@ -57,6 +41,11 @@ public:
         current_time += current_delta_time;
         ++loop_count;
     }
+    
+    inline void printTimeInfo() {
+        std::cout << boost::format("Time step: %08d, Current time: %f, Delta time: %f")
+        % getLoopCount() % getCurrentTime() % getCurrentDeltaTime() << std::endl;
+    }
 
     inline void limitCurrentDeltaTime(double max_speed, const Condition& condition) {
         if (max_speed <= 0) return;
@@ -68,7 +57,9 @@ public:
                 / condition.kinematic_viscosity;
         current_delta_time = std::min(dt, current_delta_time);
     }
-
+    inline bool isUnderMinDeltaTime() {
+        return getCurrentDeltaTime() < min_delta_time;
+    }
     inline bool isOutputTime() const {
         return current_time >= next_output_time;
     }
@@ -87,6 +78,7 @@ private:
     double finish_time;
     double current_delta_time;
     double initial_delta_time;
+    double min_delta_time;
     double output_interval;
     double next_output_time;
     int loop_count;

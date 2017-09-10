@@ -17,8 +17,8 @@ Particles::Particles(const std::string& path, const Condition& condition) : cond
     setInitialParticleNumberDensity(condition.inner_particle_index);
     calculateLaplacianLambda(condition.inner_particle_index, lap_grid);
     checkSurfaceParticles(condition.surface_parameter);
-    std::cout << "Laplacian lambda:" << laplacian_lambda << std::endl;
-    std::cout << "initial_pnd" << initial_particle_number_density << std::endl;
+    std::cout << "Initial particle number density: " << initial_particle_number_density << std::endl;
+    std::cout << "Laplacian lambda: " << laplacian_lambda << std::endl;
 }
 
 Particles::~Particles() {}
@@ -292,7 +292,7 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
     if (cg.info() != Eigen::ComputationInfo::Success) {
         std::cerr << "Error: Failed solving." << std::endl;
     }
-    std::cout << "Solver - iterations: " << cg.iterations() << "- estimated error: " << cg.error() << std::endl;
+    std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
     for (int i = 0; i < size; ++i) {
         if (pressure(i) < 0) pressure(i) = 0;
     }

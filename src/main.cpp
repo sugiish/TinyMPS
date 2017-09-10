@@ -15,12 +15,14 @@ int main() {
     particles.saveInterval("./output/output_%04d.vtk", timer);
     while(timer.hasNextLoop()) {
         timer.limitCurrentDeltaTime(particles.getMaxSpeed(), condition);
-        std::cout << boost::format("Time step: %08d, Current time: %f, Delta time: %f")
-            % timer.getLoopCount() % timer.getCurrentTime() % timer.getCurrentDeltaTime() 
-            << std::endl << boost::format("Max velocity: %f") % particles.getMaxSpeed() << std::endl;
-        if (particles.checkNeedlessCalculation()) exit(EXIT_FAILURE);
-        if (timer.getCurrentDeltaTime() < condition.delta_time * condition.min_delta_time) {
-            std::cerr << "Error: Delta time becomes so small." << std::endl;
+        timer.printTimeInfo();
+        std::cout << boost::format("Max velocity: %f") % particles.getMaxSpeed() << std::endl;
+        if (particles.checkNeedlessCalculation()) {
+            std::cerr << "Error: All particles have become ghost." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        if (timer.isUnderMinDeltaTime()) {
+            std::cerr << "Error: Delta time has become so small." << std::endl;
             exit(EXIT_FAILURE);
         }
         particles.calculateTemporaryVelocity(condition.gravity, timer);
