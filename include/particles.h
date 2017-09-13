@@ -33,7 +33,7 @@ public:
     Particles(const std::string& path, const Condition& condition);
     virtual ~Particles();
     bool checkNeedlessCalculation();
-    bool next(const std::string& path, Timer& timer, const Condition& condition);
+    bool nextLoop(const std::string& path, Timer& timer, const Condition& condition);
     void calculateTemporaryParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Grid& grid);

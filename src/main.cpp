@@ -12,7 +12,7 @@ int main() {
     tiny_mps::Condition condition("./input/input.data");
     tiny_mps::Particles particles("./input/dam.grid", condition);
     tiny_mps::Timer timer(condition);
-    while(particles.next("./output/output_%04d.vtk", timer, condition)) {
+    while(particles.nextLoop("./output/output_%04d.vtk", timer, condition)) {
         particles.calculateTemporaryVelocity(condition.gravity, timer);
         particles.calculateTemporaryParticleNumberDensity(condition);
         particles.checkSurfaceParticles();

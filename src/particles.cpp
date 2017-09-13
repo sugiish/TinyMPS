@@ -146,7 +146,7 @@ bool Particles::saveInterval(const std::string& path, Timer& timer) {
     return true;
 }
 
-bool Particles::next(const std::string& path, Timer& timer, const Condition& condition) {
+bool Particles::nextLoop(const std::string& path, Timer& timer, const Condition& condition) {
     saveInterval(path, timer);
     std::cout << std::endl;
     timer.limitCurrentDeltaTime(getMaxSpeed(), condition);
