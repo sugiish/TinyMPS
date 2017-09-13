@@ -140,9 +140,10 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     return 0;
 }
 
-void Particles::saveInterval(const std::string& path, const Timer& timer) {
+void Particles::saveInterval(const std::string& path, Timer& timer) {
     if (!timer.isOutputTime()) return;
     writeVtkFile((boost::format(path) % timer.getOutputCount()).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    timer.increaseOutputCount();
 }
 
 bool Particles::checkNeedlessCalculation() {
