@@ -75,7 +75,7 @@ int Particles::readGridFile(const std::string& path, int dimension) {
     return 0;
 }
 
-int Particles::writeVtkFile(const std::string& path, const std::string& title) {
+int Particles::writeVtkFile(const std::string& path, const std::string& title) const {
     std::ofstream ofs(path);
     if(ofs.fail()) {
         std::cerr << "Error: in writeVtkFile()" << std::endl;
@@ -140,7 +140,7 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     return 0;
 }
 
-bool Particles::saveInterval(const std::string& path, Timer& timer) {
+bool Particles::saveInterval(const std::string& path, const Timer& timer) const {
     if (!timer.isOutputTime()) return false;
     writeVtkFile((boost::format(path) % timer.getOutputCount()).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
     return true;
@@ -168,7 +168,7 @@ bool Particles::nextLoop(const std::string& path, Timer& timer, const Condition&
     return false;
 }
 
-bool Particles::checkNeedlessCalculation() {
+bool Particles::checkNeedlessCalculation() const {
     if (pressure.hasNaN() || velocity.hasNaN() || position.hasNaN()) {
         std::cerr << "Error: Data contains NaN." << std::endl;
         return true;

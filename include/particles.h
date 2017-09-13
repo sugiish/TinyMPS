@@ -32,7 +32,7 @@ class Particles {
 public:
     Particles(const std::string& path, const Condition& condition);
     virtual ~Particles();
-    bool checkNeedlessCalculation();
+    bool checkNeedlessCalculation() const;
     bool nextLoop(const std::string& path, Timer& timer, const Condition& condition);
     void calculateTemporaryParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Condition& condition);
@@ -45,8 +45,8 @@ public:
     void correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition);
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
-    int writeVtkFile(const std::string& path, const std::string& title);
-    bool saveInterval(const std::string& path, Timer& timer);
+    int writeVtkFile(const std::string& path, const std::string& title) const;
+    bool saveInterval(const std::string& path, const Timer& timer) const;
     inline double getMaxSpeed() const {
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();
