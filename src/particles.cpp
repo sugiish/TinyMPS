@@ -91,8 +91,8 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     for(int i = 0; i < size; ++i) {
         ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
     }
-	ofs << std::endl;
-	ofs << "CELLS " << size << " " << size * 2 << std::endl;
+    ofs << std::endl;
+    ofs << "CELLS " << size << " " << size * 2 << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << 1 << " " << i << std::endl;
     }
