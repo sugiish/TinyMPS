@@ -55,6 +55,10 @@
         "limits": "cpp",
         "ratio": "cpp",
         "streambuf": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "array": "cpp",
+        "queue": "cpp",
+        "set": "cpp",
+        "valarray": "cpp"
     }
 }

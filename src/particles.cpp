@@ -140,10 +140,32 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     return 0;
 }
 
-void Particles::saveInterval(const std::string& path, Timer& timer) {
-    if (!timer.isOutputTime()) return;
+bool Particles::saveInterval(const std::string& path, Timer& timer) {
+    if (!timer.isOutputTime()) return false;
     writeVtkFile((boost::format(path) % timer.getOutputCount()).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
-    timer.increaseOutputCount();
+    return true;
+}
+
+bool Particles::next(const std::string& path, Timer& timer, const Condition& condition) {
+    saveInterval(path, timer);
+    std::cout << std::endl;
+    timer.limitCurrentDeltaTime(getMaxSpeed(), condition);
+    timer.printTimeInfo();
+    std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
+    if (checkNeedlessCalculation()) {
+        std::cerr << "Error: All particles have become ghost." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if (timer.isUnderMinDeltaTime()) {
+        std::cerr << "Error: Delta time has become so small." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if (timer.hasNextLoop()) {
+        timer.update();
+        return true;
+    }
+    std::cout << "Succeed in simulation." << std::endl;
+    return false;
 }
 
 bool Particles::checkNeedlessCalculation() {
