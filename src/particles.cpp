@@ -91,6 +91,11 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     for(int i = 0; i < size; ++i) {
         ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
     }
+	ofs << std::endl;
+	ofs << "CELLS " << size << " " << size * 2 << std::endl;
+    for(int i = 0; i < size; ++i) {
+        ofs << 1 << " " << i << std::endl;
+    }
     ofs << std::endl;
     ofs << "CELL_TYPES " << size << std::endl;
     for(int i = 0; i < size; ++i) {
@@ -99,7 +104,7 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     ofs << std::endl;
     ofs << "POINT_DATA " << size << std::endl;
     ofs << "SCALARS Pressure double" << std::endl;
-    ofs << "LOOKUP_TABLE default" << std::endl;
+    ofs << "LOOKUP_TABLE Pressure" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << pressure(i) << std::endl;
     }
@@ -110,19 +115,19 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) {
     }
     ofs << std::endl;
     ofs << "SCALARS Type int" << std::endl;
-    ofs << "LOOKUP_TABLE default" << std::endl;
+    ofs << "LOOKUP_TABLE Type" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << particle_types(i) << std::endl;
     }
     ofs << std::endl;
     ofs << "SCALARS ParticleNumberDensity double" << std::endl;
-    ofs << "LOOKUP_TABLE default" << std::endl;
+    ofs << "LOOKUP_TABLE ParticleNumberDensity" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << particle_number_density(i) << std::endl;
     }
     ofs << std::endl;
     ofs << "SCALARS BoundaryCondition int" << std::endl;
-    ofs << "LOOKUP_TABLE default" << std::endl;
+    ofs << "LOOKUP_TABLE BoundaryCondition" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << boundary_types(i) << std::endl;
     }
