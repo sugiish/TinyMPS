@@ -35,6 +35,9 @@ public:
     bool checkNeedlessCalculation() const;
     bool nextLoop(const std::string& path, Timer& timer, const Condition& condition);
     void calculateTemporaryParticleNumberDensity(const Condition& condition);
+    void setGhostParticle(int index);
+    void removeOutsideParticles(const Eigen::Vector3d& minpos, const Eigen::Vector3d& maxpos);
+    void removeFastParticles(double max_speed);
     void updateParticleNumberDensity(const Condition& condition);
     void updateParticleNumberDensity(const Grid& grid);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
@@ -43,6 +46,7 @@ public:
     void solvePressurePoission(const Timer& timer);
     void correctVelocity(const Timer& timer);
     void correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition);
+    void updateFromTemporary();
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
     int writeVtkFile(const std::string& path, const std::string& title) const;

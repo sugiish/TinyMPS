@@ -12,11 +12,16 @@ int main() {
     tiny_mps::Condition condition("./input/input.data");
     tiny_mps::Particles particles("./input/dam.grid", condition);
     tiny_mps::Timer timer(condition);
+    Eigen::Vector3d minpos(-0.1, -0.1, 0);
+    Eigen::Vector3d maxpos(0.8, 0.8, 0);
     while(particles.nextLoop("./output/output_%04d.vtk", timer, condition)) {
         particles.calculateTemporaryVelocity(condition.gravity, timer);
         particles.calculateTemporaryParticleNumberDensity(condition);
         particles.checkSurfaceParticles();
         particles.solvePressurePoission(timer);
         particles.correctVelocity(timer);
+        particles.updateFromTemporary();
+        particles.removeOutsideParticles(minpos, maxpos);
+        particles.removeFastParticles(340);
     }
 }

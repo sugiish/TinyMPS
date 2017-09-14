@@ -180,6 +180,41 @@ bool Particles::checkNeedlessCalculation() const {
     return true;
 }
 
+void Particles::setGhostParticle(int index) {
+    if (index < 0 || index >= size) {
+        std::cerr << "Error: Index is out of range." << std::endl;
+        std::cerr << "Size: " << size << ", Index: " << std::endl;
+    }
+    particle_types(index) = ParticleType::GHOST;
+    boundary_types(index) = BoundaryType::OTHERS;
+    position.col(index).setZero();
+    velocity.col(index).setZero();
+    pressure(index) = 0.0;
+    particle_number_density(index) = 0.0;
+    temporary_position.col(index).setZero();
+    temporary_velocity.col(index).setZero();
+    correction_velocity.col(index).setZero();
+    std::cout << "Changed ghost particle: " << index << std::endl;
+}
+
+void Particles::removeOutsideParticles(const Eigen::Vector3d& minpos, const Eigen::Vector3d& maxpos) {
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+        if (particle_types(i_particle) == ParticleType::GHOST) continue;
+        for (int i_dim = 0; i_dim < dimension; ++i_dim) {
+            if (position.col(i_particle)(i_dim) < minpos(i_dim) || position.col(i_particle)(i_dim) > maxpos(i_dim)) {
+                setGhostParticle(i_particle);
+            }
+        }
+    }
+}
+
+void Particles::removeFastParticles(double max_speed) {
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+        if (particle_types(i_particle) == ParticleType::GHOST) continue;
+        if (velocity.col(i_particle).norm() > max_speed) setGhostParticle(i_particle);
+    }
+}
+
 void Particles::calculateTemporaryParticleNumberDensity(const Condition& condition) {
     Grid grid(condition.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
     for (int i_particle = 0; i_particle < size; ++i_particle) {
@@ -284,6 +319,7 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
     Eigen::VectorXd source(size);
     std::vector<T> coeffs(size * n_size);
     std::vector<int> neighbors(n_size * 2);
+    source.setZero();
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (boundary_types(i_particle) == BoundaryType::OTHERS) {
             coeffs.push_back(T(i_particle, i_particle, 1.0));
@@ -352,8 +388,13 @@ void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Cond
         if (dimension == 2) tmp(2) = 0;
         correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
     }
-    velocity = temporary_velocity + correction_velocity;
-    position = temporary_position + correction_velocity * timer.getCurrentDeltaTime();
+    temporary_velocity += correction_velocity;
+    temporary_position += correction_velocity * timer.getCurrentDeltaTime();
+}
+
+void Particles::updateFromTemporary() {
+    velocity = temporary_velocity;
+    position = temporary_position;
 }
 
 void Particles::checkSurfaceParticles() {
