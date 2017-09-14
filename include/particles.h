@@ -81,10 +81,12 @@ private:
     Eigen::Matrix3Xd correction_velocity;
     Eigen::VectorXi particle_types;
     Eigen::VectorXi boundary_types;
+    Eigen::VectorXi neighbor_particles;
     int size;
     int dimension;
     double initial_particle_number_density;
     double laplacian_lambda;
+    double initial_neighbor_particles;
 };
 
 } // namespace tiny_mps

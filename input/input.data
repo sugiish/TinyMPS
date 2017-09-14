@@ -88,6 +88,6 @@ surface_parameter                       0.97
 
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on
-tanaka_masunaga_lambda                  
-tanaka_masunaga_c                       
-tanaka_masunaga_beta                    
+tanaka_masunaga_gamma                   1.0e-2
+tanaka_masunaga_c                       1.05
+tanaka_masunaga_beta                    0.8

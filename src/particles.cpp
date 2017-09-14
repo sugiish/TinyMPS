@@ -34,6 +34,7 @@ void Particles::initialize(int size) {
     particle_types = Eigen::VectorXi::Zero(size);
     boundary_types = Eigen::VectorXi::Zero(size);
     correction_velocity = Eigen::MatrixXd::Zero(3, size);
+    neighbor_particles = Eigen::VectorXi::Zero(size);
 }
 
 int Particles::readGridFile(const std::string& path, int dimension) {
@@ -124,6 +125,12 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) c
     ofs << "LOOKUP_TABLE ParticleNumberDensity" << std::endl;
     for(int i = 0; i < size; ++i) {
         ofs << particle_number_density(i) << std::endl;
+    }
+    ofs << std::endl;
+    ofs << "SCALARS NeighborParticles int" << std::endl;
+    ofs << "LOOKUP_TABLE NeighborParticles" << std::endl;
+    for(int i = 0; i < size; ++i) {
+        ofs << neighbor_particles(i) << std::endl;
     }
     ofs << std::endl;
     ofs << "SCALARS BoundaryCondition int" << std::endl;
@@ -220,17 +227,21 @@ void Particles::calculateTemporaryParticleNumberDensity(const Condition& conditi
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) == ParticleType::GHOST) {
             particle_number_density(i_particle) = 0.0;
+            neighbor_particles(i_particle) = 0;
             continue;
         }
         Grid::Neighbors neighbors;
         grid.getNeighbors(i_particle, neighbors);
         double pnd = 0.0;
+        int count = 0;
         for (int j_particle : neighbors) {
             if (particle_types(i_particle) == ParticleType::GHOST) continue;
             Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
             pnd += weightFunction(r_ji, grid.getGridWidth());
+            ++count;
         }
         particle_number_density(i_particle) = pnd;
+        neighbor_particles(i_particle) = count;
     }
 }
 
@@ -243,22 +254,27 @@ void Particles::updateParticleNumberDensity(const Grid& grid) {
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) == ParticleType::GHOST) {
             particle_number_density(i_particle) = 0.0;
+            neighbor_particles(i_particle) = 0;
             continue;
         }
         Grid::Neighbors neighbors;
         grid.getNeighbors(i_particle, neighbors);
         double pnd = 0.0;
+        int count = 0;
         for (int j_particle : neighbors) {
             if (particle_types(i_particle) == ParticleType::GHOST) continue;
             Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
             pnd += weightFunction(r_ji, grid.getGridWidth());
+            ++count;
         }
         particle_number_density(i_particle) = pnd;
+        neighbor_particles(i_particle) = count;
     }
 }
 
 void Particles::setInitialParticleNumberDensity(int index) {
     initial_particle_number_density = particle_number_density(index);
+    initial_neighbor_particles = neighbor_particles(index);
 }
 
 void Particles::calculateLaplacianLambda(int index, const Grid& grid) {
