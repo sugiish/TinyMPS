@@ -44,11 +44,17 @@ public:
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition);
     void solvePressurePoission(const Grid& grid, const Timer& timer, const Condition& condition);
     void solvePressurePoission(const Timer& timer);
+    void solveTanakaMasunagaPressurePoission(const Timer& timer, const Condition& condition);
     void correctVelocity(const Timer& timer);
     void correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition);
+    void correctVelocityExplicitly(const Timer& timer);
+    void correctTanakaMasunagaVelocity(const Timer& timer, const Condition& condition);
     void updateFromTemporary();
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
+    void checkSurfaceParticlesWithTanakaMasunaga(const Condition& condition);
+    void checkTanakaMasunagaSurfaceParticles(double surface_parameter);
+    void giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer, const Condition& condition);
     int writeVtkFile(const std::string& path, const std::string& title) const;
     bool saveInterval(const std::string& path, const Timer& timer) const;
     inline double getMaxSpeed() const {
@@ -58,18 +64,6 @@ public:
     }
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
-
-private:
-    using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-    void initialize(int particles_number);
-    int readGridFile(const std::string& path, int dimension);
-    void setInitialParticleNumberDensity(int index);
-    void calculateLaplacianLambda(int index, const Grid& grid);
-    inline double weightFunction(const Eigen::Vector3d& vec, double influence_radius) const {
-        double r = vec.norm();
-        if(r < influence_radius) return (influence_radius / r - 1.0);
-        else return 0.0;
-    }
 
     const Condition& condition_;
     Eigen::Matrix3Xd position;
@@ -82,10 +76,25 @@ private:
     Eigen::VectorXi particle_types;
     Eigen::VectorXi boundary_types;
     Eigen::VectorXi neighbor_particles;
+
+private:
+    using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+    void initialize(int particles_number);
+    int readGridFile(const std::string& path, int dimension);
+    void setInitialParticleNumberDensity(int index);
+    void calculateLaplacianLambda(int index, const Condition& condition);
+    inline double weightFunction(const Eigen::Vector3d& vec, double influence_radius) const {
+        double r = vec.norm();
+        if(r < influence_radius) return (influence_radius / r - 1.0);
+        else return 0.0;
+    }
+
+
     int size;
     int dimension;
     double initial_particle_number_density;
-    double laplacian_lambda;
+    double laplacian_lambda_pressure;
+    double laplacian_lambda_viscosity;
     double initial_neighbor_particles;
 };
 
