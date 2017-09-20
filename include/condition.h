@@ -54,7 +54,12 @@ public:
         getValue("min_delta_time", min_delta_time);
         getValue("output_interval", output_interval);
         getValue("inner_particle_index", inner_particle_index);
+        getValue("relaxation_coefficient_lambda" ,relaxation_coefficient_lambda);
         getValue("surface_parameter", surface_parameter);
+        getValue("tanaka_masunaga_method", tanaka_masunaga_method);
+        getValue("tanaka_masunaga_gamma", tanaka_masunaga_gamma);
+        getValue("tanaka_masunaga_c", tanaka_masunaga_c);
+        getValue("tanaka_masunaga_beta", tanaka_masunaga_beta);
 
         pnd_weight_radius = pnd_influence * average_distance;
         gradient_radius = gradient_influence * average_distance;
@@ -120,11 +125,17 @@ public:
 
     int inner_particle_index;
     double surface_parameter;
+    double relaxation_coefficient_lambda;
 
     double pnd_weight_radius;
     double gradient_radius;
     double laplacian_pressure_weight_radius;
     double laplacian_viscosity_weight_radius;
+
+    bool tanaka_masunaga_method;
+    double tanaka_masunaga_gamma;
+    double tanaka_masunaga_c;
+    double tanaka_masunaga_beta;
 
 private:
     inline int readDataFile(std::string path) {

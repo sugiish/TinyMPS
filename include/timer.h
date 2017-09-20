@@ -36,12 +36,11 @@ public:
     inline void update() {
         if (isOutputTime()) {
             next_output_time += output_interval;
+            ++output_count;
         }
         current_time += current_delta_time;
         ++loop_count;
     }
-
-    inline void increaseOutputCount() { ++output_count; }
     
     inline void printTimeInfo() {
         std::cout << boost::format("Time step: %08d, Current time: %f, Delta time: %f")
