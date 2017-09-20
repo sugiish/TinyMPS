@@ -55,6 +55,7 @@
         "limits": "cpp",
         "ratio": "cpp",
         "streambuf": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "sparse": "cpp"
     }
 }
