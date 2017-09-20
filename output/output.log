@@ -1,0 +1,664 @@
+Succeed in reading data file: ./input/input.data
+Initial particle number density: 6.5397
+Laplacian lambda for Pressure: 0.00037071
+Laplacian lambda for Viscosity: 0.00037071
+Relaxation coefficient of lambda: 0.2
+Laplacian lambda for Pressure with relaxation coefficient: 7.4142e-05
+Succeed in writing vtk file: ./output/output_0000.vtk
+
+Time step: 00000000, Current time: 0.000000, Delta time: 0.001000
+Max velocity: 0.000000
+Solver - iterations: 154, estimated error: 1.80032e-16
+
+Time step: 00000001, Current time: 0.001000, Delta time: 0.001000
+Max velocity: 0.009810
+Solver - iterations: 151, estimated error: 1.78565e-16
+
+Time step: 00000002, Current time: 0.002000, Delta time: 0.001000
+Max velocity: 0.019620
+Solver - iterations: 153, estimated error: 1.6829e-16
+
+Time step: 00000003, Current time: 0.003000, Delta time: 0.001000
+Max velocity: 0.029430
+Solver - iterations: 154, estimated error: 1.87854e-16
+
+Time step: 00000004, Current time: 0.004000, Delta time: 0.001000
+Max velocity: 0.039449
+Solver - iterations: 155, estimated error: 1.30477e-16
+
+Time step: 00000005, Current time: 0.005000, Delta time: 0.001000
+Max velocity: 0.053679
+Solver - iterations: 155, estimated error: 1.35049e-16
+
+Time step: 00000006, Current time: 0.006000, Delta time: 0.001000
+Max velocity: 0.074573
+Solver - iterations: 154, estimated error: 1.99104e-16
+
+Time step: 00000007, Current time: 0.007000, Delta time: 0.001000
+Max velocity: 0.101363
+Solver - iterations: 155, estimated error: 1.30093e-16
+
+Time step: 00000008, Current time: 0.008000, Delta time: 0.001000
+Max velocity: 0.133735
+Solver - iterations: 155, estimated error: 1.38659e-16
+
+Time step: 00000009, Current time: 0.009000, Delta time: 0.001000
+Max velocity: 0.170741
+Solver - iterations: 155, estimated error: 1.43623e-16
+Succeed in writing vtk file: ./output/output_0001.vtk
+
+Time step: 00000010, Current time: 0.010000, Delta time: 0.001000
+Max velocity: 0.210979
+Solver - iterations: 155, estimated error: 1.55905e-16
+
+Time step: 00000011, Current time: 0.011000, Delta time: 0.001000
+Max velocity: 0.253320
+Solver - iterations: 155, estimated error: 1.41791e-16
+
+Time step: 00000012, Current time: 0.012000, Delta time: 0.001000
+Max velocity: 0.296454
+Solver - iterations: 155, estimated error: 1.41052e-16
+
+Time step: 00000013, Current time: 0.013000, Delta time: 0.001000
+Max velocity: 0.339085
+Solver - iterations: 155, estimated error: 1.54467e-16
+
+Time step: 00000014, Current time: 0.014000, Delta time: 0.001000
+Max velocity: 0.379865
+Solver - iterations: 155, estimated error: 1.39519e-16
+
+Time step: 00000015, Current time: 0.015000, Delta time: 0.001000
+Max velocity: 0.417932
+Solver - iterations: 155, estimated error: 1.5649e-16
+
+Time step: 00000016, Current time: 0.016000, Delta time: 0.001000
+Max velocity: 0.452835
+Solver - iterations: 155, estimated error: 1.42184e-16
+
+Time step: 00000017, Current time: 0.017000, Delta time: 0.001000
+Max velocity: 0.484314
+Solver - iterations: 155, estimated error: 1.57561e-16
+
+Time step: 00000018, Current time: 0.018000, Delta time: 0.001000
+Max velocity: 0.512220
+Solver - iterations: 155, estimated error: 1.75499e-16
+
+Time step: 00000019, Current time: 0.019000, Delta time: 0.001000
+Max velocity: 0.536534
+Solver - iterations: 155, estimated error: 1.55628e-16
+Succeed in writing vtk file: ./output/output_0002.vtk
+
+Time step: 00000020, Current time: 0.020000, Delta time: 0.001000
+Max velocity: 0.579935
+Solver - iterations: 154, estimated error: 2.09705e-16
+
+Time step: 00000021, Current time: 0.021000, Delta time: 0.001000
+Max velocity: 0.621646
+Solver - iterations: 154, estimated error: 2.14935e-16
+
+Time step: 00000022, Current time: 0.022000, Delta time: 0.001000
+Max velocity: 0.660855
+Solver - iterations: 154, estimated error: 2.13574e-16
+
+Time step: 00000023, Current time: 0.023000, Delta time: 0.001000
+Max velocity: 0.696949
+Solver - iterations: 155, estimated error: 1.4691e-16
+
+Time step: 00000024, Current time: 0.024000, Delta time: 0.001000
+Max velocity: 0.729533
+Solver - iterations: 154, estimated error: 2.07885e-16
+
+Time step: 00000025, Current time: 0.025000, Delta time: 0.001000
+Max velocity: 0.758198
+Solver - iterations: 154, estimated error: 2.1094e-16
+
+Time step: 00000026, Current time: 0.026000, Delta time: 0.001000
+Max velocity: 0.783525
+Solver - iterations: 154, estimated error: 2.05074e-16
+
+Time step: 00000027, Current time: 0.027000, Delta time: 0.001000
+Max velocity: 0.827984
+Solver - iterations: 154, estimated error: 1.99713e-16
+
+Time step: 00000028, Current time: 0.028000, Delta time: 0.001000
+Max velocity: 0.849668
+Solver - iterations: 154, estimated error: 1.88196e-16
+
+Time step: 00000029, Current time: 0.029000, Delta time: 0.001000
+Max velocity: 0.871594
+Solver - iterations: 154, estimated error: 1.71633e-16
+Succeed in writing vtk file: ./output/output_0003.vtk
+
+Time step: 00000030, Current time: 0.030000, Delta time: 0.001000
+Max velocity: 0.894155
+Solver - iterations: 154, estimated error: 1.62569e-16
+
+Time step: 00000031, Current time: 0.031000, Delta time: 0.001000
+Max velocity: 0.921617
+Solver - iterations: 154, estimated error: 1.73618e-16
+
+Time step: 00000032, Current time: 0.032000, Delta time: 0.001000
+Max velocity: 0.948204
+Solver - iterations: 154, estimated error: 1.92663e-16
+
+Time step: 00000033, Current time: 0.033000, Delta time: 0.001000
+Max velocity: 0.974447
+Solver - iterations: 154, estimated error: 1.77191e-16
+
+Time step: 00000034, Current time: 0.034000, Delta time: 0.001000
+Max velocity: 0.998747
+Solver - iterations: 153, estimated error: 1.69889e-16
+
+Time step: 00000035, Current time: 0.035000, Delta time: 0.001000
+Max velocity: 1.019830
+Solver - iterations: 152, estimated error: 2.17059e-16
+
+Time step: 00000036, Current time: 0.036000, Delta time: 0.001000
+Max velocity: 0.994563
+Solver - iterations: 153, estimated error: 2.11598e-16
+
+Time step: 00000037, Current time: 0.037000, Delta time: 0.001000
+Max velocity: 1.050497
+Solver - iterations: 155, estimated error: 1.76727e-16
+
+Time step: 00000038, Current time: 0.038000, Delta time: 0.001000
+Max velocity: 1.083080
+Solver - iterations: 156, estimated error: 2.04179e-16
+
+Time step: 00000039, Current time: 0.039000, Delta time: 0.001000
+Max velocity: 1.107147
+Solver - iterations: 155, estimated error: 1.7646e-16
+Succeed in writing vtk file: ./output/output_0004.vtk
+
+Time step: 00000040, Current time: 0.040000, Delta time: 0.001000
+Max velocity: 1.093589
+Solver - iterations: 155, estimated error: 1.9482e-16
+
+Time step: 00000041, Current time: 0.041000, Delta time: 0.001000
+Max velocity: 1.101524
+Solver - iterations: 155, estimated error: 1.99995e-16
+
+Time step: 00000042, Current time: 0.042000, Delta time: 0.001000
+Max velocity: 1.134800
+Solver - iterations: 156, estimated error: 1.46078e-16
+
+Time step: 00000043, Current time: 0.043000, Delta time: 0.001000
+Max velocity: 1.161203
+Solver - iterations: 155, estimated error: 2.03448e-16
+
+Time step: 00000044, Current time: 0.044000, Delta time: 0.001000
+Max velocity: 1.076309
+Solver - iterations: 155, estimated error: 1.97933e-16
+
+Time step: 00000045, Current time: 0.045000, Delta time: 0.001000
+Max velocity: 1.180336
+Solver - iterations: 155, estimated error: 1.96498e-16
+
+Time step: 00000046, Current time: 0.046000, Delta time: 0.001000
+Max velocity: 1.173715
+Solver - iterations: 155, estimated error: 1.92747e-16
+
+Time step: 00000047, Current time: 0.047000, Delta time: 0.001000
+Max velocity: 1.236954
+Solver - iterations: 155, estimated error: 1.68341e-16
+
+Time step: 00000048, Current time: 0.048000, Delta time: 0.001000
+Max velocity: 1.205503
+Solver - iterations: 155, estimated error: 1.44876e-16
+
+Time step: 00000049, Current time: 0.049000, Delta time: 0.001000
+Max velocity: 1.235683
+Solver - iterations: 154, estimated error: 1.91135e-16
+Succeed in writing vtk file: ./output/output_0005.vtk
+
+Time step: 00000050, Current time: 0.050000, Delta time: 0.001000
+Max velocity: 1.242073
+Solver - iterations: 154, estimated error: 2.04518e-16
+
+Time step: 00000051, Current time: 0.051000, Delta time: 0.001000
+Max velocity: 1.282737
+Solver - iterations: 154, estimated error: 1.81974e-16
+
+Time step: 00000052, Current time: 0.052000, Delta time: 0.001000
+Max velocity: 1.287738
+Solver - iterations: 153, estimated error: 1.79712e-16
+
+Time step: 00000053, Current time: 0.053000, Delta time: 0.001000
+Max velocity: 1.258854
+Solver - iterations: 153, estimated error: 1.6082e-16
+
+Time step: 00000054, Current time: 0.054000, Delta time: 0.001000
+Max velocity: 1.340994
+Solver - iterations: 153, estimated error: 1.43809e-16
+
+Time step: 00000055, Current time: 0.055000, Delta time: 0.001000
+Max velocity: 1.342970
+Solver - iterations: 153, estimated error: 1.57929e-16
+
+Time step: 00000056, Current time: 0.056000, Delta time: 0.001000
+Max velocity: 1.379056
+Solver - iterations: 153, estimated error: 1.45229e-16
+
+Time step: 00000057, Current time: 0.057000, Delta time: 0.001000
+Max velocity: 1.404987
+Solver - iterations: 163, estimated error: 1.89289e-16
+
+Time step: 00000058, Current time: 0.058000, Delta time: 0.001000
+Max velocity: 1.427643
+Solver - iterations: 153, estimated error: 1.55863e-16
+
+Time step: 00000059, Current time: 0.059000, Delta time: 0.001000
+Max velocity: 1.451721
+Solver - iterations: 152, estimated error: 2.16275e-16
+Succeed in writing vtk file: ./output/output_0006.vtk
+
+Time step: 00000060, Current time: 0.060000, Delta time: 0.001000
+Max velocity: 1.467577
+Solver - iterations: 153, estimated error: 1.76469e-16
+
+Time step: 00000061, Current time: 0.061000, Delta time: 0.001000
+Max velocity: 1.488197
+Solver - iterations: 153, estimated error: 1.80131e-16
+
+Time step: 00000062, Current time: 0.062000, Delta time: 0.001000
+Max velocity: 1.503058
+Solver - iterations: 153, estimated error: 2.1598e-16
+
+Time step: 00000063, Current time: 0.063000, Delta time: 0.001000
+Max velocity: 1.528814
+Solver - iterations: 153, estimated error: 2.00319e-16
+
+Time step: 00000064, Current time: 0.064000, Delta time: 0.001000
+Max velocity: 1.547782
+Solver - iterations: 154, estimated error: 1.49832e-16
+
+Time step: 00000065, Current time: 0.065000, Delta time: 0.001000
+Max velocity: 1.574809
+Solver - iterations: 155, estimated error: 1.88258e-16
+
+Time step: 00000066, Current time: 0.066000, Delta time: 0.001000
+Max velocity: 1.600006
+Solver - iterations: 154, estimated error: 1.86089e-16
+
+Time step: 00000067, Current time: 0.067000, Delta time: 0.001000
+Max velocity: 1.617759
+Solver - iterations: 154, estimated error: 1.57828e-16
+
+Time step: 00000068, Current time: 0.068000, Delta time: 0.001000
+Max velocity: 1.635106
+Solver - iterations: 154, estimated error: 1.63765e-16
+
+Time step: 00000069, Current time: 0.069000, Delta time: 0.001000
+Max velocity: 1.653606
+Solver - iterations: 154, estimated error: 1.85932e-16
+Succeed in writing vtk file: ./output/output_0007.vtk
+
+Time step: 00000070, Current time: 0.070000, Delta time: 0.001000
+Max velocity: 1.675309
+Solver - iterations: 164, estimated error: 2.0047e-16
+
+Time step: 00000071, Current time: 0.071000, Delta time: 0.001000
+Max velocity: 1.692724
+Solver - iterations: 154, estimated error: 1.96971e-16
+
+Time step: 00000072, Current time: 0.072000, Delta time: 0.001000
+Max velocity: 1.711648
+Solver - iterations: 154, estimated error: 2.07802e-16
+
+Time step: 00000073, Current time: 0.073000, Delta time: 0.001000
+Max velocity: 1.732292
+Solver - iterations: 155, estimated error: 1.68284e-16
+
+Time step: 00000074, Current time: 0.074000, Delta time: 0.001000
+Max velocity: 1.750819
+Solver - iterations: 155, estimated error: 1.88157e-16
+
+Time step: 00000075, Current time: 0.075000, Delta time: 0.001000
+Max velocity: 1.775952
+Solver - iterations: 155, estimated error: 2.16075e-16
+
+Time step: 00000076, Current time: 0.076000, Delta time: 0.001000
+Max velocity: 1.805955
+Solver - iterations: 155, estimated error: 1.72797e-16
+
+Time step: 00000077, Current time: 0.077000, Delta time: 0.001000
+Max velocity: 1.827628
+Solver - iterations: 155, estimated error: 2.1041e-16
+
+Time step: 00000078, Current time: 0.078000, Delta time: 0.001000
+Max velocity: 1.860041
+Solver - iterations: 155, estimated error: 1.57788e-16
+
+Time step: 00000079, Current time: 0.079000, Delta time: 0.001000
+Max velocity: 1.875184
+Solver - iterations: 166, estimated error: 1.9051e-16
+Succeed in writing vtk file: ./output/output_0008.vtk
+
+Time step: 00000080, Current time: 0.080000, Delta time: 0.001000
+Max velocity: 1.910172
+Solver - iterations: 154, estimated error: 2.17496e-16
+
+Time step: 00000081, Current time: 0.081000, Delta time: 0.001000
+Max velocity: 1.925679
+Solver - iterations: 155, estimated error: 1.38324e-16
+
+Time step: 00000082, Current time: 0.082000, Delta time: 0.001000
+Max velocity: 1.963644
+Solver - iterations: 155, estimated error: 1.98548e-16
+
+Time step: 00000083, Current time: 0.083000, Delta time: 0.001000
+Max velocity: 1.979320
+Solver - iterations: 155, estimated error: 2.09951e-16
+
+Time step: 00000084, Current time: 0.084000, Delta time: 0.001000
+Max velocity: 1.989507
+Solver - iterations: 155, estimated error: 1.63494e-16
+
+Time step: 00000085, Current time: 0.085000, Delta time: 0.000999
+Max velocity: 2.002867
+Solver - iterations: 154, estimated error: 2.06242e-16
+
+Time step: 00000086, Current time: 0.085999, Delta time: 0.000991
+Max velocity: 2.017997
+Solver - iterations: 155, estimated error: 1.50977e-16
+
+Time step: 00000087, Current time: 0.086990, Delta time: 0.000984
+Max velocity: 2.032870
+Solver - iterations: 154, estimated error: 2.19889e-16
+
+Time step: 00000088, Current time: 0.087973, Delta time: 0.000976
+Max velocity: 2.048398
+Solver - iterations: 155, estimated error: 1.52967e-16
+
+Time step: 00000089, Current time: 0.088950, Delta time: 0.000974
+Max velocity: 2.053709
+Solver - iterations: 166, estimated error: 1.36959e-16
+
+Time step: 00000090, Current time: 0.089924, Delta time: 0.000966
+Max velocity: 2.069377
+Solver - iterations: 166, estimated error: 1.45524e-16
+Succeed in writing vtk file: ./output/output_0009.vtk
+
+Time step: 00000091, Current time: 0.090890, Delta time: 0.000961
+Max velocity: 2.082050
+Solver - iterations: 155, estimated error: 1.86878e-16
+
+Time step: 00000092, Current time: 0.091851, Delta time: 0.000950
+Max velocity: 2.105522
+Solver - iterations: 155, estimated error: 1.929e-16
+
+Time step: 00000093, Current time: 0.092801, Delta time: 0.000946
+Max velocity: 2.114049
+Solver - iterations: 156, estimated error: 1.44018e-16
+
+Time step: 00000094, Current time: 0.093747, Delta time: 0.000936
+Max velocity: 2.136784
+Solver - iterations: 156, estimated error: 1.44044e-16
+
+Time step: 00000095, Current time: 0.094683, Delta time: 0.000936
+Max velocity: 2.136447
+Solver - iterations: 156, estimated error: 1.56835e-16
+
+Time step: 00000096, Current time: 0.095619, Delta time: 0.000929
+Max velocity: 2.153308
+Solver - iterations: 154, estimated error: 2.16955e-16
+
+Time step: 00000097, Current time: 0.096548, Delta time: 0.000928
+Max velocity: 2.154461
+Solver - iterations: 156, estimated error: 1.60265e-16
+
+Time step: 00000098, Current time: 0.097476, Delta time: 0.000920
+Max velocity: 2.173912
+Solver - iterations: 156, estimated error: 1.81588e-16
+
+Time step: 00000099, Current time: 0.098396, Delta time: 0.000918
+Max velocity: 2.178030
+Solver - iterations: 157, estimated error: 1.69869e-16
+
+Time step: 00000100, Current time: 0.099314, Delta time: 0.000913
+Max velocity: 2.190710
+Solver - iterations: 156, estimated error: 1.89463e-16
+Succeed in writing vtk file: ./output/output_0010.vtk
+
+Time step: 00000101, Current time: 0.100227, Delta time: 0.000912
+Max velocity: 2.192118
+Solver - iterations: 156, estimated error: 1.73686e-16
+
+Time step: 00000102, Current time: 0.101139, Delta time: 0.000909
+Max velocity: 2.200608
+Solver - iterations: 156, estimated error: 1.73587e-16
+
+Time step: 00000103, Current time: 0.102048, Delta time: 0.000905
+Max velocity: 2.209706
+Solver - iterations: 156, estimated error: 1.9458e-16
+
+Time step: 00000104, Current time: 0.102953, Delta time: 0.000903
+Max velocity: 2.215629
+Solver - iterations: 156, estimated error: 1.94352e-16
+
+Time step: 00000105, Current time: 0.103856, Delta time: 0.000900
+Max velocity: 2.223387
+Solver - iterations: 154, estimated error: 1.50462e-16
+
+Time step: 00000106, Current time: 0.104756, Delta time: 0.000901
+Max velocity: 2.218840
+Solver - iterations: 156, estimated error: 1.67179e-16
+
+Time step: 00000107, Current time: 0.105657, Delta time: 0.000895
+Max velocity: 2.235021
+Solver - iterations: 156, estimated error: 1.89038e-16
+
+Time step: 00000108, Current time: 0.106552, Delta time: 0.000898
+Max velocity: 2.227712
+Solver - iterations: 157, estimated error: 2.05933e-16
+
+Time step: 00000109, Current time: 0.107450, Delta time: 0.000888
+Max velocity: 2.252438
+Solver - iterations: 155, estimated error: 1.89795e-16
+
+Time step: 00000110, Current time: 0.108338, Delta time: 0.000888
+Max velocity: 2.251462
+Solver - iterations: 155, estimated error: 1.90898e-16
+
+Time step: 00000111, Current time: 0.109226, Delta time: 0.000883
+Max velocity: 2.266215
+Solver - iterations: 155, estimated error: 1.76732e-16
+Succeed in writing vtk file: ./output/output_0011.vtk
+
+Time step: 00000112, Current time: 0.110108, Delta time: 0.000876
+Max velocity: 2.283296
+Solver - iterations: 155, estimated error: 1.74374e-16
+
+Time step: 00000113, Current time: 0.110984, Delta time: 0.000868
+Max velocity: 2.304204
+Solver - iterations: 155, estimated error: 1.84359e-16
+
+Time step: 00000114, Current time: 0.111852, Delta time: 0.000863
+Max velocity: 2.316860
+Solver - iterations: 155, estimated error: 2.0537e-16
+
+Time step: 00000115, Current time: 0.112716, Delta time: 0.000856
+Max velocity: 2.335725
+Solver - iterations: 155, estimated error: 2.17242e-16
+
+Time step: 00000116, Current time: 0.113572, Delta time: 0.000853
+Max velocity: 2.344377
+Solver - iterations: 155, estimated error: 1.95917e-16
+
+Time step: 00000117, Current time: 0.114425, Delta time: 0.000845
+Max velocity: 2.367686
+Solver - iterations: 155, estimated error: 2.13584e-16
+
+Time step: 00000118, Current time: 0.115270, Delta time: 0.000844
+Max velocity: 2.369851
+Solver - iterations: 155, estimated error: 1.68483e-16
+
+Time step: 00000119, Current time: 0.116114, Delta time: 0.000834
+Max velocity: 2.397164
+Solver - iterations: 153, estimated error: 1.77771e-16
+
+Time step: 00000120, Current time: 0.116948, Delta time: 0.000834
+Max velocity: 2.398707
+Solver - iterations: 155, estimated error: 1.6706e-16
+
+Time step: 00000121, Current time: 0.117782, Delta time: 0.000823
+Max velocity: 2.429050
+Solver - iterations: 155, estimated error: 1.81609e-16
+
+Time step: 00000122, Current time: 0.118605, Delta time: 0.000826
+Max velocity: 2.422370
+Solver - iterations: 155, estimated error: 2.13345e-16
+
+Time step: 00000123, Current time: 0.119431, Delta time: 0.000817
+Max velocity: 2.448707
+Solver - iterations: 156, estimated error: 1.48753e-16
+Succeed in writing vtk file: ./output/output_0012.vtk
+
+Time step: 00000124, Current time: 0.120247, Delta time: 0.000819
+Max velocity: 2.442328
+Solver - iterations: 155, estimated error: 1.77369e-16
+
+Time step: 00000125, Current time: 0.121066, Delta time: 0.000811
+Max velocity: 2.466914
+Solver - iterations: 154, estimated error: 2.21384e-16
+
+Time step: 00000126, Current time: 0.121877, Delta time: 0.000812
+Max velocity: 2.462014
+Solver - iterations: 156, estimated error: 1.6201e-16
+
+Time step: 00000127, Current time: 0.122689, Delta time: 0.000807
+Max velocity: 2.479561
+Solver - iterations: 156, estimated error: 1.59707e-16
+
+Time step: 00000128, Current time: 0.123496, Delta time: 0.000809
+Max velocity: 2.473260
+Solver - iterations: 156, estimated error: 1.52341e-16
+
+Time step: 00000129, Current time: 0.124305, Delta time: 0.000804
+Max velocity: 2.488298
+Solver - iterations: 156, estimated error: 1.45869e-16
+
+Time step: 00000130, Current time: 0.125108, Delta time: 0.000805
+Max velocity: 2.485277
+Solver - iterations: 155, estimated error: 2.15189e-16
+
+Time step: 00000131, Current time: 0.125913, Delta time: 0.000795
+Max velocity: 2.515826
+Solver - iterations: 155, estimated error: 2.15981e-16
+
+Time step: 00000132, Current time: 0.126708, Delta time: 0.000791
+Max velocity: 2.528515
+Solver - iterations: 156, estimated error: 1.56815e-16
+
+Time step: 00000133, Current time: 0.127499, Delta time: 0.000782
+Max velocity: 2.557513
+Solver - iterations: 156, estimated error: 1.87295e-16
+
+Time step: 00000134, Current time: 0.128281, Delta time: 0.000777
+Max velocity: 2.575429
+Solver - iterations: 157, estimated error: 1.65331e-16
+
+Time step: 00000135, Current time: 0.129058, Delta time: 0.000771
+Max velocity: 2.592784
+Solver - iterations: 157, estimated error: 1.45678e-16
+
+Time step: 00000136, Current time: 0.129829, Delta time: 0.000765
+Max velocity: 2.613395
+Solver - iterations: 157, estimated error: 1.53266e-16
+Succeed in writing vtk file: ./output/output_0013.vtk
+
+Time step: 00000137, Current time: 0.130594, Delta time: 0.000762
+Max velocity: 2.625831
+Solver - iterations: 157, estimated error: 1.44921e-16
+
+Time step: 00000138, Current time: 0.131356, Delta time: 0.000758
+Max velocity: 2.639143
+Solver - iterations: 156, estimated error: 2.02506e-16
+
+Time step: 00000139, Current time: 0.132114, Delta time: 0.000754
+Max velocity: 2.652773
+Solver - iterations: 156, estimated error: 2.14031e-16
+
+Time step: 00000140, Current time: 0.132868, Delta time: 0.000752
+Max velocity: 2.659586
+Solver - iterations: 156, estimated error: 2.19449e-16
+
+Time step: 00000141, Current time: 0.133620, Delta time: 0.000749
+Max velocity: 2.669366
+Solver - iterations: 156, estimated error: 2.08545e-16
+
+Time step: 00000142, Current time: 0.134369, Delta time: 0.000748
+Max velocity: 2.673632
+Solver - iterations: 156, estimated error: 1.77897e-16
+
+Time step: 00000143, Current time: 0.135117, Delta time: 0.000746
+Max velocity: 2.680671
+Solver - iterations: 156, estimated error: 2.14574e-16
+
+Time step: 00000144, Current time: 0.135863, Delta time: 0.000745
+Max velocity: 2.683245
+Solver - iterations: 156, estimated error: 1.87596e-16
+
+Time step: 00000145, Current time: 0.136608, Delta time: 0.000706
+Max velocity: 2.833570
+Solver - iterations: 156, estimated error: 1.94807e-16
+
+Time step: 00000146, Current time: 0.137314, Delta time: 0.000718
+Max velocity: 2.784102
+Solver - iterations: 156, estimated error: 1.83949e-16
+
+Time step: 00000147, Current time: 0.138033, Delta time: 0.000666
+Max velocity: 3.002102
+Solver - iterations: 156, estimated error: 1.90236e-16
+
+Time step: 00000148, Current time: 0.138699, Delta time: 0.000705
+Max velocity: 2.836857
+Solver - iterations: 156, estimated error: 1.79649e-16
+
+Time step: 00000149, Current time: 0.139404, Delta time: 0.000713
+Max velocity: 2.803283
+Solver - iterations: 156, estimated error: 1.56536e-16
+Succeed in writing vtk file: ./output/output_0014.vtk
+
+Time step: 00000150, Current time: 0.140117, Delta time: 0.000743
+Max velocity: 2.692452
+Solver - iterations: 156, estimated error: 1.80097e-16
+
+Time step: 00000151, Current time: 0.140860, Delta time: 0.000710
+Max velocity: 2.815816
+Solver - iterations: 156, estimated error: 1.53388e-16
+
+Time step: 00000152, Current time: 0.141570, Delta time: 0.000742
+Max velocity: 2.696999
+Solver - iterations: 156, estimated error: 1.70128e-16
+
+Time step: 00000153, Current time: 0.142312, Delta time: 0.000741
+Max velocity: 2.700615
+Solver - iterations: 157, estimated error: 1.49133e-16
+
+Time step: 00000154, Current time: 0.143053, Delta time: 0.000739
+Max velocity: 2.706535
+Solver - iterations: 157, estimated error: 1.77965e-16
+
+Time step: 00000155, Current time: 0.143791, Delta time: 0.000737
+Max velocity: 2.712677
+Solver - iterations: 157, estimated error: 2.14223e-16
+
+Time step: 00000156, Current time: 0.144529, Delta time: 0.000736
+Max velocity: 2.718872
+Solver - iterations: 158, estimated error: 1.60307e-16
+
+Time step: 00000157, Current time: 0.145264, Delta time: 0.000735
+Max velocity: 2.721952
+Solver - iterations: 158, estimated error: 1.5122e-16
+
+Time step: 00000158, Current time: 0.145999, Delta time: 0.000735
+Max velocity: 2.722862
+Solver - iterations: 158, estimated error: 1.85128e-16
+
+Time step: 00000159, Current time: 0.146734, Delta time: 0.000733
+Max velocity: 2.727780
+Solver - iterations: 158, estimated error: 1.62106e-16
+
+Time step: 00000160, Current time: 0.147467, Delta time: 0.000731
+Max velocity: 2.734363

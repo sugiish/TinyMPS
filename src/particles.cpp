@@ -16,9 +16,6 @@ Particles::Particles(const std::string& path, const Condition& condition) : cond
     setInitialParticleNumberDensity(condition.inner_particle_index);
     calculateLaplacianLambda(condition.inner_particle_index, condition);
     checkSurfaceParticles(condition.surface_parameter);
-    std::cout << "Initial particle number density: " << initial_particle_number_density << std::endl;
-    std::cout << "Laplacian lambda for Pressure: " << laplacian_lambda_pressure << std::endl;
-    std::cout << "Laplacian lambda for Viscosity: " << laplacian_lambda_viscosity << std::endl;
 }
 
 Particles::~Particles() {}
@@ -277,6 +274,7 @@ void Particles::updateParticleNumberDensity(const Grid& grid) {
 void Particles::setInitialParticleNumberDensity(int index) {
     initial_particle_number_density = particle_number_density(index);
     initial_neighbor_particles = neighbor_particles(index);
+    std::cout << "Initial particle number density: " << initial_particle_number_density << std::endl;
 }
 
 void Particles::calculateLaplacianLambda(int index, const Condition& condition) {
@@ -303,6 +301,13 @@ void Particles::calculateLaplacianLambda(int index, const Condition& condition) 
         denominator += w;
     }
     laplacian_lambda_viscosity = numerator / denominator;
+    std::cout << "Laplacian lambda for Pressure: " << laplacian_lambda_pressure << std::endl;
+    std::cout << "Laplacian lambda for Viscosity: " << laplacian_lambda_viscosity << std::endl;
+    std::cout << "Relaxation coefficient of lambda: " << condition.relaxation_coefficient_lambda << std::endl;
+
+    laplacian_lambda_pressure *= condition.relaxation_coefficient_lambda;
+    std::cout << "Laplacian lambda for Pressure with relaxation coefficient: " << laplacian_lambda_pressure << std::endl;
+
 }
 
 void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer) {
@@ -586,9 +591,10 @@ void Particles::giveCollisionRepulsion(double influence_ratio, double restitutio
             if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
             Eigen::Vector3d n_ij = (temporary_position.col(j_particle) - temporary_position.col(i_particle)).normalized();
             Eigen::Vector3d u_ij = temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle);
-            impulse_vel.col(i_particle) -= n_ij * u_ij.dot(n_ij) * (restitution_coefficient + 1) / 2;
+            impulse_vel.col(i_particle) += n_ij * u_ij.dot(n_ij) * (restitution_coefficient + 1) / 2;
+            // if (particle_types(i_particle) == ParticleType::WALL) impulse_vel.col(i_particle) += n_ij * u_ij.dot(n_ij) * (restitution_coefficient + 1) / 2;
+            // std::cout << "Collision (" << i_particle << ", " << j_particle << "): " << impulse_vel.col(i_particle)(0) << ", " << impulse_vel.col(i_particle)(1) << std::endl;
         }
-        if(!neighbors.empty())std::cout << "Collision " << i_particle << ": " << impulse_vel.col(i_particle)(1) << std::endl;
     }
     temporary_velocity += impulse_vel;
     temporary_position += impulse_vel * timer.getCurrentDeltaTime();

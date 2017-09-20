@@ -16,12 +16,12 @@ int main() {
     Eigen::Vector3d maxpos(0.8, 0.8, 0);
     while(particles.nextLoop("./output/output_%04d.vtk", timer, condition)) {
         particles.calculateTemporaryVelocity(condition.gravity, timer);
+        particles.giveCollisionRepulsion(0.85, 0.2, timer, condition);
         particles.calculateTemporaryParticleNumberDensity(condition);
         particles.checkSurfaceParticles();
         particles.solvePressurePoission(timer);
         particles.correctVelocity(timer);
         particles.updateFromTemporary();
         particles.removeOutsideParticles(minpos, maxpos);
-        particles.removeFastParticles(340);
     }
 }
