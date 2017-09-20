@@ -13,6 +13,7 @@
 #--------------------------------------------------------------------
 #   Each input variable is defined as follows.
 #   variable_name                      variable_value
+#   grid_file                          ../input/input.grid
 
 #   It doesn't matter how many tabs and spaces between name and value.
 #   Variable types of int, double, bool and string are available.
@@ -30,7 +31,7 @@
 
 #--------------------------------------------------------------------
 #   We can use parenthesis "()" to describe their units.
-#   average_distance(m)                     0.01
+#   average_distance(m)                     0.008
 
 #   These parenthesis including units are ignored when we retrieve variables.
 #   Example:
@@ -50,7 +51,7 @@
 #   All definitions are shown below.
 #   You can modify them as needed.
 #--------------------------------------------------------------------
-average_distance(m)                     0.01
+average_distance(m)                     0.008
 dimension(2/3)                          2
 
 viscosity_calculation                   on

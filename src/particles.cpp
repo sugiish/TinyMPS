@@ -163,7 +163,6 @@ bool Particles::nextLoop(const std::string& path, Timer& timer, const Condition&
     }
     if (timer.isUnderMinDeltaTime()) {
         std::cerr << "Error: Delta time has become so small." << std::endl;
-        writeVtkFile("./err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
         exit(EXIT_FAILURE);
     }
     if (!timer.hasNextLoop()) {
