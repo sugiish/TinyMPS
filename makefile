@@ -9,13 +9,15 @@
 # Distributed under the MIT License.
 
 TARGET := mps.out
+BINARY_DIR := bin
 SOURCE_DIR := src
 OBJECT_DIR := obj
 INCLUDE_DIR := include
+EXAMPLE_DIR := examples
 
 CC := g++
 CXX := g++
-DEBUGFLAGS := -g -O0
+DEBUGFLAGS := -O3
 CXXFLAGS := $(DEBUGFLAGS) -std=c++11 -Wall -Wextra -MP -MMD
 CPPFLAGS := -I $(INCLUDE_DIR)
 

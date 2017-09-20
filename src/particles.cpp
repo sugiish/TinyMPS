@@ -70,6 +70,7 @@ int Particles::readGridFile(const std::string& path, int dimension) {
         ss >> pressure(i_counter);
         ++i_counter;
     }
+    std::cout << "Succeed in reading grid file: " << path << std::endl;
     return 0;
 }
 
@@ -165,12 +166,14 @@ bool Particles::nextLoop(const std::string& path, Timer& timer, const Condition&
         writeVtkFile("./err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
         exit(EXIT_FAILURE);
     }
-    if (timer.hasNextLoop()) {
-        timer.update();
-        return true;
+    if (!timer.hasNextLoop()) {
+        std::cout << "Succeed in simulation." << std::endl;
+        return false;
     }
-    std::cout << "Succeed in simulation." << std::endl;
-    return false;
+    timer.update();
+    temporary_velocity = velocity;
+    temporary_position = position;
+    return true;
 }
 
 bool Particles::checkNeedlessCalculation() const {
@@ -304,10 +307,6 @@ void Particles::calculateLaplacianLambda(int index, const Condition& condition) 
     std::cout << "Laplacian lambda for Pressure: " << laplacian_lambda_pressure << std::endl;
     std::cout << "Laplacian lambda for Viscosity: " << laplacian_lambda_viscosity << std::endl;
     std::cout << "Relaxation coefficient of lambda: " << condition.relaxation_coefficient_lambda << std::endl;
-
-    laplacian_lambda_pressure *= condition.relaxation_coefficient_lambda;
-    std::cout << "Laplacian lambda for Pressure with relaxation coefficient: " << laplacian_lambda_pressure << std::endl;
-
 }
 
 void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer) {
@@ -376,7 +375,7 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
             }
         }
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.mass_density
+        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.relaxation_coefficient_lambda * condition.mass_density
                     / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
