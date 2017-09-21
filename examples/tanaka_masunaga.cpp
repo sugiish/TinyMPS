@@ -23,15 +23,5 @@ int main() {
         particles.correctVelocity(timer);
         particles.updateFromTemporary();
         particles.removeOutsideParticles(minpos, maxpos);
-/*        // particles.giveCollisionRepulsion(timer);
-        particles.updateParticleNumberDensity();
-        particles.calculateTemporaryVelocity(condition.gravity, timer);
-        particles.checkSurfaceParticlesWithTanakaMasunaga();
-        particles.solveTanakaMasunagaPressurePoission(timer);
-        particles.correctTanakaMasunagaVelocity(timer);
-        particles.velocity = particles.temporary_velocity;
-        particles.position += particles.velocity * timer.getCurrentDeltaTime();
-        // particles.updateFromTemporary();
-        particles.removeOutsideParticles(minpos, maxpos);*/
     }
 }

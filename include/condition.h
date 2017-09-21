@@ -57,6 +57,7 @@ public:
         getValue("output_interval", output_interval);
         getValue("inner_particle_index", inner_particle_index);
         getValue("relaxation_coefficient_lambda" ,relaxation_coefficient_lambda);
+        getValue("weak_compressibility", weak_compressibility);
         getValue("surface_parameter", surface_parameter);
         getValue("tanaka_masunaga_method", tanaka_masunaga_method);
         getValue("tanaka_masunaga_gamma", tanaka_masunaga_gamma);
@@ -128,6 +129,7 @@ public:
     int inner_particle_index;
     double surface_parameter;
     double relaxation_coefficient_lambda;
+    double weak_compressibility;
 
     double collision_influence;
     double restitution_coefficent;

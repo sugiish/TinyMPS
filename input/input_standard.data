@@ -89,6 +89,7 @@ gas_constant(J/K*mol)                   8.3144621
 inner_particle_index                    100
 surface_parameter                       0.97
 relaxation_coefficient_lambda           0.2
+weak_compressibility(ratio)             1.0e-6
 
 #   COLLISION
 collision_influence(ratio)              0.85
@@ -96,6 +97,6 @@ restitution_coefficient                 0.2
 
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on
-tanaka_masunaga_gamma                   1.0e-2
+tanaka_masunaga_gamma                   1.0e-1
 tanaka_masunaga_c                       1.05
 tanaka_masunaga_beta                    0.95

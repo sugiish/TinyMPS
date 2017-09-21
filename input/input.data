@@ -89,6 +89,7 @@ gas_constant(J/K*mol)                   8.3144621
 inner_particle_index                    100
 surface_parameter                       0.95
 relaxation_coefficient_lambda           0.2
+weak_compressibility(ratio)             1.0e-6
 
 #   COLLISION
 collision_influence(ratio)              0.85
