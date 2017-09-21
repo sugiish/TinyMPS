@@ -7,15 +7,15 @@ This is a simple library for Moving Particle Semi-implicit (MPS) method.
 
 ## Usage
 Build the source code.
-'''bash
+```bash
 make
-'''
+```
 
 Run example codes for dam break problem.
-'''bash
+```bash
 mkdir output
 ./bin/standard_mps
-'''
+```
 This example code writes vtk files as output.
 You can visualize them with Paraview (https://www.paraview.org).
 
