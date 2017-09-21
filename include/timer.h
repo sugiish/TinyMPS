@@ -57,7 +57,7 @@ public:
         using std::chrono::milliseconds;
         auto end = system_clock::now();
         auto dur = end - start_chrono;
-        std::cout << boost::format("Computation Time: %03dh %02dmin %02d.%03ds.")
+        std::cout << boost::format("Computation Time: %02dh %02dmin %02d.%03ds.")
             % duration_cast<hours>(dur).count()
             % (duration_cast<minutes>(dur).count() % 60)
             % (duration_cast<seconds>(dur).count() % 60)

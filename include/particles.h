@@ -17,6 +17,8 @@ enum ParticleType {
     NORMAL = 0,
     WALL = 2,
     DUMMY_WALL = 3,
+    INFLOW = 4,
+    DUMMY_INFLOW = 5,
     GHOST = -1
 };
 
@@ -53,13 +55,13 @@ public:
     void correctVelocity(const Timer& timer, const Grid& grid);
     void correctVelocityExplicitly(const Timer& timer);
     void correctTanakaMasunagaVelocity(const Timer& timer);
-    void updateFromTemporary();
+    void updateVelocityAndPosition();
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
     void checkSurfaceParticlesWithTanakaMasunaga();
     void checkTanakaMasunagaSurfaceParticles(double surface_parameter);
-    void giveCollisionRepulsion(const Timer& timer);
-    void giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer);
+    void giveCollisionRepulsionForce();
+    void giveCollisionRepulsionForce(double influence_ratio, double restitution_coefficient);
     inline double getMaxSpeed() const {
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();
