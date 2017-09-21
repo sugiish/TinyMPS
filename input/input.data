@@ -92,6 +92,7 @@ relaxation_coefficient_lambda           0.2
 
 #   COLLISION
 collision_influence(ratio)              0.85
+restitution_coefficient                 0.2
 
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on

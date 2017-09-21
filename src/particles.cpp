@@ -12,7 +12,7 @@ Particles::Particles(const std::string& path, const Condition& condition) : cond
     readGridFile(path, condition.dimension);
     dimension = condition.dimension;
     VectorXb valid = particle_types.array() != ParticleType::GHOST;
-    updateParticleNumberDensity(condition);
+    updateParticleNumberDensity();
     setInitialParticleNumberDensity(condition.inner_particle_index);
     calculateLaplacianLambda(condition.inner_particle_index, condition);
     checkSurfaceParticles(condition.surface_parameter);
@@ -152,11 +152,12 @@ bool Particles::saveInterval(const std::string& path, const Timer& timer) const 
 }
 
 bool Particles::nextLoop(const std::string& path, Timer& timer) {
-    saveInterval(path, timer);
     std::cout << std::endl;
     timer.limitCurrentDeltaTime(getMaxSpeed(), condition_);
+    timer.printCompuationTime();
     timer.printTimeInfo();
     std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
+    saveInterval(path, timer);
     if (checkNeedlessCalculation()) {
         std::cerr << "Error: All particles have become ghost." << std::endl;
         exit(EXIT_FAILURE);
@@ -166,6 +167,8 @@ bool Particles::nextLoop(const std::string& path, Timer& timer) {
         exit(EXIT_FAILURE);
     }
     if (!timer.hasNextLoop()) {
+        std::cout << std::endl << "Total ";
+        timer.printCompuationTime();
         std::cout << "Succeed in simulation." << std::endl;
         return false;
     }
@@ -246,8 +249,8 @@ void Particles::calculateTemporaryParticleNumberDensity() {
     }
 }
 
-void Particles::updateParticleNumberDensity(const Condition& condition) {
-    Grid grid(condition.pnd_weight_radius, position, particle_types.array() != ParticleType::GHOST, dimension);
+void Particles::updateParticleNumberDensity() {
+    Grid grid(condition_.pnd_weight_radius, position, particle_types.array() != ParticleType::GHOST, dimension);
     updateParticleNumberDensity(grid);
 }
 
@@ -344,10 +347,10 @@ void Particles::updateTemporaryPosition(const Timer& timer) {
 
 void Particles::solvePressurePoission(const Timer& timer) {
     Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
-    solvePressurePoission(grid, timer, condition_);
+    solvePressurePoission(timer, grid);
 }
 
-void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, const Condition& condition) {
+void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
     using T = Eigen::Triplet<double>;
     double lap_r = grid.getGridWidth();
     int n_size = (int)(std::pow(lap_r * 2, dimension));
@@ -378,7 +381,8 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
             }
         }
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) * condition.relaxation_coefficient_lambda * condition.mass_density
+        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) 
+                    * condition_.relaxation_coefficient_lambda * condition_.mass_density
                     / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
@@ -400,8 +404,8 @@ void Particles::solvePressurePoission(const Grid& grid, const Timer& timer, cons
 }
 
 
-void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer, const Condition& condition) {
-    Grid grid(condition.laplacian_pressure_weight_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition.dimension);
+void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
+    Grid grid(condition_.laplacian_pressure_weight_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
     using T = Eigen::Triplet<double>;
     double lap_r = grid.getGridWidth();
     int n_size = (int)(std::pow(lap_r * 2, dimension));
@@ -427,17 +431,17 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer, const Co
             Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
             double mat_ij = weightFunction(r_ji, lap_r) * 2 * dimension
                     / (laplacian_lambda_pressure * initial_particle_number_density);
-            sum -= mat_ij * condition.tanaka_masunaga_c;
+            sum -= mat_ij * condition_.tanaka_masunaga_c;
             div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ji) 
-                    * weightFunction(r_ji, lap_r) * condition.dimension / (r_ji.squaredNorm() * initial_particle_number_density);
+                    * weightFunction(r_ji, lap_r) * condition_.dimension / (r_ji.squaredNorm() * initial_particle_number_density);
             if (boundary_types(j_particle) == BoundaryType::INNER) {
                 coeffs.push_back(T(i_particle, j_particle, mat_ij));
             }
         }
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = div_vel * condition.mass_density / delta_time 
+        source(i_particle) = div_vel * condition_.mass_density / delta_time 
                     - (particle_number_density(i_particle) - initial_particle_number_density) 
-                    * condition.tanaka_masunaga_gamma * condition.mass_density / (delta_time * delta_time * initial_particle_number_density);
+                    * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
     
@@ -459,10 +463,10 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer, const Co
 
 void Particles::correctVelocity(const Timer& timer) {
     Grid grid(condition_.gradient_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
-    correctVelocity(grid, timer, condition_);
+    correctVelocity(timer, grid);
 }
 
-void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition) {
+void Particles::correctVelocity(const Timer& timer, const Grid& grid) {
     correction_velocity.setZero();
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) != ParticleType::NORMAL) continue;
@@ -481,7 +485,7 @@ void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Cond
             tmp += r_ij * (pressure(j_particle) - p_min) * weightFunction(r_ij, grid.getGridWidth()) / r_ij.squaredNorm();
         }
         if (dimension == 2) tmp(2) = 0;
-        correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
+        correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
     }
     temporary_velocity += correction_velocity;
     temporary_position += correction_velocity * timer.getCurrentDeltaTime();
@@ -515,8 +519,8 @@ void Particles::correctVelocityExplicitly(const Timer& timer) {
 }
 
 
-void Particles::correctTanakaMasunagaVelocity(const Timer& timer, const Condition& condition) {
-    Grid grid(condition.gradient_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition.dimension);
+void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {
+    Grid grid(condition_.gradient_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
     correction_velocity.setZero();
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) != ParticleType::NORMAL) continue;
@@ -530,7 +534,7 @@ void Particles::correctTanakaMasunagaVelocity(const Timer& timer, const Conditio
             tmp += r_ji * (pressure(j_particle) + pressure(i_particle)) * weightFunction(r_ji, grid.getGridWidth()) / r_ji.squaredNorm();
         }
         if (dimension == 2) tmp(2) = 0;
-        correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
+        correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
     }
     temporary_velocity += correction_velocity;
     temporary_position += correction_velocity * timer.getCurrentDeltaTime();
@@ -556,11 +560,11 @@ void Particles::checkSurfaceParticles(double surface_parameter) {
     }
 }
 
-void Particles::checkSurfaceParticlesWithTanakaMasunaga(const Condition& condition) {
+void Particles::checkSurfaceParticlesWithTanakaMasunaga() {
     for(int i = 0; i < getSize(); ++i) {
         if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL) {
-            if (particle_number_density(i) < condition.surface_parameter * initial_particle_number_density 
-                    && neighbor_particles(i) < condition.tanaka_masunaga_beta * initial_neighbor_particles) {
+            if (particle_number_density(i) < condition_.surface_parameter * initial_particle_number_density 
+                    && neighbor_particles(i) < condition_.tanaka_masunaga_beta * initial_neighbor_particles) {
                 boundary_types(i) = BoundaryType::SURFACE;
             }
             else boundary_types(i) = BoundaryType::INNER;
@@ -581,8 +585,12 @@ void Particles::checkTanakaMasunagaSurfaceParticles(double surface_parameter) {
     }
 }
 
-void Particles::giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer, const Condition& condition) {
-    Grid grid(influence_ratio * condition.average_distance, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition.dimension);
+void Particles::giveCollisionRepulsion(const Timer& timer) {
+    giveCollisionRepulsion(condition_.collision_influence, condition_.restitution_coefficent, timer);
+}
+
+void Particles::giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer) {
+    Grid grid(influence_ratio * condition_.average_distance, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
     Eigen::Matrix3Xd impulse_vel = Eigen::MatrixXd::Zero(3, size);
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) != ParticleType::NORMAL) continue;

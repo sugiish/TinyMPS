@@ -15,14 +15,14 @@ int main() {
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop("../output/output_%04d.vtk", timer)) {
-        particles.updateParticleNumberDensity(condition);
+        particles.updateParticleNumberDensity();
         particles.calculateTemporaryVelocity(condition.gravity, timer);
         particles.checkTanakaMasunagaSurfaceParticles(condition.tanaka_masunaga_beta);
         // particles.checkSurfaceParticles();
-        particles.solveTanakaMasunagaPressurePoission(timer, condition);
-        particles.correctTanakaMasunagaVelocity(timer, condition);
+        particles.solveTanakaMasunagaPressurePoission(timer);
+        particles.correctTanakaMasunagaVelocity(timer);
         particles.updateFromTemporary();
         particles.removeOutsideParticles(minpos, maxpos);
-        particles.removeFastParticles(170);
+        // particles.removeFastParticles(170);
     }
 }

@@ -13,7 +13,6 @@
 #--------------------------------------------------------------------
 #   Each input variable is defined as follows.
 #   variable_name                      variable_value
-#   grid_file                          ../input/input.grid
 
 #   It doesn't matter how many tabs and spaces between name and value.
 #   Variable types of int, double, bool and string are available.
@@ -31,7 +30,7 @@
 
 #--------------------------------------------------------------------
 #   We can use parenthesis "()" to describe their units.
-#   average_distance(m)                     0.008
+#   average_distance(m)                     0.01
 
 #   These parenthesis including units are ignored when we retrieve variables.
 #   Example:
@@ -51,7 +50,7 @@
 #   All definitions are shown below.
 #   You can modify them as needed.
 #--------------------------------------------------------------------
-average_distance(m)                     0.008
+average_distance(m)                     0.01
 dimension(2/3)                          2
 
 viscosity_calculation                   on
@@ -90,6 +89,10 @@ gas_constant(J/K*mol)                   8.3144621
 inner_particle_index                    100
 surface_parameter                       0.95
 relaxation_coefficient_lambda           0.2
+
+#   COLLISION
+collision_influence(ratio)              0.85
+restitution_coefficient                 0.2
 
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on

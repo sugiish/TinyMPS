@@ -32,32 +32,33 @@ class Particles {
 public:
     Particles(const std::string& path, const Condition& condition);
     virtual ~Particles();
-    bool checkNeedlessCalculation() const;
+    int writeVtkFile(const std::string& path, const std::string& title) const;
+    bool saveInterval(const std::string& path, const Timer& timer) const;
     bool nextLoop(const std::string& path, Timer& timer);
-    void calculateTemporaryParticleNumberDensity();
+    bool checkNeedlessCalculation() const;
     void setGhostParticle(int index);
     void removeOutsideParticles(const Eigen::Vector3d& minpos, const Eigen::Vector3d& maxpos);
     void removeFastParticles(double max_speed);
-    void updateParticleNumberDensity(const Condition& condition);
+    void calculateTemporaryParticleNumberDensity();
+    void updateParticleNumberDensity();
     void updateParticleNumberDensity(const Grid& grid);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);
     void updateTemporaryPosition(const Timer& timer);
-    void solvePressurePoission(const Grid& grid, const Timer& timer, const Condition& condition);
+    void solvePressurePoission(const Timer& timer, const Grid& grid);
     void solvePressurePoission(const Timer& timer);
-    void solveTanakaMasunagaPressurePoission(const Timer& timer, const Condition& condition);
+    void solveTanakaMasunagaPressurePoission(const Timer& timer);
     void correctVelocity(const Timer& timer);
-    void correctVelocity(const Grid& grid, const Timer& timer, const Condition& condition);
+    void correctVelocity(const Timer& timer, const Grid& grid);
     void correctVelocityExplicitly(const Timer& timer);
-    void correctTanakaMasunagaVelocity(const Timer& timer, const Condition& condition);
+    void correctTanakaMasunagaVelocity(const Timer& timer);
     void updateFromTemporary();
     void checkSurfaceParticles();
     void checkSurfaceParticles(double surface_parameter);
-    void checkSurfaceParticlesWithTanakaMasunaga(const Condition& condition);
+    void checkSurfaceParticlesWithTanakaMasunaga();
     void checkTanakaMasunagaSurfaceParticles(double surface_parameter);
-    void giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer, const Condition& condition);
-    int writeVtkFile(const std::string& path, const std::string& title) const;
-    bool saveInterval(const std::string& path, const Timer& timer) const;
+    void giveCollisionRepulsion(const Timer& timer);
+    void giveCollisionRepulsion(double influence_ratio, double restitution_coefficient, const Timer& timer);
     inline double getMaxSpeed() const {
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();
@@ -66,7 +67,6 @@ public:
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
 
-    const Condition& condition_;
     Eigen::Matrix3Xd position;
     Eigen::Matrix3Xd velocity;
     Eigen::VectorXd pressure;
@@ -90,7 +90,7 @@ private:
         else return 0.0;
     }
 
-
+    const Condition& condition_;
     int size;
     int dimension;
     double initial_particle_number_density;

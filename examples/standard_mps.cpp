@@ -16,7 +16,7 @@ int main() {
     Eigen::Vector3d maxpos(0.8, 0.8, 0);
     while(particles.nextLoop("./output/output_%04d.vtk", timer)) {
         particles.calculateTemporaryVelocity(condition.gravity, timer);
-        particles.giveCollisionRepulsion(0.85, 0.2, timer, condition);
+        particles.giveCollisionRepulsion(timer);
         particles.calculateTemporaryParticleNumberDensity();
         particles.checkSurfaceParticles();
         particles.solvePressurePoission(timer);

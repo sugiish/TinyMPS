@@ -3,6 +3,9 @@
 #ifndef MPS_TIMER_H_INCLUDED
 #define MPS_TIMER_H_INCLUDED
 
+#include <chrono>
+#include <ctime>
+#include <iostream>
 #include <boost/format.hpp>
 
 namespace tiny_mps {
@@ -26,6 +29,9 @@ public:
         this->output_interval = condition.output_interval;
         this->loop_count = 0;
         this->output_count = 0;
+        start_chrono = std::chrono::system_clock::now();
+        std::time_t start = std::chrono::system_clock::to_time_t(start_chrono);
+        std::cout << "Started timer at " << std::ctime(&start) << std::endl;
     }
 
     inline bool hasNextLoop() const {
@@ -40,6 +46,19 @@ public:
         }
         current_time += current_delta_time;
         ++loop_count;
+    }
+
+    inline void printCompuationTime() {
+        using std::chrono::duration_cast;
+        using std::chrono::system_clock;
+        using std::chrono::hours;
+        using std::chrono::minutes;
+        using std::chrono::milliseconds;
+        auto end = system_clock::now();
+        auto dur = end - start_chrono;
+        std::cout << boost::format("Computation Time: %03dh %02dmin %02.3fs.")
+            % duration_cast<hours>(dur).count() % duration_cast<minutes>(dur).count() % (duration_cast<milliseconds>(dur).count() / 1000.0)
+            << std::endl;
     }
     
     inline void printTimeInfo() {
@@ -73,6 +92,7 @@ public:
     inline int getOutputCount() const { return output_count; }
 
 private:
+    std::chrono::system_clock::time_point start_chrono;
     double current_time;
     double initial_time;
     double finish_time;

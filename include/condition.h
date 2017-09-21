@@ -47,6 +47,8 @@ public:
         getValue("gradient_influence", gradient_influence);
         getValue("laplacian_pressure_influence", laplacian_pressure_influence);
         getValue("laplacian_viscosity_influence", laplacian_viscosity_influence);
+        getValue("collision_influence", collision_influence);
+        getValue("restitution_coefficent", restitution_coefficent);
 
         getValue("initial_time", initial_time);
         getValue("delta_time", delta_time);
@@ -126,6 +128,9 @@ public:
     int inner_particle_index;
     double surface_parameter;
     double relaxation_coefficient_lambda;
+
+    double collision_influence;
+    double restitution_coefficent;
 
     double pnd_weight_radius;
     double gradient_radius;
