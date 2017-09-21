@@ -147,7 +147,8 @@ int Particles::writeVtkFile(const std::string& path, const std::string& title) c
 
 bool Particles::saveInterval(const std::string& path, const Timer& timer) const {
     if (!timer.isOutputTime()) return false;
-    writeVtkFile((boost::format(path) % timer.getOutputCount()).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    std::string output_index = (boost::format("%04d") % timer.getOutputCount()).str();
+    writeVtkFile((boost::format(path) % output_index).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
     return true;
 }
 
@@ -160,10 +161,12 @@ bool Particles::nextLoop(const std::string& path, Timer& timer) {
     saveInterval(path, timer);
     if (checkNeedlessCalculation()) {
         std::cerr << "Error: All particles have become ghost." << std::endl;
+        writeVtkFile((boost::format(path) % "err").str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
         exit(EXIT_FAILURE);
     }
     if (timer.isUnderMinDeltaTime()) {
         std::cerr << "Error: Delta time has become so small." << std::endl;
+        writeVtkFile((boost::format(path) % "err").str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
         exit(EXIT_FAILURE);
     }
     if (!timer.hasNextLoop()) {
@@ -342,7 +345,7 @@ void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const T
 }
 
 void Particles::updateTemporaryPosition(const Timer& timer) {
-    temporary_position += timer.getCurrentDeltaTime() * temporary_velocity;
+    temporary_position = position + timer.getCurrentDeltaTime() * temporary_velocity;
 }
 
 void Particles::solvePressurePoission(const Timer& timer) {
@@ -403,7 +406,6 @@ void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
     }
 }
 
-
 void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
     Grid grid(condition_.laplacian_pressure_weight_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
     using T = Eigen::Triplet<double>;
@@ -429,6 +431,63 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
         for (int j_particle : neighbors) {
             if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
             Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
+            double mat_ij = weightFunction(r_ji, lap_r) * 2 * dimension
+                    / (laplacian_lambda_pressure * initial_particle_number_density);
+            sum -= mat_ij * condition_.tanaka_masunaga_c;
+            div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ji) 
+                    * weightFunction(r_ji, lap_r) * condition_.dimension / (r_ji.squaredNorm() * initial_particle_number_density);
+            if (boundary_types(j_particle) == BoundaryType::INNER) {
+                coeffs.push_back(T(i_particle, j_particle, mat_ij));
+            }
+        }
+        coeffs.push_back(T(i_particle, i_particle, sum));
+        source(i_particle) = div_vel * condition_.mass_density / delta_time 
+                    - (particle_number_density(i_particle) - initial_particle_number_density) 
+                    * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+    }
+    p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+    
+    // Solving a problem
+    Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+    cg.compute(p_mat);
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed decompostion." << std::endl;
+    }
+    pressure = cg.solve(source);
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed solving." << std::endl;
+    }
+    std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+    for (int i = 0; i < size; ++i) {
+        if (pressure(i) < 0) pressure(i) = 0;
+    }
+}
+
+void Particles::solvePressurePoissionWithTanakaMasunaga(const Timer& timer) {
+    Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+    using T = Eigen::Triplet<double>;
+    double lap_r = grid.getGridWidth();
+    int n_size = (int)(std::pow(lap_r * 2, dimension));
+    double delta_time = timer.getCurrentDeltaTime();
+    Eigen::SparseMatrix<double> p_mat(size, size);
+    Eigen::VectorXd source(size);
+    std::vector<T> coeffs(size * n_size);
+    std::vector<int> neighbors(n_size * 2);
+    source.setZero();
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+        if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+            coeffs.push_back(T(i_particle, i_particle, 1.0));
+            continue;
+        } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+            coeffs.push_back(T(i_particle, i_particle, 1.0));
+            continue;
+        }
+        grid.getNeighbors(i_particle, neighbors);
+        double sum = 0.0;
+        double div_vel = 0.0;
+        for (int j_particle : neighbors) {
+            if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+            Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
             double mat_ij = weightFunction(r_ji, lap_r) * 2 * dimension
                     / (laplacian_lambda_pressure * initial_particle_number_density);
             sum -= mat_ij * condition_.tanaka_masunaga_c;
@@ -537,7 +596,6 @@ void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {
         correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
     }
     temporary_velocity += correction_velocity;
-    temporary_position += correction_velocity * timer.getCurrentDeltaTime();
 }
 
 void Particles::updateFromTemporary() {

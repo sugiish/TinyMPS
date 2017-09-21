@@ -57,7 +57,9 @@ public:
         auto end = system_clock::now();
         auto dur = end - start_chrono;
         std::cout << boost::format("Computation Time: %03dh %02dmin %02.3fs.")
-            % duration_cast<hours>(dur).count() % duration_cast<minutes>(dur).count() % (duration_cast<milliseconds>(dur).count() / 1000.0)
+            % duration_cast<hours>(dur).count()
+            % (duration_cast<minutes>(dur).count() % 60)
+            % ((duration_cast<milliseconds>(dur).count() % 60000)/ 1000.0)
             << std::endl;
     }
     

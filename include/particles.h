@@ -48,6 +48,7 @@ public:
     void solvePressurePoission(const Timer& timer, const Grid& grid);
     void solvePressurePoission(const Timer& timer);
     void solveTanakaMasunagaPressurePoission(const Timer& timer);
+    void solvePressurePoissionWithTanakaMasunaga(const Timer& timer);
     void correctVelocity(const Timer& timer);
     void correctVelocity(const Timer& timer, const Grid& grid);
     void correctVelocityExplicitly(const Timer& timer);
