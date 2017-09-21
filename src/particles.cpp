@@ -151,10 +151,10 @@ bool Particles::saveInterval(const std::string& path, const Timer& timer) const 
     return true;
 }
 
-bool Particles::nextLoop(const std::string& path, Timer& timer, const Condition& condition) {
+bool Particles::nextLoop(const std::string& path, Timer& timer) {
     saveInterval(path, timer);
     std::cout << std::endl;
-    timer.limitCurrentDeltaTime(getMaxSpeed(), condition);
+    timer.limitCurrentDeltaTime(getMaxSpeed(), condition_);
     timer.printTimeInfo();
     std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
     if (checkNeedlessCalculation()) {
@@ -223,8 +223,8 @@ void Particles::removeFastParticles(double max_speed) {
     }
 }
 
-void Particles::calculateTemporaryParticleNumberDensity(const Condition& condition) {
-    Grid grid(condition.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
+void Particles::calculateTemporaryParticleNumberDensity() {
+    Grid grid(condition_.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) == ParticleType::GHOST) {
             particle_number_density(i_particle) = 0.0;
@@ -310,14 +310,14 @@ void Particles::calculateLaplacianLambda(int index, const Condition& condition) 
 
 void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer) {
     Grid grid(condition_.laplacian_viscosity_weight_radius, position, particle_types.array() == ParticleType::NORMAL, condition_.dimension);
-    calculateTemporaryVelocity(force, grid, timer, condition_);
+    calculateTemporaryVelocity(force, timer, grid);
 }
 
-void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& grid, const Timer& timer, const Condition& condition) {
+void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid) {
     double delta_time = timer.getCurrentDeltaTime();
     temporary_velocity = velocity;
     temporary_velocity.colwise() += delta_time * force;
-    if (condition.viscosity_calculation) {
+    if (condition_.viscosity_calculation) {
         for (int i_particle = 0; i_particle < size; ++i_particle) {
             Grid::Neighbors neighbors;
             if (particle_types(i_particle) != ParticleType::NORMAL) continue;
@@ -325,17 +325,21 @@ void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, Grid& g
             Eigen::Vector3d lap_vec(0.0, 0.0, 0.0);
             for (int j_particle : neighbors) {
                 if (particle_types(j_particle) != ParticleType::NORMAL) continue;
-                Eigen::Vector3d u_ji = velocity.col(j_particle) - velocity.col(i_particle);
-                Eigen::Vector3d r_ji = position.col(j_particle) - position.col(i_particle);
-                lap_vec += u_ji * weightFunction(r_ji, grid.getGridWidth()) * 2 * dimension / (laplacian_lambda_viscosity * initial_particle_number_density);
+                Eigen::Vector3d u_ij = velocity.col(j_particle) - velocity.col(i_particle);
+                Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
+                lap_vec += u_ij * weightFunction(r_ij, grid.getGridWidth()) * 2 * dimension / (laplacian_lambda_viscosity * initial_particle_number_density);
             }
-            temporary_velocity.col(i_particle) += lap_vec * condition.kinematic_viscosity * delta_time;
+            temporary_velocity.col(i_particle) += lap_vec * condition_.kinematic_viscosity * delta_time;
         }
     }
     for (int i_particle = 0; i_particle < size; ++i_particle) {
         if (particle_types(i_particle) != ParticleType::NORMAL) temporary_velocity.col(i_particle).setZero();
     }
-    temporary_position = position + delta_time * temporary_velocity;
+    temporary_position += temporary_velocity * delta_time;
+}
+
+void Particles::updateTemporaryPosition(const Timer& timer) {
+    temporary_position += timer.getCurrentDeltaTime() * temporary_velocity;
 }
 
 void Particles::solvePressurePoission(const Timer& timer) {
@@ -473,8 +477,8 @@ void Particles::correctVelocity(const Grid& grid, const Timer& timer, const Cond
         Eigen::Vector3d tmp(0.0, 0.0, 0.0);
         for (int j_particle : neighbors) {
             if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
-            Eigen::Vector3d r_ji = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-            tmp += r_ji * (pressure(j_particle) - p_min) * weightFunction(r_ji, grid.getGridWidth()) / r_ji.squaredNorm();
+            Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+            tmp += r_ij * (pressure(j_particle) - p_min) * weightFunction(r_ij, grid.getGridWidth()) / r_ij.squaredNorm();
         }
         if (dimension == 2) tmp(2) = 0;
         correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition.mass_density);
@@ -590,8 +594,6 @@ void Particles::giveCollisionRepulsion(double influence_ratio, double restitutio
             Eigen::Vector3d n_ij = (temporary_position.col(j_particle) - temporary_position.col(i_particle)).normalized();
             Eigen::Vector3d u_ij = temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle);
             impulse_vel.col(i_particle) += n_ij * u_ij.dot(n_ij) * (restitution_coefficient + 1) / 2;
-            // if (particle_types(i_particle) == ParticleType::WALL) impulse_vel.col(i_particle) += n_ij * u_ij.dot(n_ij) * (restitution_coefficient + 1) / 2;
-            // std::cout << "Collision (" << i_particle << ", " << j_particle << "): " << impulse_vel.col(i_particle)(0) << ", " << impulse_vel.col(i_particle)(1) << std::endl;
         }
     }
     temporary_velocity += impulse_vel;

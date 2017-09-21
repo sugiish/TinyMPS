@@ -90,6 +90,9 @@ inner_particle_index                    100
 surface_parameter                       0.95
 relaxation_coefficient_lambda           0.2
 
+#   COLLISION
+collision_influence(ratio)              0.85
+
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on
 tanaka_masunaga_gamma                   1.0e-1
