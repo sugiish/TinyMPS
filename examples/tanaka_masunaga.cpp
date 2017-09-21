@@ -9,19 +9,21 @@
 
 // Sample code using TinyMPS library.
 int main() {
-    tiny_mps::Condition condition("./input/input_standard.data");
+    tiny_mps::Condition condition("./input/input.data");
     tiny_mps::Particles particles("./input/dam_tm.grid", condition);
     tiny_mps::Timer timer(condition);
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop("./output/output_%1%.vtk", timer)) {
+        particles.giveCollisionRepulsionForce();
+        particles.updateTemporaryPosition(timer);
         particles.calculateTemporaryVelocity(condition.gravity, timer);
-        particles.giveCollisionRepulsion(timer);
         particles.calculateTemporaryParticleNumberDensity();
         particles.checkSurfaceParticlesWithTanakaMasunaga();
         particles.solvePressurePoissionWithTanakaMasunaga(timer);
-        particles.correctVelocity(timer);
-        particles.updateFromTemporary();
+        particles.correctTanakaMasunagaVelocity(timer);
+        particles.updateTemporaryPosition(timer);
+        particles.updateVelocityAndPosition();
         particles.removeOutsideParticles(minpos, maxpos);
     }
 }
