@@ -47,6 +47,8 @@ public:
         getValue("gradient_influence", gradient_influence);
         getValue("laplacian_pressure_influence", laplacian_pressure_influence);
         getValue("laplacian_viscosity_influence", laplacian_viscosity_influence);
+        getValue("collision_influence", collision_influence);
+        getValue("restitution_coefficent", restitution_coefficent);
 
         getValue("initial_time", initial_time);
         getValue("delta_time", delta_time);
@@ -127,6 +129,9 @@ public:
     double surface_parameter;
     double relaxation_coefficient_lambda;
 
+    double collision_influence;
+    double restitution_coefficent;
+
     double pnd_weight_radius;
     double gradient_radius;
     double laplacian_pressure_weight_radius;
@@ -146,29 +151,27 @@ private:
             exit(EXIT_FAILURE);
             return 1;
         }
+        std::cout << "Succeed in reading data file: " << path << std::endl;
         std::string tmp_str;
-        std::regex re("\\(.*\\)"); // For removing (**)
-        std::regex re2("-+\\w+-+");// For removing like --**--
+        std::regex re("\\(.*\\)");          // For removing (**)
+        std::regex re2("-+\\w+-+");         // For removing like --**--
         while(getline(ifs, tmp_str)) {
             if(tmp_str.empty()) continue;
             std::stringstream ss;
             ss.str(tmp_str);
-            
             std::string item, value;
             ss >> item;
             {
-                // Lines that begin with '#' are comments
                 char first = item.at(0);
-                if(first == '#') continue;
+                if(first == '#') continue;  // Lines that begin with '#' are comments
             }
-            
             item = std::regex_replace(item, re, "");
             item = std::regex_replace(item, re2, "");
-            
             ss >> value;
             data[item] = value;
+            std::cout << "    " << item << ": " << value << std::endl;
         }
-        std::cout << "Succeed in reading data file: " << path << std::endl;
+        std::cout << std::endl;
         return 0;
     }
     

@@ -58,7 +58,7 @@ viscosity_calculation                   on
 
 #    TIME
 initial_time(sec)                       0
-finish_time(sec)                        1.0
+finish_time(sec)                        5.0
 delta_time(sec)                         1.0e-3
 min_delta_time(ratio)                   1.0e-3
 output_interval(sec)                    1.0e-2
@@ -87,7 +87,7 @@ temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621
 
 inner_particle_index                    100
-surface_parameter                       0.95
+surface_parameter                       0.97
 relaxation_coefficient_lambda           0.2
 
 #   COLLISION
@@ -96,6 +96,6 @@ restitution_coefficient                 0.2
 
 #   TANAKA MASUNAGA METHOD
 tanaka_masunaga_method                  on
-tanaka_masunaga_gamma                   1.0e-1
+tanaka_masunaga_gamma                   1.0e-2
 tanaka_masunaga_c                       1.05
 tanaka_masunaga_beta                    0.95

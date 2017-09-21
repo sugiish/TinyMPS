@@ -8,47 +8,59 @@
 # Copyright (c) 2017 Shota SUGIHARA
 # Distributed under the MIT License.
 
-TARGET := mps.out
+BINARY_DIR := bin
 SOURCE_DIR := src
 OBJECT_DIR := obj
+OBJECT_LIB_DIR := $(OBJECT_DIR)/lib
 INCLUDE_DIR := include
+TARGET_DIR := examples
+TARGET := $(wildcard $(TARGET_DIR)/*.cpp)
 
 CC := g++
 CXX := g++
-DEBUGFLAGS := -g -O0
-CXXFLAGS := $(DEBUGFLAGS) -std=c++11 -Wall -Wextra -MP -MMD
+DEBUGS := -O3
+CXXFLAGS := $(DEBUGS) -std=c++11 -Wall -Wextra -MP -MMD
 CPPFLAGS := -I $(INCLUDE_DIR)
 
 MKDIR := mkdir -p
 MV := mv -f
-RM := rm -f
+RM := rm -rf
 SED := sed
 TEST := test
 
 # Creates an object directory if it does not exist.
-to_create_dir := $(OBJECT_DIR)
-create-object-directory := $(shell for f in $(to_create_dir); do $(TEST) -d $$f | $(MKDIR) $$f; done)
+create_binary_directory := $(shell for f in $(BINARY_DIR); do $(TEST) -d $$f | $(MKDIR) $$f; done)
+create_object_directory := $(shell for f in $(OBJECT_DIR); do $(TEST) -d $$f | $(MKDIR) $$f; done)
+create_object_library_directory := $(shell for f in $(OBJECT_LIB_DIR); do $(TEST) -d $$f | $(MKDIR) $$f; done)
 
 sources := $(wildcard $(SOURCE_DIR)/*.cpp)
-objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(sources:.cpp=.o)))
+target_objects := $(addprefix $(OBJECT_DIR)/, $(notdir $(TARGET:.cpp=.o)))
+lib_objects := $(addprefix $(OBJECT_LIB_DIR)/, $(notdir $(sources:.cpp=.o)))
+objects := $(target_objects) $(lib_objects)
 dependencies := $(objects:.o=.d)
+targets := $(addprefix $(BINARY_DIR)/, $(notdir $(target_objects:.o=)))
 
 .PHONY: all
-all: $(TARGET)
+all: $(targets)
 
-$(TARGET): $(objects)
+$(BINARY_DIR)/%: $(OBJECT_DIR)/%.o $(lib_objects)
 	$(LINK.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
-$(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.cpp
+$(OBJECT_LIB_DIR)/%.o: $(SOURCE_DIR)/%.cpp
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
+
+$(OBJECT_DIR)/%.o: $(TARGET_DIR)/%.cpp
 	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(objects) $(dependencies)
+	$(RM) $(OBJECT_DIR) $(BINARY_DIR)
 
 ifneq "$(MAKECMDGOALS)" "clean"
 	-include $(dependencies)
 endif
+
+.SECONDARY: $(objects)
 
 .PHONY: help
 help:
