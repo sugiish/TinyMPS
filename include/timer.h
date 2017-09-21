@@ -53,13 +53,15 @@ public:
         using std::chrono::system_clock;
         using std::chrono::hours;
         using std::chrono::minutes;
+        using std::chrono::seconds;
         using std::chrono::milliseconds;
         auto end = system_clock::now();
         auto dur = end - start_chrono;
-        std::cout << boost::format("Computation Time: %03dh %02dmin %02.3fs.")
+        std::cout << boost::format("Computation Time: %03dh %02dmin %02d.%03ds.")
             % duration_cast<hours>(dur).count()
             % (duration_cast<minutes>(dur).count() % 60)
-            % ((duration_cast<milliseconds>(dur).count() % 60000)/ 1000.0)
+            % (duration_cast<seconds>(dur).count() % 60)
+            % (duration_cast<milliseconds>(dur).count() % 1000)
             << std::endl;
     }
     

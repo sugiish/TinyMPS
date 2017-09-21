@@ -383,6 +383,7 @@ void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
                 coeffs.push_back(T(i_particle, j_particle, mat_ij));
             }
         }
+        sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
         coeffs.push_back(T(i_particle, i_particle, sum));
         source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) 
                     * condition_.relaxation_coefficient_lambda * condition_.mass_density
