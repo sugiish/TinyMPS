@@ -56,13 +56,10 @@
         "ratio": "cpp",
         "streambuf": "cpp",
         "*.ipp": "cpp",
-<<<<<<< HEAD
-=======
         "array": "cpp",
         "queue": "cpp",
         "set": "cpp",
         "valarray": "cpp",
->>>>>>> 51df51d7b5d3f464bb67285489dc2be5c465d7bb
         "sparse": "cpp"
     }
 }
