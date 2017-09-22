@@ -3,6 +3,7 @@
 #ifndef MPS_PARTICLES_H_INCLUDED
 #define MPS_PARTICLES_H_INCLUDED
 
+#include <stack>
 #include <string>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -44,6 +45,7 @@ public:
     void calculateTemporaryParticleNumberDensity();
     void updateParticleNumberDensity();
     void updateParticleNumberDensity(const Grid& grid);
+    void moveInflowParticles(const Timer& timer);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
     void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);
     void updateTemporaryPosition(const Timer& timer);
@@ -83,6 +85,7 @@ public:
 
 private:
     using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+
     void initialize(int particles_number);
     int readGridFile(const std::string& path, const Condition& condition);
     void setInitialParticleNumberDensity(int index);
@@ -95,12 +98,14 @@ private:
     }
 
     const Condition& condition_;
+    std::stack<int> ghost_stack;
     int size;
     int dimension;
     double initial_particle_number_density;
     double laplacian_lambda_pressure;
     double laplacian_lambda_viscosity;
     double initial_neighbor_particles;
+    double inflow_stride;
 };
 
 } // namespace tiny_mps

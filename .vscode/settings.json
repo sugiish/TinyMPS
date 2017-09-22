@@ -60,6 +60,7 @@
         "queue": "cpp",
         "set": "cpp",
         "valarray": "cpp",
-        "sparse": "cpp"
+        "sparse": "cpp",
+        "stack": "cpp"
     }
 }

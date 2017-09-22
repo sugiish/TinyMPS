@@ -15,6 +15,7 @@ int main() {
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop("./output/output_%1%.vtk", timer)) {
+        // particles.moveInflowParticles(timer);
         particles.calculateTemporaryVelocity(condition.gravity, timer);
         particles.updateTemporaryPosition(timer);
         particles.giveCollisionRepulsionForce();

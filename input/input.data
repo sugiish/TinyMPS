@@ -93,7 +93,7 @@ weak_compressibility(ratio)             1.0e-6
 
 #   INFLOW CONDITION
 extra_ghost_particles                   1000
-inflow_x(m/s)                           1.0
+inflow_x(m/s)                           0.2
 inflow_y(m/s)                           0.0
 inflow_z(m/s)                           0.0
 
