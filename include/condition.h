@@ -31,8 +31,14 @@ public:
         getValue("gravity_z", gz);
         gravity(0) = gx;
         gravity(1) = gy;
-        gravity(2) = gz;
-        if (dimension == 2) gravity(2) = 0;
+        gravity(2) = (dimension == 3)? gz : 0;
+        double ix, iy, iz;
+        getValue("inflow_x", ix);
+        getValue("inflow_y", iy);
+        getValue("inflow_z", iz);
+        inflow_velocity(0) = ix;
+        inflow_velocity(1) = iy;
+        inflow_velocity(2) = (dimension == 3)? iz : 0;
 
         getValue("temperature", temperature);
         getValue("head_pressure", head_pressure);
@@ -47,6 +53,7 @@ public:
         getValue("gradient_influence", gradient_influence);
         getValue("laplacian_pressure_influence", laplacian_pressure_influence);
         getValue("laplacian_viscosity_influence", laplacian_viscosity_influence);
+        getValue("extra_ghost_particles", extra_ghost_particles);
         getValue("collision_influence", collision_influence);
         getValue("restitution_coefficent", restitution_coefficent);
 
@@ -130,6 +137,9 @@ public:
     double surface_parameter;
     double relaxation_coefficient_lambda;
     double weak_compressibility;
+
+    int extra_ghost_particles;
+    Eigen::Vector3d inflow_velocity;
 
     double collision_influence;
     double restitution_coefficent;

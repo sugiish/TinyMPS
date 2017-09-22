@@ -84,9 +84,10 @@ public:
 private:
     using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
     void initialize(int particles_number);
-    int readGridFile(const std::string& path, int dimension);
+    int readGridFile(const std::string& path, const Condition& condition);
     void setInitialParticleNumberDensity(int index);
     void calculateLaplacianLambda(int index, const Condition& condition);
+    void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source);
     inline double weightFunction(const Eigen::Vector3d& vec, double influence_radius) const {
         double r = vec.norm();
         if(r < influence_radius) return (influence_radius / r - 1.0);

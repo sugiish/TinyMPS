@@ -9,8 +9,8 @@
 namespace tiny_mps {
 
 Particles::Particles(const std::string& path, const Condition& condition) : condition_(condition) {
-    readGridFile(path, condition.dimension);
     dimension = condition.dimension;
+    readGridFile(path, condition);
     VectorXb valid = particle_types.array() != ParticleType::GHOST;
     updateParticleNumberDensity();
     setInitialParticleNumberDensity(condition.inner_particle_index);
@@ -34,7 +34,7 @@ void Particles::initialize(int size) {
     neighbor_particles = Eigen::VectorXi::Zero(size);
 }
 
-int Particles::readGridFile(const std::string& path, int dimension) {
+int Particles::readGridFile(const std::string& path, const Condition& condition) {
     std::ifstream ifs(path);
     if (ifs.fail()) {
         std::cerr << "Error: in readGridFile() in particles.cpp" << std::endl;
@@ -45,12 +45,12 @@ int Particles::readGridFile(const std::string& path, int dimension) {
     std::string tmp_str;
     getline(ifs, tmp_str);      //Line 0: Start time
     getline(ifs, tmp_str);      //Line 1: particles_number
+    int ptcl_num = 0;
     {
         std::stringstream ss;
-        int ptcl_num = 0;
         ss.str(tmp_str);
         ss >> ptcl_num;
-        initialize(ptcl_num);
+        initialize(ptcl_num + condition.extra_ghost_particles);
     }
     int i_counter = 0;
     while(getline(ifs, tmp_str)) {
@@ -69,6 +69,9 @@ int Particles::readGridFile(const std::string& path, int dimension) {
         }
         ss >> pressure(i_counter);
         ++i_counter;
+    }
+    for (int i_particle = ptcl_num; i_particle < size; ++i_particle) {
+        particle_types(i_particle) = ParticleType::GHOST;
     }
     std::cout << "Succeed in reading grid file: " << path << std::endl;
     return 0;
@@ -453,6 +456,23 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
         std::cerr << "Error: Failed decompostion." << std::endl;
     }
     pressure = cg.solve(source);
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed solving." << std::endl;
+    }
+    std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+    for (int i = 0; i < size; ++i) {
+        if (pressure(i) < 0) pressure(i) = 0;
+    }
+}
+
+void Particles::solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source, Eigen::VectorXd& solution) {
+    Eigen::VectorXd solutions;
+    Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+    cg.compute(p_mat);
+    if (cg.info() != Eigen::ComputationInfo::Success) {
+        std::cerr << "Error: Failed decompostion." << std::endl;
+    }
+    solutions = cg.solve(source);
     if (cg.info() != Eigen::ComputationInfo::Success) {
         std::cerr << "Error: Failed solving." << std::endl;
     }

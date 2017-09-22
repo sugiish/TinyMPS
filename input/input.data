@@ -91,6 +91,12 @@ surface_parameter                       0.97
 relaxation_coefficient_lambda           0.2
 weak_compressibility(ratio)             1.0e-6
 
+#   INFLOW CONDITION
+extra_ghost_particles                   1000
+inflow_x(m/s)                           1.0
+inflow_y(m/s)                           0.0
+inflow_z(m/s)                           0.0
+
 #   COLLISION
 collision_influence(ratio)              0.85
 restitution_coefficient                 0.2
