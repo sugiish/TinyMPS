@@ -37,6 +37,7 @@
                 "${workspaceRoot}",
                 "/usr/include",
                 "/usr/local/include",
+                "/usr/lib/clang",
                 "${workspaceRoot}/include"
             ],
             "defines": [],
@@ -44,6 +45,7 @@
                 "path": [
                     "/usr/include",
                     "/usr/local/include",
+                    "/usr/lib/clang",
                     "${workspaceRoot}",
                     "${workspaceRoot}/include"
                 ],
