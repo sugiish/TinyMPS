@@ -64,6 +64,7 @@ public:
     void checkTanakaMasunagaSurfaceParticles(double surface_parameter);
     void giveCollisionRepulsionForce();
     void giveCollisionRepulsionForce(double influence_ratio, double restitution_coefficient);
+    void showParticlesInfo();
     inline double getMaxSpeed() const {
         Eigen::VectorXd moving = (particle_types.array() != ParticleType::GHOST).cast<double>().transpose();
         Eigen::VectorXd norms = velocity.colwise().norm();

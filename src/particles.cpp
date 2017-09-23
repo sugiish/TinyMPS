@@ -732,4 +732,8 @@ void Particles::giveCollisionRepulsionForce(double influence_ratio, double resti
     temporary_velocity += impulse_vel;
 }
 
+void Particles::showParticlesInfo() {
+    
+}
+
 } // namespace tiny_mps

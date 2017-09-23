@@ -58,7 +58,7 @@ viscosity_calculation                   on
 
 #    TIME
 initial_time(sec)                       0
-finish_time(sec)                        1.0e-3
+finish_time(sec)                        1.0e-2
 delta_time(sec)                         1.0e-5
 min_delta_time(ratio)                   1.0e-3
 output_interval(sec)                    1.0e-5
@@ -74,7 +74,7 @@ laplacian_viscosity_influence(ratio)    4.0
 
 #    GRAVITY
 gravity_x(m/s^2)                        0.0
-gravity_y(m/s^2)                       -9.81 
+gravity_y(m/s^2)                        0.0 
 gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
@@ -92,9 +92,9 @@ relaxation_coefficient_lambda           0.2
 weak_compressibility(ratio)             1.0e-6
 
 #   INFLOW CONDITION
-extra_ghost_particles                   1000
+extra_ghost_particles                   10000
 inflow_x(m/s)                           0.0
-inflow_y(m/s)                           0.0
+inflow_y(m/s)                          -2.0
 inflow_z(m/s)                           0.0
 
 #   COLLISION
