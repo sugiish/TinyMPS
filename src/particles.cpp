@@ -197,6 +197,7 @@ bool Particles::nextLoop(const std::string& path, Timer& timer) {
     timer.limitCurrentDeltaTime(getMaxSpeed(), condition_);
     timer.printCompuationTime();
     timer.printTimeInfo();
+    showParticlesInfo();
     std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
     saveInterval(path, timer);
     if (checkNeedlessCalculation()) {
@@ -733,7 +734,17 @@ void Particles::giveCollisionRepulsionForce(double influence_ratio, double resti
 }
 
 void Particles::showParticlesInfo() {
-    
+    int inner = 0;
+    int surface = 0;
+    int ghost = 0;
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+        if (boundary_types(i_particle) == BoundaryType::INNER) ++inner;
+        if (boundary_types(i_particle) == BoundaryType::SURFACE) ++surface;
+        if (particle_types(i_particle) == ParticleType::GHOST) ++ghost;
+    }
+    std::cout << "Particles - "
+        << " inners: " << inner << ", surfaces: " << surface 
+        << ", others: " << size - (inner + surface) << " (ghosts: " << ghost << ")" << std::endl;
 }
 
 } // namespace tiny_mps

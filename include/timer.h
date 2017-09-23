@@ -66,7 +66,7 @@ public:
     }
     
     inline void printTimeInfo() {
-        std::cout << boost::format("Time step: %08d, Current time: %f, Delta time: %f")
+        std::cout << boost::format("Time step: %06d, Current time: %e, Delta time: %e")
         % getLoopCount() % getCurrentTime() % getCurrentDeltaTime() << std::endl;
     }
 
