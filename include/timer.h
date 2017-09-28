@@ -64,7 +64,7 @@ public:
             % (duration_cast<milliseconds>(dur).count() % 1000)
             << std::endl;
     }
-    
+
     inline void printTimeInfo() {
         std::cout << boost::format("Time step: %06d, Current time: %e, Delta time: %e")
         % getLoopCount() % getCurrentTime() % getCurrentDeltaTime() << std::endl;

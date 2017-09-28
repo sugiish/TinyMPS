@@ -436,12 +436,12 @@ void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
         }
         sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density) 
+        source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density)
                     * condition_.relaxation_coefficient_lambda * condition_.mass_density
                     / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-    
+
     // Solving a problem
     Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
     cg.compute(p_mat);
@@ -486,19 +486,19 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
             double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
                     / (laplacian_lambda_pressure * initial_particle_number_density);
             sum -= mat_ij * condition_.tanaka_masunaga_c;
-            div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij) 
+            div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
                     * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
             if (boundary_types(j_particle) == BoundaryType::INNER) {
                 coeffs.push_back(T(i_particle, j_particle, mat_ij));
             }
         }
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = div_vel * condition_.mass_density / delta_time 
-                    - (particle_number_density(i_particle) - initial_particle_number_density) 
+        source(i_particle) = div_vel * condition_.mass_density / delta_time
+                    - (particle_number_density(i_particle) - initial_particle_number_density)
                     * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-    
+
     // Solving a problem
     Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
     cg.compute(p_mat);
@@ -560,19 +560,19 @@ void Particles::solvePressurePoissionWithTanakaMasunaga(const Timer& timer) {
             double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
                     / (laplacian_lambda_pressure * initial_particle_number_density);
             sum -= mat_ij * condition_.tanaka_masunaga_c;
-            div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij) 
+            div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
                     * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
             if (boundary_types(j_particle) == BoundaryType::INNER) {
                 coeffs.push_back(T(i_particle, j_particle, mat_ij));
             }
         }
         coeffs.push_back(T(i_particle, i_particle, sum));
-        source(i_particle) = div_vel * condition_.mass_density / delta_time 
-                    - (particle_number_density(i_particle) - initial_particle_number_density) 
+        source(i_particle) = div_vel * condition_.mass_density / delta_time
+                    - (particle_number_density(i_particle) - initial_particle_number_density)
                     * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
     }
     p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-    
+
     // Solving a problem
     Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
     cg.compute(p_mat);
@@ -688,7 +688,7 @@ void Particles::checkSurfaceParticlesWithTanakaMasunaga() {
     for(int i = 0; i < getSize(); ++i) {
         if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL
             || particle_types(i) == ParticleType::INFLOW) {
-            if (particle_number_density(i) < condition_.surface_parameter * initial_particle_number_density 
+            if (particle_number_density(i) < condition_.surface_parameter * initial_particle_number_density
                     && neighbor_particles(i) < condition_.tanaka_masunaga_beta * initial_neighbor_particles) {
                 boundary_types(i) = BoundaryType::SURFACE;
             } else {
@@ -743,7 +743,7 @@ void Particles::showParticlesInfo() {
         if (particle_types(i_particle) == ParticleType::GHOST) ++ghost;
     }
     std::cout << "Particles - "
-        << " inners: " << inner << ", surfaces: " << surface 
+        << " inners: " << inner << ", surfaces: " << surface
         << ", others: " << size - (inner + surface) << " (ghosts: " << ghost << ")" << std::endl;
 }
 

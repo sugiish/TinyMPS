@@ -8,7 +8,7 @@
 
 namespace tiny_mps {
 
-Grid::Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension) 
+Grid::Grid(double grid_width, const Eigen::MatrixXd& coordinates, const Eigen::Matrix<bool, Eigen::Dynamic, 1>& valid_coordinates, int dimension)
     : grid_hash(coordinates.cols()), coordinates(coordinates), valid_coordinates(valid_coordinates) {
     this->grid_width = grid_width;
     this->dimension = dimension;

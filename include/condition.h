@@ -106,7 +106,7 @@ public:
         }
         return 0;
     }
-    
+
     inline int getValue(const std::string& item, std::string& value) {
         if(data.find(item) == data.end()) return 1;
         value = data[item];
@@ -186,7 +186,7 @@ private:
         std::cout << std::endl;
         return 0;
     }
-    
+
     std::unordered_map<std::string, std::string> data;
     double pnd_influence;
     double gradient_influence;

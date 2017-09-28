@@ -22,7 +22,7 @@ public:
     inline int getSize() const { return size; }
     inline int getDimension() const { return dimension; }
     inline double getGridWidth() const { return grid_width; }
-    
+
 private:
     void setHash();
     inline void getGridHashBegin(int hash, int& begin, int& end) const {
