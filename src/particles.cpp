@@ -743,7 +743,7 @@ void Particles::showParticlesInfo() {
         if (particle_types(i_particle) == ParticleType::GHOST) ++ghost;
     }
     std::cout << "Particles - "
-        << " inners: " << inner << ", surfaces: " << surface
+        << "inners: " << inner << ", surfaces: " << surface
         << ", others: " << size - (inner + surface) << " (ghosts: " << ghost << ")" << std::endl;
 }
 
