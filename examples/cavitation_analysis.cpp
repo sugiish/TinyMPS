@@ -22,7 +22,7 @@ int main() {
         particles.updateTemporaryPosition(timer);
         particles.calculateTemporaryParticleNumberDensity();
         particles.checkSurfaceParticlesWithTanakaMasunaga();
-        particles.solvePressurePoissionWithTanakaMasunaga(timer);
+        particles.solvePressurePoission(timer);
         particles.correctVelocity(timer);
         particles.updateTemporaryPosition(timer);
         particles.updateVelocityAndPosition();

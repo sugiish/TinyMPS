@@ -61,6 +61,14 @@
         "set": "cpp",
         "valarray": "cpp",
         "sparse": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "clocale": "cpp",
+        "csignal": "cpp",
+        "cstdarg": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "slist": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp"
     }
 }
