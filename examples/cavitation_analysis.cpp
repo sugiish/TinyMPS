@@ -12,7 +12,7 @@ int main() {
     tiny_mps::Condition condition("./input/input_cavitation.data");
     tiny_mps::Particles particles("./input/input.grid", condition);
     tiny_mps::Timer timer(condition);
-    Eigen::Vector3d minpos(-0.02, -0.00042, 0);
+    Eigen::Vector3d minpos(-0.02, -0.1, 0);
     Eigen::Vector3d maxpos(0.02, 0.05, 0);
     while(particles.nextLoop("./output/output_%1%.vtk", timer)) {
         particles.moveInflowParticles(timer);
