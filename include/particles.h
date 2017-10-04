@@ -39,6 +39,7 @@ public:
     bool saveInterval(const std::string& path, const Timer& timer) const;
     bool nextLoop(const std::string& path, Timer& timer);
     bool checkNeedlessCalculation() const;
+    int addParticle();
     void setGhostParticle(int index);
     void removeOutsideParticles(const Eigen::Vector3d& minpos, const Eigen::Vector3d& maxpos);
     void removeFastParticles(double max_speed);
@@ -86,7 +87,8 @@ public:
 
 private:
     using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-
+    Particles(const Particles&);
+    Particles& operator=(const Particles&);
     void initialize(int particles_number);
     int readGridFile(const std::string& path, const Condition& condition);
     void setInitialParticleNumberDensity(int index);

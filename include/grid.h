@@ -24,6 +24,9 @@ public:
     inline double getGridWidth() const { return grid_width; }
 
 private:
+    Grid(const Grid&);
+    Grid& operator=(const Grid&);
+
     void setHash();
     inline void getGridHashBegin(int hash, int& begin, int& end) const {
         if (begin_hash.empty()) {

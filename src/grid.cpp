@@ -45,7 +45,6 @@ void Grid::getNeighbors(int index, Neighbors& neighbors) const {
                 int begin, end;
                 getGridHashBegin(toHash(gx, gy, gz), begin, end);
                 if (begin == -1 || end == -1) continue;
-
                 Eigen::Vector3d r_i = coordinates.col(index);
                 for (int n = begin; n <= end; ++n) {
                     int j_particle = grid_hash[n].second;
@@ -53,7 +52,7 @@ void Grid::getNeighbors(int index, Neighbors& neighbors) const {
                     if (valid_coordinates(j_particle) == false) continue;
                     Eigen::Vector3d r_ji = coordinates.col(j_particle);
                     r_ji -= r_i;
-                    if(r_ji.norm() < grid_width) neighbors.push_back(j_particle);
+                    if (r_ji.norm() < grid_width) neighbors.push_back(j_particle);
                 }
             }
         }

@@ -13,7 +13,7 @@ namespace tiny_mps {
 // Holds data on time
 class Timer {
 public:
-    Timer(const Condition & condition) {
+    explicit Timer(const Condition & condition) {
         initialize(condition);
     }
 
@@ -27,6 +27,7 @@ public:
         this->initial_delta_time = condition.delta_time;
         this->min_delta_time = condition.min_delta_time * condition.delta_time;
         this->output_interval = condition.output_interval;
+        this->next_output_time = condition.initial_time;
         this->loop_count = 0;
         this->output_count = 0;
         start_chrono = std::chrono::system_clock::now();
@@ -107,6 +108,9 @@ private:
     double next_output_time;
     int loop_count;
     int output_count;
+
+    Timer(const Timer&);
+    Timer& operator=(const Timer&);
 };
 
 } // namespace tiny_mps

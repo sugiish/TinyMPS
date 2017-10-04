@@ -16,7 +16,7 @@ namespace tiny_mps {
 // Holds analysis conditions.
 class Condition {
 public:
-    Condition(std::string path) {
+    explicit Condition(std::string path) {
         readDataFile(path);
         getValue("average_distance",  average_distance);
         getValue("dimension", dimension);
@@ -155,6 +155,8 @@ public:
     double tanaka_masunaga_beta;
 
 private:
+    Condition(const Condition&);
+    Condition& operator=(const Condition&);
     inline int readDataFile(std::string path) {
         std::ifstream ifs(path);
         if(ifs.fail()) {

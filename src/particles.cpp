@@ -234,6 +234,19 @@ bool Particles::checkNeedlessCalculation() const {
     return true;
 }
 
+int Particles::addParticle() {
+    if (ghost_stack.empty()) {
+        std::cerr << "Error: Can't make new particles." << std::endl
+            << "Extra ghost particles has run out." << std::endl;
+        exit(EXIT_FAILURE);
+    } else {
+        int new_index = ghost_stack.top();
+        ghost_stack.pop();
+        particle_types(new_index) = ParticleType::NORMAL;
+        return new_index;
+    }
+}
+
 void Particles::setGhostParticle(int index) {
     if (index < 0 || index >= size) {
         std::cerr << "Error: Index is out of range." << std::endl;
