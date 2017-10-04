@@ -17,6 +17,51 @@ Particles::Particles(const std::string& path, const Condition& condition)
   checkSurfaceParticles(condition.surface_parameter);
 }
 
+Particles::Particles(const Particles& other)
+    : condition_(other.condition_),
+      dimension(other.dimension) {
+  size = other.size;
+  ghost_stack = other.ghost_stack;
+  initial_particle_number_density = other.initial_particle_number_density;
+  laplacian_lambda_pressure = other.laplacian_lambda_pressure;
+  laplacian_lambda_viscosity = other.laplacian_lambda_viscosity;
+  initial_neighbor_particles = other.initial_neighbor_particles;
+  inflow_stride = other.inflow_stride;
+  position = other.position;
+  velocity = other.velocity;
+  pressure = other.pressure;
+  particle_number_density = other.particle_number_density;
+  temporary_position = other.temporary_position;
+  temporary_velocity = other.temporary_velocity;
+  correction_velocity = other.correction_velocity;
+  particle_types = other.particle_types;
+  boundary_types = other.boundary_types;
+  neighbor_particles = other.neighbor_particles;
+}
+
+Particles& Particles::operator=(const Particles& other) {
+  if (this != &other) {
+    size = other.size;
+    ghost_stack = other.ghost_stack;
+    initial_particle_number_density = other.initial_particle_number_density;
+    laplacian_lambda_pressure = other.laplacian_lambda_pressure;
+    laplacian_lambda_viscosity = other.laplacian_lambda_viscosity;
+    initial_neighbor_particles = other.initial_neighbor_particles;
+    inflow_stride = other.inflow_stride;
+    position = other.position;
+    velocity = other.velocity;
+    pressure = other.pressure;
+    particle_number_density = other.particle_number_density;
+    temporary_position = other.temporary_position;
+    temporary_velocity = other.temporary_velocity;
+    correction_velocity = other.correction_velocity;
+    particle_types = other.particle_types;
+    boundary_types = other.boundary_types;
+    neighbor_particles = other.neighbor_particles;
+  }
+  return *this;
+}
+
 Particles::~Particles() {}
 
 void Particles::initialize(int size) {

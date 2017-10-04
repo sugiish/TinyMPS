@@ -11,7 +11,8 @@
 int main() {
   try {
     tiny_mps::Condition condition("./input/input.data");
-    tiny_mps::Particles particles("./input/dam.grid", condition);
+    tiny_mps::Particles particles2("./input/dam.grid", condition);
+    tiny_mps::Particles particles = particles2;
     tiny_mps::Timer timer(condition);
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
@@ -27,7 +28,6 @@ int main() {
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
-      particles.extendStorage(2);
     }
     return 0;
   } catch (const std::exception& e) {

@@ -34,8 +34,8 @@ enum BoundaryType {
 class Particles {
  public:
   Particles(const std::string& path, const Condition& condition);
-  Particles(const Particles&) = delete;
-  Particles& operator=(const Particles&) = delete;
+  Particles(const Particles& other);
+  Particles& operator=(const Particles& other);
   virtual ~Particles();
   void writeVtkFile(const std::string& path, const std::string& title) const;
   bool saveInterval(const std::string& path, const Timer& timer) const;
