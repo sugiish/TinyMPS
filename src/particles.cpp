@@ -1,6 +1,7 @@
 // Copyright (c) 2017 Shota SUGIHARA
 // Distributed under the MIT License.
 #include "particles.h"
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -12,7 +13,7 @@ Particles::Particles(const std::string& path, const Condition& condition)
     : condition_(condition), dimension(condition.dimension), inflow_stride(0.0) {
   readGridFile(path, condition);
   updateParticleNumberDensity();
-  setInitialParticleNumberDensity(condition.inner_particle_index);
+  setInitialParticleNumberDensity();
   calculateLaplacianLambda(condition.inner_particle_index, condition);
   checkSurfaceParticles(condition.surface_parameter);
 }
@@ -196,10 +197,27 @@ bool Particles::saveInterval(const std::string& path, const Timer& timer) const 
   return true;
 }
 
-void Particles::setInitialParticleNumberDensity(int index) {
-  initial_particle_number_density = particle_number_density(index);
-  initial_neighbor_particles = neighbor_particles(index);
+void Particles::setInitialParticleNumberDensity() {
+  const int xy_max = (int)condition_.pnd_influence;
+  const int z_max = (dimension == 3)? xy_max : 0;
+  double pnd = 0;
+  int count = 0;
+  for (int i_z = -z_max; i_z <= z_max; ++i_z) {
+    for (int i_y = -xy_max; i_y <= xy_max; ++i_y) {
+      for (int i_x = -xy_max; i_x <= xy_max; ++i_x) {
+        if (i_x == 0 && i_y == 0 && i_z == 0) continue;
+        double dist = sqrt(i_x * i_x + i_y * i_y + i_z * i_z);
+        if (dist < condition_.pnd_influence) {
+          pnd += condition_.pnd_influence / dist - 1;
+          ++count;
+        }
+      }
+    }
+  }
+  initial_particle_number_density = pnd;
+  initial_neighbor_particles = count;
   std::cout << "Initial particle number density: " << initial_particle_number_density << std::endl;
+  std::cout << "Initial neighbor particles: " << initial_neighbor_particles << std::endl;
 }
 
 void Particles::calculateLaplacianLambda(int index, const Condition& condition) {

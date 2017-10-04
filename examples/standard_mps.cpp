@@ -2,7 +2,7 @@
 // Distributed under the MIT License.
 #include <iostream>
 #include <boost/format.hpp>
-#include <Eigen/Dense>
+#include <Eigen/Core>
 #include "condition.h"
 #include "grid.h"
 #include "particles.h"

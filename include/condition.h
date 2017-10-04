@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <regex>
-#include <Eigen/Dense>
+#include <Eigen/Core>
 
 namespace tiny_mps {
 
@@ -147,6 +147,11 @@ class Condition {
   double collision_influence;
   double restitution_coefficent;
 
+  double pnd_influence;
+  double gradient_influence;
+  double laplacian_pressure_influence;
+  double laplacian_viscosity_influence;
+
   double pnd_weight_radius;
   double gradient_radius;
   double laplacian_pressure_weight_radius;
@@ -189,10 +194,6 @@ class Condition {
   }
 
   std::unordered_map<std::string, std::string> data;
-  double pnd_influence;
-  double gradient_influence;
-  double laplacian_pressure_influence;
-  double laplacian_viscosity_influence;
 };
 
 }

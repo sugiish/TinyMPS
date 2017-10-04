@@ -6,7 +6,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-#include <Eigen/Dense>
+#include <Eigen/Core>
 
 namespace tiny_mps {
 

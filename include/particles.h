@@ -5,8 +5,9 @@
 
 #include <stack>
 #include <string>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+#include <Eigen/IterativeLinearSolvers>
 #include "condition.h"
 #include "grid.h"
 #include "timer.h"
@@ -93,7 +94,7 @@ class Particles {
   using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   void initialize(int particles_number);
   void readGridFile(const std::string& path, const Condition& condition);
-  void setInitialParticleNumberDensity(int index);
+  void setInitialParticleNumberDensity();
   void calculateLaplacianLambda(int index, const Condition& condition);
   void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source);
   inline double weightFunction(const Eigen::Vector3d& vec, double influence_radius) const {
