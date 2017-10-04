@@ -53,6 +53,7 @@ class Condition {
     getValue("gradient_influence", gradient_influence);
     getValue("laplacian_pressure_influence", laplacian_pressure_influence);
     getValue("laplacian_viscosity_influence", laplacian_viscosity_influence);
+    getValue("additional_ghost_particles", additional_ghost_particles);
     getValue("extra_ghost_particles", extra_ghost_particles);
     getValue("collision_influence", collision_influence);
     getValue("restitution_coefficent", restitution_coefficent);
@@ -140,6 +141,7 @@ class Condition {
   double weak_compressibility;
 
   int extra_ghost_particles;
+  int additional_ghost_particles;
   Eigen::Vector3d inflow_velocity;
 
   double collision_influence;

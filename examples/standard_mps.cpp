@@ -27,6 +27,7 @@ int main() {
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
+      particles.extendStorage(2);
     }
     return 0;
   } catch (const std::exception& e) {

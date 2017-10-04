@@ -74,7 +74,7 @@ laplacian_viscosity_influence(ratio)    4.0
 
 #    GRAVITY
 gravity_x(m/s^2)                        0.0
-gravity_y(m/s^2)                        0.0 
+gravity_y(m/s^2)                        0.0
 gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
@@ -90,9 +90,10 @@ inner_particle_index                    100
 surface_parameter                       0.97
 relaxation_coefficient_lambda           0.2
 weak_compressibility(ratio)             1.0e-6
+extra_ghost_particles                   0
+additional_ghost_particles              1000
 
 #   INFLOW CONDITION
-extra_ghost_particles                   10000
 inflow_x(m/s)                           0.0
 inflow_y(m/s)                          -2.0
 inflow_z(m/s)                           0.0
