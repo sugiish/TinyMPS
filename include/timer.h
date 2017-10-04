@@ -103,7 +103,7 @@ class Timer {
   inline int getLoopCount() const { return loop_count; }
   inline int getOutputCount() const { return output_count; }
 
-private:
+ private:
   // Stores the time point when called initialize.
   std::chrono::system_clock::time_point start_chrono;
 
