@@ -15,19 +15,19 @@ namespace tiny_mps {
 
 // Particle type
 enum ParticleType {
-    NORMAL = 0,
-    WALL = 2,
-    DUMMY_WALL = 3,
-    INFLOW = 4,
-    DUMMY_INFLOW = 5,
-    GHOST = -1
+  NORMAL = 0,
+  WALL = 2,
+  DUMMY_WALL = 3,
+  INFLOW = 4,
+  DUMMY_INFLOW = 5,
+  GHOST = -1
 };
 
 // Used for solving Poisson's equation.
 enum BoundaryType {
-    INNER = 0,
-    SURFACE = 1,
-    OTHERS = -1
+  INNER = 0,
+  SURFACE = 1,
+  OTHERS = -1
 };
 
 // Holds data on particles and manipulates them.
