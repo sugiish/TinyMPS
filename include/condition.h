@@ -41,10 +41,14 @@ class Condition {
   double min_delta_time;
   double output_interval;
 
+  double surface_threshold_pnd;
+  double surface_threshold_number;
+
   int inner_particle_index;
-  double surface_parameter;
-  double relaxation_coefficient_lambda;
   double weak_compressibility;
+
+  double relaxation_coefficient_pnd;
+  double relaxation_coefficient_vel_div;
 
   int extra_ghost_particles;
   int additional_ghost_particles;
@@ -62,11 +66,6 @@ class Condition {
   double gradient_radius;
   double laplacian_pressure_weight_radius;
   double laplacian_viscosity_weight_radius;
-
-  bool tanaka_masunaga_method;
-  double tanaka_masunaga_gamma;
-  double tanaka_masunaga_c;
-  double tanaka_masunaga_beta;
 
  private:
   void readDataFile(std::string path);

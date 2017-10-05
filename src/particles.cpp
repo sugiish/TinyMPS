@@ -15,7 +15,7 @@ Particles::Particles(const std::string& path, const Condition& condition)
   updateParticleNumberDensity();
   setInitialParticleNumberDensity();
   calculateLaplacianLambda(condition.inner_particle_index, condition);
-  checkSurfaceParticles(condition.surface_parameter);
+  checkSurfaceParticles();
 }
 
 Particles::Particles(const Particles& other)
@@ -246,7 +246,7 @@ void Particles::calculateLaplacianLambda(int index, const Condition& condition) 
   laplacian_lambda_viscosity = numerator / denominator;
   std::cout << "Laplacian lambda for Pressure: " << laplacian_lambda_pressure << std::endl;
   std::cout << "Laplacian lambda for Viscosity: " << laplacian_lambda_viscosity << std::endl;
-  std::cout << "Relaxation coefficient of lambda: " << condition.relaxation_coefficient_lambda << std::endl;
+  std::cout << "Relaxation coefficient of lambda: " << condition.relaxation_coefficient_pnd << std::endl;
 }
 
 bool Particles::nextLoop(const std::string& path, Timer& timer) {
@@ -505,10 +505,63 @@ void Particles::updateTemporaryPosition(const Timer& timer) {
 
 void Particles::solvePressurePoission(const Timer& timer) {
   Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
-  solvePressurePoission(timer, grid);
+  using T = Eigen::Triplet<double>;
+  double lap_r = grid.getGridWidth();
+  int n_size = (int)(std::pow(lap_r * 2, dimension));
+  double delta_time = timer.getCurrentDeltaTime();
+  Eigen::SparseMatrix<double> p_mat(size, size);
+  Eigen::VectorXd source(size);
+  std::vector<T> coeffs(size * n_size);
+  std::vector<int> neighbors(n_size * 2);
+  source.setZero();
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    }
+    grid.getNeighbors(i_particle, neighbors);
+    double sum = 0.0;
+    double div_vel = 0.0;
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
+              / (laplacian_lambda_pressure * initial_particle_number_density);
+      sum -= mat_ij;
+      div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
+              * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+      if (boundary_types(j_particle) == BoundaryType::INNER) {
+        coeffs.push_back(T(i_particle, j_particle, mat_ij));
+      }
+    }
+    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
+    coeffs.push_back(T(i_particle, i_particle, sum));
+    source(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+                - (particle_number_density(i_particle) - initial_particle_number_density)
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+  }
+  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+
+  // Solving a problem
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+  cg.compute(p_mat);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed decompostion." << std::endl;
+  }
+  pressure = cg.solve(source);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed solving." << std::endl;
+  }
+  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+  for (int i = 0; i < size; ++i) {
+    if (pressure(i) < 0) pressure(i) = 0;
+  }
 }
 
-void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
+void Particles::solvePressurePoissionOriginal(const Timer& timer, const Grid& grid) {
   using T = Eigen::Triplet<double>;
   double lap_r = grid.getGridWidth();
   int n_size = (int)(std::pow(lap_r * 2, dimension));
@@ -541,7 +594,7 @@ void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
     source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density)
-                * condition_.relaxation_coefficient_lambda * condition_.mass_density
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density
                 / (delta_time * delta_time * initial_particle_number_density);
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
@@ -562,7 +615,7 @@ void Particles::solvePressurePoission(const Timer& timer, const Grid& grid) {
   }
 }
 
-void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
+void Particles::solvePressurePoissionTanakaMasunaga(const Timer& timer) {
   Grid grid(condition_.laplacian_pressure_weight_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
   using T = Eigen::Triplet<double>;
   double lap_r = grid.getGridWidth();
@@ -589,17 +642,18 @@ void Particles::solveTanakaMasunagaPressurePoission(const Timer& timer) {
       Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
       double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
-      sum -= mat_ij * condition_.tanaka_masunaga_c;
+      sum -= mat_ij;
       div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
               * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
       if (boundary_types(j_particle) == BoundaryType::INNER) {
         coeffs.push_back(T(i_particle, j_particle, mat_ij));
       }
     }
+    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
-    source(i_particle) = div_vel * condition_.mass_density / delta_time
+    source(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_particle_number_density)
-                * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
 
@@ -627,63 +681,6 @@ void Particles::solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen:
     std::cerr << "Error: Failed decompostion." << std::endl;
   }
   solutions = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  for (int i = 0; i < size; ++i) {
-    if (pressure(i) < 0) pressure(i) = 0;
-  }
-}
-
-void Particles::solvePressurePoissionWithTanakaMasunaga(const Timer& timer) {
-  Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
-  using T = Eigen::Triplet<double>;
-  double lap_r = grid.getGridWidth();
-  int n_size = (int)(std::pow(lap_r * 2, dimension));
-  double delta_time = timer.getCurrentDeltaTime();
-  Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
-  std::vector<T> coeffs(size * n_size);
-  std::vector<int> neighbors(n_size * 2);
-  source.setZero();
-  for (int i_particle = 0; i_particle < size; ++i_particle) {
-    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
-      coeffs.push_back(T(i_particle, i_particle, 1.0));
-      continue;
-    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
-      coeffs.push_back(T(i_particle, i_particle, 1.0));
-      continue;
-    }
-    grid.getNeighbors(i_particle, neighbors);
-    double sum = 0.0;
-    double div_vel = 0.0;
-    for (int j_particle : neighbors) {
-      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
-      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
-              / (laplacian_lambda_pressure * initial_particle_number_density);
-      sum -= mat_ij * condition_.tanaka_masunaga_c;
-      div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
-              * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
-      if (boundary_types(j_particle) == BoundaryType::INNER) {
-        coeffs.push_back(T(i_particle, j_particle, mat_ij));
-      }
-    }
-    coeffs.push_back(T(i_particle, i_particle, sum));
-    source(i_particle) = div_vel * condition_.mass_density / delta_time
-                - (particle_number_density(i_particle) - initial_particle_number_density)
-                * condition_.tanaka_masunaga_gamma * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
-  }
-  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
   if (cg.info() != Eigen::ComputationInfo::Success) {
     std::cerr << "Error: Failed solving." << std::endl;
   }
@@ -774,41 +771,15 @@ void Particles::updateVelocityAndPosition() {
 }
 
 void Particles::checkSurfaceParticles() {
-  checkSurfaceParticles(condition_.surface_parameter);
-}
-
-void Particles::checkSurfaceParticles(double surface_parameter) {
-  for(int i = 0; i < getSize(); ++i) {
-    if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL || particle_types(i) == ParticleType::INFLOW) {
-      if (particle_number_density(i) < surface_parameter * initial_particle_number_density) boundary_types(i) = BoundaryType::SURFACE;
-      else boundary_types(i) = BoundaryType::INNER;
-    } else {
-      boundary_types(i) = BoundaryType::OTHERS;
-    }
-  }
-}
-
-void Particles::checkSurfaceParticlesWithTanakaMasunaga() {
   for(int i = 0; i < getSize(); ++i) {
     if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL
         || particle_types(i) == ParticleType::INFLOW) {
-      if (particle_number_density(i) < condition_.surface_parameter * initial_particle_number_density
-              && neighbor_particles(i) < condition_.tanaka_masunaga_beta * initial_neighbor_particles) {
+      if (particle_number_density(i) < condition_.surface_threshold_pnd * initial_particle_number_density
+              && neighbor_particles(i) < condition_.surface_threshold_number * initial_neighbor_particles) {
         boundary_types(i) = BoundaryType::SURFACE;
       } else {
         boundary_types(i) = BoundaryType::INNER;
       }
-    } else {
-      boundary_types(i) = BoundaryType::OTHERS;
-    }
-  }
-}
-
-void Particles::checkTanakaMasunagaSurfaceParticles(double surface_parameter) {
-  for(int i = 0; i < getSize(); ++i) {
-    if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL || particle_types(i) == ParticleType::INFLOW) {
-      if (neighbor_particles(i) < surface_parameter * initial_neighbor_particles) boundary_types(i) = BoundaryType::SURFACE;
-      else boundary_types(i) = BoundaryType::INNER;
     } else {
       boundary_types(i) = BoundaryType::OTHERS;
     }

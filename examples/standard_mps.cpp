@@ -22,7 +22,7 @@ int main() {
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurfaceParticlesWithTanakaMasunaga();
+      particles.checkSurfaceParticles();
       particles.solvePressurePoission(timer);
       particles.correctVelocity(timer);
       particles.updateTemporaryPosition(timer);

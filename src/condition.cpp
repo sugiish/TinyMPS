@@ -51,13 +51,11 @@ Condition::Condition(std::string path) {
   getValue("min_delta_time", min_delta_time);
   getValue("output_interval", output_interval);
   getValue("inner_particle_index", inner_particle_index);
-  getValue("relaxation_coefficient_lambda" ,relaxation_coefficient_lambda);
+  getValue("relaxation_coefficient_pnd", relaxation_coefficient_pnd);
+  getValue("relaxation_coefficient_vel_div", relaxation_coefficient_vel_div);
   getValue("weak_compressibility", weak_compressibility);
-  getValue("surface_parameter", surface_parameter);
-  getValue("tanaka_masunaga_method", tanaka_masunaga_method);
-  getValue("tanaka_masunaga_gamma", tanaka_masunaga_gamma);
-  getValue("tanaka_masunaga_c", tanaka_masunaga_c);
-  getValue("tanaka_masunaga_beta", tanaka_masunaga_beta);
+  getValue("surface_threshold_pnd", surface_threshold_pnd);
+  getValue("surface_threshold_number", surface_threshold_number);
 
   pnd_weight_radius = pnd_influence * average_distance;
   gradient_radius = gradient_influence * average_distance;
