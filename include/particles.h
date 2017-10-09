@@ -38,13 +38,13 @@ class Particles {
   Particles(const Particles& other);
   Particles& operator=(const Particles& other);
   virtual ~Particles();
-  void writeVtkFile(const std::string& path, const std::string& title) const;
+  virtual void writeVtkFile(const std::string& path, const std::string& title) const;
   bool saveInterval(const std::string& path, const Timer& timer) const;
   bool nextLoop(const std::string& path, Timer& timer);
   bool checkNeedlessCalculation() const;
-  void extendStorage(int extra_size);
+  virtual void extendStorage(int extra_size);
   int addParticle();
-  void setGhostParticle(int index);
+  virtual void setGhostParticle(int index);
   void removeOutsideParticles(const Eigen::Vector3d& minpos, const Eigen::Vector3d& maxpos);
   void removeFastParticles(double max_speed);
   void calculateTemporaryParticleNumberDensity();
