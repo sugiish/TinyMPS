@@ -34,6 +34,7 @@ enum BoundaryType {
 // Holds data on particles and manipulates them.
 class Particles {
  public:
+  Particles(int size, const Condition& condition);
   Particles(const std::string& path, const Condition& condition);
   Particles(const Particles& other);
   Particles& operator=(const Particles& other);
@@ -61,6 +62,7 @@ class Particles {
   void correctVelocity(const Timer& timer, const Grid& grid);
   void correctVelocityExplicitly(const Timer& timer);
   void correctTanakaMasunagaVelocity(const Timer& timer);
+  void correctVelocityWithTensor(const Timer& timer);
   void updateVelocityAndPosition();
   void checkSurfaceParticles();
   void giveCollisionRepulsionForce();

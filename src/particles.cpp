@@ -6,8 +6,16 @@
 #include <iostream>
 #include <sstream>
 #include <boost/format.hpp>
+#include <Eigen/LU>
 
 namespace tiny_mps {
+
+Particles::Particles(int size, const Condition& condition)
+    : condition_(condition), dimension(condition.dimension), inflow_stride(0.0) {
+  initialize(size);
+  setInitialParticleNumberDensity();
+  setLaplacianLambda();
+}
 
 Particles::Particles(const std::string& path, const Condition& condition)
     : condition_(condition), dimension(condition.dimension), inflow_stride(0.0) {
@@ -777,6 +785,38 @@ void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {
     }
     if (dimension == 2) tmp(2) = 0;
     correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+  }
+  temporary_velocity += correction_velocity;
+}
+
+void Particles::correctVelocityWithTensor(const Timer& timer) {
+  Grid grid(condition_.gradient_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  correction_velocity.setZero();
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    if (neighbors.size() <= 3) continue; // if neighbor particles are three or less, considers it as surface.
+    Eigen::Martix3d tensor = Eigen::Matrix3d::Zero();
+    Eigen::Vector3d tmp_vel(0.0, 0.0, 0.0);
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      Eigen::Vector3d n_ij = r_ij.normalized();
+      Eigen::Martix3d tmp_tensor;
+      tmp_tensor << n_ij(0) * n_ij(0), n_ij(0) * n_ij(1), n_ij(0) * n_ij(2),
+                    n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
+                    n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
+      tmp_tensor *= weightForGradientPressure(r_ij) / initial_particle_number_density;
+      tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
+      tensor += tmp_tensor;
+    }
+    if (dimension == 2) {
+      tmp_vel(2) = 0;
+      tensor(2, 2) = 1.0;
+    }
+    correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
   }
   temporary_velocity += correction_velocity;
 }
