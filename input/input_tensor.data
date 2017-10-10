@@ -1,0 +1,105 @@
+#--------------------------------------------------------------------
+#   This is an example input file.
+#   This file can be read by "reader.h".
+#
+#   Copyright (c) 2017 Shota SUGIHARA
+#   Distributed under the MIT License.
+#--------------------------------------------------------------------
+
+#--------------------------------------------------------------------
+#   Lines that begin with '#' are comments.
+#   All comments are ignored.
+
+#--------------------------------------------------------------------
+#   Each input variable is defined as follows.
+#   variable_name                      variable_value
+
+#   It doesn't matter how many tabs and spaces between name and value.
+#   Variable types of int, double, bool and string are available.
+#   We can assign "on" / "off" or "true" / "false" for bool type values.
+
+#   We can get variables via "getValue" function in "condition.h".
+#   Usage:  int getValue(const std::string& name, int& value);
+#           int getValue(const std::string& name, double& value);
+#           int getValue(const std::string& name, bool& value);
+#           int getValue(const std::string& name, string& value);
+#   Return: returns 1 if error occurs.
+#   Example:
+#   std::string path;
+#   getValue("grid_file", path);
+
+#--------------------------------------------------------------------
+#   We can use parenthesis "()" to describe their units.
+#   average_distance(m)                     0.01
+
+#   These parenthesis including units are ignored when we retrieve variables.
+#   Example:
+#   std::string path;
+#   getValue("average_distance", path);
+
+#--------------------------------------------------------------------
+#   Parts between hyphens are also ignored.
+#   Example:
+#   double viscosity;
+#   getValue("kinematic_viscosity", viscosity);
+#   viscosity_calculation                   on
+#   --on--kinematic_viscosity(m^2/s)        1.0e-6
+
+
+#--------------------------------------------------------------------
+#   All definitions are shown below.
+#   You can modify them as needed.
+#--------------------------------------------------------------------
+average_distance(m)                     0.008
+dimension(2/3)                          2
+
+viscosity_calculation                   on
+--on--kinematic_viscosity(m^2/s)        1.0e-6
+
+#    TIME
+initial_time(sec)                       0
+finish_time(sec)                        1.0
+delta_time(sec)                         1.0e-3
+min_delta_time(ratio)                   1.0e-3
+output_interval(sec)                    1.0e-2
+
+#    CFL CONDITION
+courant_number                          0.2
+diffusion_number                        0.2
+
+#    INFLUENCE RATIO
+pnd_influence(ratio)                    2.1
+gradient_influence(ratio)               3.1
+laplacian_pressure_influence(ratio)     4.0
+laplacian_viscosity_influence(ratio)    4.0
+
+#    GRAVITY
+gravity_x(m/s^2)                        0.0
+gravity_y(m/s^2)                       -9.81
+gravity_z(m/s^2)                        0.0
+
+#    SURFACE CONDITION
+surface_threshold_pnd                   0.95
+surface_threshold_number                0.95
+
+#    PHYSICAL PROPERTIES
+mass_density(kg/m^3)                    1000.0
+compressibility                         1.0e-7
+head_pressure(Pa)                       101325.0
+temperature(K)                          292.0
+gas_constant(J/K*mol)                   8.3144621
+
+relaxation_coefficient_pnd              0.2
+relaxation_coefficient_vel_div          0.0
+weak_compressibility(ratio)             1.0e-6
+extra_ghost_particles                   0
+additional_ghost_particles              1000
+
+#   INFLOW CONDITION
+inflow_x(m/s)                           0.0
+inflow_y(m/s)                           0.0
+inflow_z(m/s)                           0.0
+
+#   COLLISION
+collision_influence(ratio)              0.85
+restitution_coefficient                 0.2

@@ -792,12 +792,13 @@ void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {
 void Particles::correctVelocityWithTensor(const Timer& timer) {
   Grid grid(condition_.gradient_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
   correction_velocity.setZero();
+  int tensor_count = 0;
+  int not_tensor_count = 0;
   for (int i_particle = 0; i_particle < size; ++i_particle) {
     if (particle_types(i_particle) != ParticleType::NORMAL) continue;
     if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
     Grid::Neighbors neighbors;
     grid.getNeighbors(i_particle, neighbors);
-    if (neighbors.size() <= 3) continue; // if neighbor particles are three or less, considers it as surface.
     Eigen::Matrix3d tensor = Eigen::Matrix3d::Zero();
     Eigen::Vector3d tmp_vel(0.0, 0.0, 0.0);
     for (int j_particle : neighbors) {
@@ -816,8 +817,17 @@ void Particles::correctVelocityWithTensor(const Timer& timer) {
       tmp_vel(2) = 0;
       tensor(2, 2) = 1.0;
     }
-    correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+    if (abs(tensor.determinant()) > 1.0e-10) {
+      correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+      ++tensor_count;
+    } else {
+      correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+      ++not_tensor_count;
+    }
   }
+  std::cout << "Tensor: " << tensor_count << std::endl;
+  std::cout << "Not Tensor: " << not_tensor_count << std::endl;
+  
   temporary_velocity += correction_velocity;
 }
 
