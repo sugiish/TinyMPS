@@ -798,13 +798,13 @@ void Particles::correctVelocityWithTensor(const Timer& timer) {
     Grid::Neighbors neighbors;
     grid.getNeighbors(i_particle, neighbors);
     if (neighbors.size() <= 3) continue; // if neighbor particles are three or less, considers it as surface.
-    Eigen::Martix3d tensor = Eigen::Matrix3d::Zero();
+    Eigen::Matrix3d tensor = Eigen::Matrix3d::Zero();
     Eigen::Vector3d tmp_vel(0.0, 0.0, 0.0);
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
       Eigen::Vector3d n_ij = r_ij.normalized();
-      Eigen::Martix3d tmp_tensor;
+      Eigen::Matrix3d tmp_tensor;
       tmp_tensor << n_ij(0) * n_ij(0), n_ij(0) * n_ij(1), n_ij(0) * n_ij(2),
                     n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
                     n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
