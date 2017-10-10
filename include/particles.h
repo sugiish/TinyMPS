@@ -86,18 +86,11 @@ class Particles {
   Eigen::VectorXi boundary_types;
   Eigen::VectorXi neighbor_particles;
 
- private:
-  using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-  void initialize(int particles_number);
-  void readGridFile(const std::string& path, const Condition& condition);
-  void setInitialParticleNumberDensity();
-  void calculateLaplacianLambda(int index, const Condition& condition);
-  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source);
-  inline double weightFunction(const Eigen::Vector3d& vec, double influence_radius) const {
-    double r = vec.norm();
-    if(r < influence_radius) return (influence_radius / r - 1.0);
-    else return 0.0;
-  }
+ protected:
+  virtual double weightForParticleNumberDensity(const Eigen::Vector3d& vec) const;
+  virtual double weightForGradientPressure(const Eigen::Vector3d& vec) const;
+  virtual double weightForLaplacianPressure(const Eigen::Vector3d& vec) const;
+  virtual double weightForLaplacianViscosity(const Eigen::Vector3d& vec) const;
 
   const Condition& condition_;
   int size;
@@ -108,6 +101,29 @@ class Particles {
   double laplacian_lambda_viscosity;
   double initial_neighbor_particles;
   double inflow_stride;
+
+ private:
+  using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+  void initialize(int particles_number);
+  void readGridFile(const std::string& path, const Condition& condition);
+  void setInitialParticleNumberDensity();
+  void setLaplacianLambda();
+  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source);
+
+  static inline double weightStandard(const double distance, const double influence_radius) {
+    if (distance < influence_radius) return (influence_radius / distance - 1.0);
+    else return 0.0;
+  }
+  static inline double weightStandard(const Eigen::Vector3d& vec, const double influence_radius) {
+    return weightStandard(vec.norm(), influence_radius);
+  }
+  static inline int weightCount(const double distance, const double influence_radius) {
+    if (distance < influence_radius) return 1;
+    else return 0;
+  }
+  static inline int weightCount(const Eigen::Vector3d& vec, const double influence_radius) {
+    return weightCount(vec.norm(), influence_radius);
+  }
 };
 
 } // namespace tiny_mps

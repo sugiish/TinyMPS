@@ -14,7 +14,7 @@ Particles::Particles(const std::string& path, const Condition& condition)
   readGridFile(path, condition);
   updateParticleNumberDensity();
   setInitialParticleNumberDensity();
-  calculateLaplacianLambda(condition.inner_particle_index, condition);
+  setLaplacianLambda();
   checkSurfaceParticles();
 }
 
@@ -206,11 +206,10 @@ void Particles::setInitialParticleNumberDensity() {
     for (int i_y = -xy_max; i_y <= xy_max; ++i_y) {
       for (int i_x = -xy_max; i_x <= xy_max; ++i_x) {
         if (i_x == 0 && i_y == 0 && i_z == 0) continue;
-        double dist = sqrt(i_x * i_x + i_y * i_y + i_z * i_z);
-        if (dist < condition_.pnd_influence) {
-          pnd += condition_.pnd_influence / dist - 1;
-          ++count;
-        }
+        Eigen::Vector3d vec(i_x, i_y, i_z);
+        vec *= condition_.average_distance;
+        pnd += weightForParticleNumberDensity(vec);
+        count += weightCount(vec, condition_.pnd_weight_radius);
       }
     }
   }
@@ -220,33 +219,50 @@ void Particles::setInitialParticleNumberDensity() {
   std::cout << "Initial neighbor particles: " << initial_neighbor_particles << std::endl;
 }
 
-void Particles::calculateLaplacianLambda(int index, const Condition& condition) {
-  VectorXb valid = particle_types.array() != ParticleType::GHOST;
-  Grid lap_pressure(condition.laplacian_pressure_weight_radius, position, valid, condition.dimension);
-  Grid::Neighbors neighbors;
-  lap_pressure.getNeighbors(index, neighbors);
-  double numerator = 0.0;
-  double denominator = 0.0;
-  for (int j_particle : neighbors) {
-    Eigen::Vector3d r_ij = position.col(j_particle) - position.col(index);
-    double w =  weightFunction(r_ij, lap_pressure.getGridWidth());
-    numerator += r_ij.squaredNorm() * w;
-    denominator += w;
+void Particles::setLaplacianLambda() {
+  {
+    const int xy_max = (int)condition_.laplacian_pressure_influence;
+    const int z_max = (dimension == 3)? xy_max : 0;
+    double numerator = 0.0;
+    double denominator = 0.0;
+    for (int i_z = -z_max; i_z <= z_max; ++i_z) {
+      for (int i_y = -xy_max; i_y <= xy_max; ++i_y) {
+        for (int i_x = -xy_max; i_x <= xy_max; ++i_x) {
+          if (i_x == 0 && i_y == 0 && i_z == 0) continue;
+          Eigen::Vector3d vec(i_x, i_y, i_z);
+          vec *= condition_.average_distance;
+          double w = weightForLaplacianPressure(vec);
+          std::cout << i_x << ", " << i_y << ": " << w << std::endl;
+          numerator += vec.squaredNorm() * w;
+          denominator += w;
+        }
+      }
+    }
+    laplacian_lambda_pressure = numerator / denominator;
   }
-  laplacian_lambda_pressure = numerator / denominator;
-
-  Grid lap_viscosity(condition.laplacian_viscosity_weight_radius, position, valid, condition.dimension);
-  lap_pressure.getNeighbors(index, neighbors);
-  for (int j_particle : neighbors) {
-    Eigen::Vector3d r_ij = position.col(j_particle) - position.col(index);
-    double w =  weightFunction(r_ij, lap_pressure.getGridWidth());
-    numerator += r_ij.squaredNorm() * w;
-    denominator += w;
+  {
+    const int xy_max = (int)condition_.laplacian_viscosity_influence;
+    const int z_max = (dimension == 3)? xy_max : 0;
+    double numerator = 0.0;
+    double denominator = 0.0;
+    for (int i_z = -z_max; i_z <= z_max; ++i_z) {
+      for (int i_y = -xy_max; i_y <= xy_max; ++i_y) {
+        for (int i_x = -xy_max; i_x <= xy_max; ++i_x) {
+          if (i_x == 0 && i_y == 0 && i_z == 0) continue;
+          Eigen::Vector3d vec(i_x, i_y, i_z);
+          vec *= condition_.average_distance;
+          double w = weightForLaplacianViscosity(vec);
+          numerator += vec.squaredNorm() * w;
+          denominator += w;
+        }
+      }
+    }
+    laplacian_lambda_viscosity = numerator / denominator;
   }
-  laplacian_lambda_viscosity = numerator / denominator;
   std::cout << "Laplacian lambda for Pressure: " << laplacian_lambda_pressure << std::endl;
   std::cout << "Laplacian lambda for Viscosity: " << laplacian_lambda_viscosity << std::endl;
-  std::cout << "Relaxation coefficient of lambda: " << condition.relaxation_coefficient_pnd << std::endl;
+  std::cout << "Relaxation coefficient of PND: " << condition_.relaxation_coefficient_pnd << std::endl;
+  std::cout << "Relaxation coefficient of velocity divergence: " << condition_.relaxation_coefficient_vel_div << std::endl;
 }
 
 bool Particles::nextLoop(const std::string& path, Timer& timer) {
@@ -396,7 +412,7 @@ void Particles::calculateTemporaryParticleNumberDensity() {
     for (int j_particle : neighbors) {
       if (particle_types(i_particle) == ParticleType::GHOST) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      pnd += weightFunction(r_ij, grid.getGridWidth());
+      pnd += weightForParticleNumberDensity(r_ij);
       ++count;
     }
     particle_number_density(i_particle) = pnd;
@@ -423,7 +439,7 @@ void Particles::updateParticleNumberDensity(const Grid& grid) {
     for (int j_particle : neighbors) {
       if (particle_types(i_particle) == ParticleType::GHOST) continue;
       Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
-      pnd += weightFunction(r_ij, grid.getGridWidth());
+      pnd += weightForParticleNumberDensity(r_ij);
       ++count;
     }
     particle_number_density(i_particle) = pnd;
@@ -491,7 +507,7 @@ void Particles::calculateTemporaryVelocity(const Eigen::Vector3d& force, const T
         for (int j_particle : neighbors) {
           Eigen::Vector3d u_ij = velocity.col(j_particle) - velocity.col(i_particle);
           Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
-          lap_vec += u_ij * weightFunction(r_ij, grid.getGridWidth()) * 2 * dimension / (laplacian_lambda_viscosity * initial_particle_number_density);
+          lap_vec += u_ij * weightForLaplacianViscosity(r_ij) * 2 * dimension / (laplacian_lambda_viscosity * initial_particle_number_density);
         }
         temporary_velocity.col(i_particle) += lap_vec * condition_.kinematic_viscosity * delta_time;
       }
@@ -528,11 +544,11 @@ void Particles::solvePressurePoission(const Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
       sum -= mat_ij;
       div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
-              * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
       if (boundary_types(j_particle) == BoundaryType::INNER) {
         coeffs.push_back(T(i_particle, j_particle, mat_ij));
       }
@@ -584,7 +600,7 @@ void Particles::solvePressurePoissionOriginal(const Timer& timer, const Grid& gr
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
       sum -= mat_ij;
       if (boundary_types(j_particle) == BoundaryType::INNER) {
@@ -640,11 +656,11 @@ void Particles::solvePressurePoissionTanakaMasunaga(const Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
-      double mat_ij = weightFunction(r_ij, lap_r) * 2 * dimension
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
       sum -= mat_ij;
       div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
-              * weightFunction(r_ij, lap_r) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
       if (boundary_types(j_particle) == BoundaryType::INNER) {
         coeffs.push_back(T(i_particle, j_particle, mat_ij));
       }
@@ -711,7 +727,7 @@ void Particles::correctVelocity(const Timer& timer, const Grid& grid) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      tmp += r_ij * (pressure(j_particle) - p_min) * weightFunction(r_ij, grid.getGridWidth()) / r_ij.squaredNorm();
+      tmp += r_ij * (pressure(j_particle) - p_min) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
     }
     if (dimension == 2) tmp(2) = 0;
     correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
@@ -736,7 +752,7 @@ void Particles::correctVelocityExplicitly(const Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
-      tmp += r_ij * (pressure(j_particle) - p_min) * weightFunction(r_ij, grid.getGridWidth()) / r_ij.squaredNorm();
+      tmp += r_ij * (pressure(j_particle) - p_min) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
     }
     if (dimension == 2) tmp(2) = 0;
     correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
@@ -757,7 +773,7 @@ void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
-      tmp += r_ij * (pressure(j_particle) + pressure(i_particle)) * weightFunction(r_ij, grid.getGridWidth()) / r_ij.squaredNorm();
+      tmp += r_ij * (pressure(j_particle) + pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
     }
     if (dimension == 2) tmp(2) = 0;
     correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
@@ -806,6 +822,22 @@ void Particles::giveCollisionRepulsionForce(double influence_ratio, double resti
     }
   }
   temporary_velocity += impulse_vel;
+}
+
+double Particles::weightForParticleNumberDensity(const Eigen::Vector3d& vec) const {
+  return weightStandard(vec, condition_.pnd_weight_radius);
+}
+
+double Particles::weightForGradientPressure(const Eigen::Vector3d& vec) const {
+  return weightStandard(vec, condition_.gradient_radius);
+}
+
+double Particles::weightForLaplacianPressure(const Eigen::Vector3d& vec) const {
+  return weightStandard(vec, condition_.laplacian_pressure_weight_radius);
+}
+
+double Particles::weightForLaplacianViscosity(const Eigen::Vector3d& vec) const {
+  return weightStandard(vec, condition_.laplacian_viscosity_weight_radius);
 }
 
 void Particles::showParticlesInfo() {

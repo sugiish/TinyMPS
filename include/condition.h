@@ -44,7 +44,6 @@ class Condition {
   double surface_threshold_pnd;
   double surface_threshold_number;
 
-  int inner_particle_index;
   double weak_compressibility;
 
   double relaxation_coefficient_pnd;

@@ -50,7 +50,6 @@ Condition::Condition(std::string path) {
   getValue("finish_time", finish_time);
   getValue("min_delta_time", min_delta_time);
   getValue("output_interval", output_interval);
-  getValue("inner_particle_index", inner_particle_index);
   getValue("relaxation_coefficient_pnd", relaxation_coefficient_pnd);
   getValue("relaxation_coefficient_vel_div", relaxation_coefficient_vel_div);
   getValue("weak_compressibility", weak_compressibility);
