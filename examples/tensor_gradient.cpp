@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   try {
     std::string output_path = "./output/";
     std::string input_data = "./input/input_tensor.data";
-    std::string input_grid = "./input/hydrostatic.grid";
+    std::string input_grid = "./input/dam_tm.grid";
     if (argc >= 2) output_path = argv[1];
     if (argc >= 3) input_data = argv[2];
     if (argc >= 4) input_grid = argv[3];
@@ -23,14 +23,28 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop(output_path, timer)) {
-      particles.calculateTemporaryVelocity(condition.gravity, timer);
-      particles.updateTemporaryPosition(timer);
+      // particles.calculateTemporaryVelocity(condition.gravity, timer);
+      // particles.updateTemporaryPosition(timer);
+      // particles.shiftParticles(2.1, 0.03);
+      // particles.giveCollisionRepulsionForce();
+      // particles.updateTemporaryPosition(timer);
+      // particles.calculateTemporaryParticleNumberDensity();
+      // particles.checkSurfaceParticlesRemovingIsolated();
+      // particles.solvePressurePoission(timer);
+      // particles.correctVelocityWithTensor(timer);
+      // particles.updateTemporaryPosition(timer);
+      // particles.updateVelocityAndPosition();
+      // particles.removeOutsideParticles(minpos, maxpos);
+
+      particles.shiftParticles(2.1, 0.03);
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
+      particles.calculateTemporaryVelocity(condition.gravity, timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurfaceParticlesRemovingIsolated();
-      particles.solvePressurePoission(timer);
-      particles.correctVelocityWithTensor(timer);
+      particles.checkSurfaceParticles();
+      particles.solvePressurePoissionTanakaMasunaga(timer);
+      // particles.correctVelocityExplicitly(timer);
+      particles.correctVelocityTanakaMasunagaWithTensor(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);

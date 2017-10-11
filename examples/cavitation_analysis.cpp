@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
       particles.moveInflowParticles(timer);
       particles.calculateTemporaryVelocity(condition.gravity, timer);
       particles.updateTemporaryPosition(timer);
+      particles.shiftParticles(2.1, 0.03);
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();

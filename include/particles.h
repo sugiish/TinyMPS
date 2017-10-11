@@ -63,11 +63,13 @@ class Particles {
   void correctVelocityExplicitly(const Timer& timer);
   void correctTanakaMasunagaVelocity(const Timer& timer);
   void correctVelocityWithTensor(const Timer& timer);
+  void correctVelocityTanakaMasunagaWithTensor(const Timer& timer);
   void updateVelocityAndPosition();
   void checkSurfaceParticles();
   void checkSurfaceParticlesRemovingIsolated();
   void giveCollisionRepulsionForce();
   void giveCollisionRepulsionForce(double influence_ratio, double restitution_coefficient);
+  void shiftParticles(double influence_ratio, double alpha);
   void showParticlesInfo();
 
   inline int getSize() const { return size; }

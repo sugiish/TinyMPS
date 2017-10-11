@@ -829,6 +829,47 @@ void Particles::correctVelocityWithTensor(const Timer& timer) {
   temporary_velocity += correction_velocity;
 }
 
+void Particles::correctVelocityTanakaMasunagaWithTensor(const Timer& timer) {
+  Grid grid(condition_.gradient_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  correction_velocity.setZero();
+  int tensor_count = 0;
+  int not_tensor_count = 0;
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    Eigen::Matrix3d tensor = Eigen::Matrix3d::Zero();
+    Eigen::Vector3d tmp_vel(0.0, 0.0, 0.0);
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = position.col(j_particle) - position.col(i_particle);
+      Eigen::Vector3d n_ij = r_ij.normalized();
+      Eigen::Matrix3d tmp_tensor = Eigen::Matrix3d::Zero();
+      tmp_tensor << n_ij(0) * n_ij(0), n_ij(0) * n_ij(1), n_ij(0) * n_ij(2),
+                    n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
+                    n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
+      tensor += tmp_tensor * weightForGradientPressure(r_ij) / initial_particle_number_density;
+      tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
+    }
+    if (dimension == 2) {
+      tmp_vel(2) = 0;
+      tensor(2, 2) = 1.0;
+    }
+    if (tensor.determinant() > 1.0e-10) {
+      correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+      ++tensor_count;
+    } else {
+      correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+      ++not_tensor_count;
+      // std::cout << abs(tensor.determinant()) << std::endl <<  tensor << std::endl;
+    }
+  }
+  std::cout << "Tensor: " << tensor_count << ", Not Tensor: " << not_tensor_count << std::endl;
+
+  temporary_velocity += correction_velocity;
+}
+
 void Particles::updateVelocityAndPosition() {
   velocity = temporary_velocity;
   position = temporary_position;
@@ -887,6 +928,24 @@ void Particles::giveCollisionRepulsionForce(double influence_ratio, double resti
     }
   }
   temporary_velocity += impulse_vel;
+}
+
+void Particles::shiftParticles(double influence_ratio, double alpha) {
+  double influence_radius = influence_ratio * condition_.average_distance;
+  Grid grid(influence_radius, temporary_position, particle_types.array() != ParticleType::GHOST, condition_.dimension);
+  Eigen::Matrix3Xd shift_vec = Eigen::MatrixXd::Zero(3, size);
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    for (int j_particle : neighbors) {
+      if (particle_types(j_particle) == ParticleType::GHOST) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      shift_vec.col(i_particle) += r_ij * weightStandard(r_ij, influence_radius) * influence_radius / r_ij.squaredNorm();
+    }
+  }
+  temporary_position += shift_vec * alpha * condition_.average_distance;
 }
 
 double Particles::weightForParticleNumberDensity(const Eigen::Vector3d& vec) const {
