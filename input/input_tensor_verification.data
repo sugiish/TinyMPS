@@ -58,10 +58,10 @@ viscosity_calculation                   on
 
 #    TIME
 initial_time(sec)                       0
-finish_time(sec)                        3.0
-delta_time(sec)                         1.0e-3
+finish_time(sec)                        1.0
+delta_time(sec)                         1.0
 min_delta_time(ratio)                   1.0e-3
-output_interval(sec)                    1.0e-2
+output_interval(sec)                    1.0
 
 #    CFL CONDITION
 courant_number                          0.2
@@ -69,13 +69,13 @@ diffusion_number                        0.2
 
 #    INFLUENCE RATIO
 pnd_influence(ratio)                    2.1
-gradient_influence(ratio)               3.1
+gradient_influence(ratio)               2.1
 laplacian_pressure_influence(ratio)     4.0
 laplacian_viscosity_influence(ratio)    4.0
 
 #    GRAVITY
 gravity_x(m/s^2)                        0.0
-gravity_y(m/s^2)                       -9.81
+gravity_y(m/s^2)                       -9.8
 gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
@@ -84,7 +84,7 @@ surface_threshold_number                0.95
 
 #    PHYSICAL PROPERTIES
 mass_density(kg/m^3)                    1000.0
-compressibility                         1.0e-6
+compressibility                         1.0e-7
 head_pressure(Pa)                       101325.0
 temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621

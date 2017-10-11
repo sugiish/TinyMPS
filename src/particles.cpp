@@ -240,7 +240,6 @@ void Particles::setLaplacianLambda() {
           Eigen::Vector3d vec(i_x, i_y, i_z);
           vec *= condition_.average_distance;
           double w = weightForLaplacianPressure(vec);
-          std::cout << i_x << ", " << i_y << ": " << w << std::endl;
           numerator += vec.squaredNorm() * w;
           denominator += w;
         }
@@ -805,29 +804,28 @@ void Particles::correctVelocityWithTensor(const Timer& timer) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
       Eigen::Vector3d n_ij = r_ij.normalized();
-      Eigen::Matrix3d tmp_tensor;
+      Eigen::Matrix3d tmp_tensor = Eigen::Matrix3d::Zero();
       tmp_tensor << n_ij(0) * n_ij(0), n_ij(0) * n_ij(1), n_ij(0) * n_ij(2),
                     n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
                     n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
-      tmp_tensor *= weightForGradientPressure(r_ij) / initial_particle_number_density;
+      tensor += tmp_tensor * weightForGradientPressure(r_ij) / initial_particle_number_density;
       tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
-      tensor += tmp_tensor;
     }
     if (dimension == 2) {
       tmp_vel(2) = 0;
       tensor(2, 2) = 1.0;
     }
-    if (abs(tensor.determinant()) > 1.0e-10) {
+    if (tensor.determinant() > 1.0e-10) {
       correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
       ++tensor_count;
     } else {
       correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
       ++not_tensor_count;
+      // std::cout << abs(tensor.determinant()) << std::endl <<  tensor << std::endl;
     }
   }
-  std::cout << "Tensor: " << tensor_count << std::endl;
-  std::cout << "Not Tensor: " << not_tensor_count << std::endl;
-  
+  std::cout << "Tensor: " << tensor_count << ", Not Tensor: " << not_tensor_count << std::endl;
+
   temporary_velocity += correction_velocity;
 }
 
@@ -845,6 +843,23 @@ void Particles::checkSurfaceParticles() {
         boundary_types(i) = BoundaryType::SURFACE;
       } else {
         boundary_types(i) = BoundaryType::INNER;
+      }
+    } else {
+      boundary_types(i) = BoundaryType::OTHERS;
+    }
+  }
+}
+
+void Particles::checkSurfaceParticlesRemovingIsolated() {
+  for(int i = 0; i < getSize(); ++i) {
+    if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL
+        || particle_types(i) == ParticleType::INFLOW) {
+      if (particle_number_density(i) < condition_.surface_threshold_pnd * initial_particle_number_density
+              && neighbor_particles(i) < condition_.surface_threshold_number * initial_neighbor_particles) {
+        boundary_types(i) = BoundaryType::SURFACE;
+      } else {
+        if (neighbor_particles(i) <= 3) boundary_types(i) = BoundaryType::SURFACE;
+        else boundary_types(i) = BoundaryType::INNER;
       }
     } else {
       boundary_types(i) = BoundaryType::OTHERS;

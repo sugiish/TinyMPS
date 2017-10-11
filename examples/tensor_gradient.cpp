@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   try {
     std::string output_path = "./output/";
     std::string input_data = "./input/input_tensor.data";
-    std::string input_grid = "./input/dam.grid";
+    std::string input_grid = "./input/hydrostatic.grid";
     if (argc >= 2) output_path = argv[1];
     if (argc >= 3) input_data = argv[2];
     if (argc >= 4) input_grid = argv[3];
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurfaceParticles();
+      particles.checkSurfaceParticlesRemovingIsolated();
       particles.solvePressurePoission(timer);
       particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);
