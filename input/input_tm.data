@@ -58,7 +58,7 @@ viscosity_calculation                   on
 
 #    TIME
 initial_time(sec)                       0
-finish_time(sec)                        1.0
+finish_time(sec)                        3.0
 delta_time(sec)                         1.0e-3
 min_delta_time(ratio)                   1.0e-3
 output_interval(sec)                    1.0e-2
@@ -80,7 +80,7 @@ gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
 surface_threshold_pnd                   0.95
-surface_threshold_number                0.95
+surface_threshold_number                0.85
 
 #    PHYSICAL PROPERTIES
 mass_density(kg/m^3)                    1000.0
@@ -89,10 +89,9 @@ head_pressure(Pa)                       101325.0
 temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621
 
-inner_particle_index                    574
-relaxation_coefficient_pnd              0.2
-relaxation_coefficient_vel_div          0.0
-weak_compressibility(ratio)             1.0e-6
+relaxation_coefficient_pnd              0.02
+relaxation_coefficient_vel_div          1.0
+weak_compressibility(ratio)             1.0e-7
 extra_ghost_particles                   0
 additional_ghost_particles              1000
 
@@ -104,3 +103,9 @@ inflow_z(m/s)                           0.0
 #   COLLISION
 collision_influence(ratio)              0.85
 restitution_coefficient                 0.2
+
+#   CAVITATION
+initial_void_fraction                   0.001
+min_void_fraction                       1.0e-6
+bubble_density                          1.0e12
+vapor_pressure                          2200

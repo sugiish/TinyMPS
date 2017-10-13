@@ -765,7 +765,6 @@ void Particles::correctVelocityExplicitly(const Timer& timer) {
     correction_velocity.col(i_particle) -= tmp * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
   }
   temporary_velocity += correction_velocity;
-  temporary_position += correction_velocity * timer.getCurrentDeltaTime();
 }
 
 void Particles::correctTanakaMasunagaVelocity(const Timer& timer) {

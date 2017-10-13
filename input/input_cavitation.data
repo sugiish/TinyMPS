@@ -87,8 +87,8 @@ head_pressure(Pa)                       101325.0
 temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621
 
-relaxation_coefficient_pnd              0.2
-relaxation_coefficient_vel_div          0.0
+relaxation_coefficient_pnd              0.02
+relaxation_coefficient_vel_div          1.0
 weak_compressibility(ratio)             1.0e-6
 extra_ghost_particles                   0
 additional_ghost_particles              1000

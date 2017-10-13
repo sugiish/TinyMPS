@@ -56,6 +56,11 @@ Condition::Condition(std::string path) {
   getValue("surface_threshold_pnd", surface_threshold_pnd);
   getValue("surface_threshold_number", surface_threshold_number);
 
+  getValue("initial_void_fraction", initial_void_fraction);
+  getValue("min_void_fraction", min_void_fraction);
+  getValue("bubble_density", bubble_density);
+  getValue("vapor_pressure", vapor_pressure);
+
   pnd_weight_radius = pnd_influence * average_distance;
   gradient_radius = gradient_influence * average_distance;
   laplacian_pressure_weight_radius = laplacian_pressure_influence * average_distance;

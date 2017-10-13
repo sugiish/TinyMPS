@@ -1,12 +1,17 @@
 // Copyright (c) 2017 Shota SUGIHARA
 // Distributed under the MIT License.
 #include "bubble_particles.h"
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 namespace my_mps{
 
 BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condition& condition)
     : Particles(path, condition) {
-  bubble_radius = Eigen::VectorXd::Zero(getSize());
+  init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
+  bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
+  void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
+  
 }
 
 void BubbleParticles::writeVtkFile(const std::string& path, const std::string& title) const {
@@ -22,7 +27,7 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   ofs << "DATASET UNSTRUCTURED_GRID" << std::endl;
   ofs << std::endl;
   ofs << "POINTS " << size << " double" << std::endl;
-  for(int i = 0; i < size; ++i) {
+  for(int i = 0; i < size; ++i) {void calculateBubbles();
     ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
   }
   ofs << std::endl;
@@ -79,10 +84,17 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 
   // extended
   ofs << std::endl;
-  ofs << "SCALARS BubbleRadius int" << std::endl;
+  ofs << "SCALARS BubbleRadius double" << std::endl;
   ofs << "LOOKUP_TABLE BubbleRadius" << std::endl;
   for(int i = 0; i < size; ++i) {
     ofs << bubble_radius(i) << std::endl;
+  }
+  std::cout << "Succeed in writing vtk file: " << path << std::endl;
+  ofs << std::endl;
+  ofs << "SCALARS VoidFraction double" << std::endl;
+  ofs << "LOOKUP_TABLE VoidFraction" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << void_fraction(i) << std::endl;
   }
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
 }
@@ -92,11 +104,98 @@ void BubbleParticles::extendStorage(int extra_size) {
   Particles::extendStorage(extra_size);
   bubble_radius.conservativeResize(size + extra_size);
   bubble_radius.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
+  void_fraction.conservativeResize(size + extra_size);
+  void_fraction.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
+  
 }
 
 void BubbleParticles::setGhostParticle(int index) {
   Particles::setGhostParticle(index);
   bubble_radius(index) = 0.0;
+  void_fraction(index) = condition_.initial_void_fraction;
+}
+
+void BubbleParticles::calculateBubbles() {
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {      
+      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
+      if (bubble_radius(i_particle) < 0) bubble_radius(i_particle) = 0;
+      
+      double bubble_vol = 4 * M_PI * condition_.bubble_density * bubble_radius(i_particle) * bubble_radius(i_particle) * bubble_radius(i_particle) / 3;
+      void_fraction(i_particle) = bubble_vol / (1 + bubble_vol);
+      if (void_fraction(i_particle) < condition_.min_void_fraction) void_fraction(i_particle) = condition_.min_void_fraction;
+      if (void_fraction(i_particle) > 0.5) void_fraction(i_particle) = 0.5;
+    }
+  }
+}
+
+
+void BubbleParticles::solvePressurePoission(const tiny_mps::Timer& timer) {
+  using namespace tiny_mps;
+  Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  using T = Eigen::Triplet<double>;
+  double lap_r = grid.getGridWidth();
+  int n_size = (int)(std::pow(lap_r * 2, dimension));
+  double delta_time = timer.getCurrentDeltaTime();
+  Eigen::SparseMatrix<double> p_mat(size, size);
+  Eigen::VectorXd source(size);
+  std::vector<T> coeffs(size * n_size);
+  std::vector<int> neighbors(n_size * 2);
+  source.setZero();
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      // source(i_particle) = condition_.head_pressure;
+      continue;
+    }
+    grid.getNeighbors(i_particle, neighbors);
+    double sum = 0.0;
+    double div_vel = 0.0;
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      // 
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
+              / (laplacian_lambda_pressure * initial_particle_number_density);
+      sum -= mat_ij;
+      div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+      if (boundary_types(j_particle) == BoundaryType::INNER) {
+        coeffs.push_back(T(i_particle, j_particle, mat_ij));
+      }
+      if (boundary_types(j_particle) == BoundaryType::SURFACE) {
+        // source(i_particle) -= mat_ij * condition_.head_pressure;
+      }
+    }
+    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
+    coeffs.push_back(T(i_particle, i_particle, sum));
+    double initial_pnd_i = initial_particle_number_density / (1 - void_fraction(i_particle));
+    source(i_particle) += div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+                - (particle_number_density(i_particle) - initial_pnd_i)
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_pnd_i);
+  }
+  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+
+  // Solving a problem
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+  cg.compute(p_mat);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed decompostion." << std::endl;
+  }
+  pressure = cg.solve(source);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed solving." << std::endl;
+  }
+  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+  // for (int i = 0; i < size; ++i) {
+  //   if (pressure(i) < 0) pressure(i) = 0;
+  // }
 }
 
 }

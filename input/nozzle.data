@@ -89,10 +89,9 @@ head_pressure(Pa)                       101325.0
 temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621
 
-inner_particle_index                    574
 relaxation_coefficient_pnd              0.2
 relaxation_coefficient_vel_div          0.0
-weak_compressibility(ratio)             1.0e-6
+weak_compressibility(ratio)             1.0e-7
 extra_ghost_particles                   0
 additional_ghost_particles              1000
 
@@ -104,3 +103,9 @@ inflow_z(m/s)                           0.0
 #   COLLISION
 collision_influence(ratio)              0.85
 restitution_coefficient                 0.2
+
+#   CAVITATION
+initial_void_fraction                   0.001
+min_void_fraction                       1.0e-6
+bubble_density                          1.0e12
+vapor_pressure                          2200

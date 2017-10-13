@@ -66,6 +66,11 @@ class Condition {
   double laplacian_pressure_weight_radius;
   double laplacian_viscosity_weight_radius;
 
+  double initial_void_fraction;
+  double min_void_fraction;
+  double bubble_density;
+  double vapor_pressure;
+
  private:
   void readDataFile(std::string path);
 
