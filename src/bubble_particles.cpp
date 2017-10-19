@@ -175,7 +175,7 @@ void BubbleParticles::solvePressurePoission(const tiny_mps::Timer& timer) {
     }
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
-    double initial_pnd_i = initial_particle_number_density / (1 - void_fraction(i_particle));
+    double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
     source(i_particle) += div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_pnd_i)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_pnd_i);

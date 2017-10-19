@@ -59,9 +59,9 @@ viscosity_calculation                   on
 #    TIME
 initial_time(sec)                       0
 finish_time(sec)                        1.0e-2
-delta_time(sec)                         1.0e-5
+delta_time(sec)                         1.0e-6
 min_delta_time(ratio)                   1.0e-3
-output_interval(sec)                    1.0e-5
+output_interval(sec)                    1.0e-6
 
 #    CFL CONDITION
 courant_number                          0.2
@@ -80,7 +80,7 @@ gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
 surface_threshold_pnd                   0.90
-surface_threshold_number                0.90
+surface_threshold_number                0.80
 
 #    PHYSICAL PROPERTIES
 mass_density(kg/m^3)                    1000.0
@@ -91,7 +91,7 @@ gas_constant(J/K*mol)                   8.3144621
 
 relaxation_coefficient_pnd              0.2
 relaxation_coefficient_vel_div          0.0
-weak_compressibility(ratio)             1.0e-7
+weak_compressibility(ratio)             1.0e-9
 extra_ghost_particles                   0
 additional_ghost_particles              1000
 
