@@ -11,7 +11,7 @@
 int main(int argc, char* argv[]) {
   try {
     std::string output_path = "./output/";
-    std::string input_data = "./input/input.data";
+    std::string input_data = "./input/tamai.data";
     std::string input_grid = "./input/dam.grid";
     if (argc >= 2) output_path = argv[1];
     if (argc >= 3) input_data = argv[2];
@@ -22,8 +22,6 @@ int main(int argc, char* argv[]) {
     tiny_mps::Timer timer(condition);
     Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
-    tiny_mps::Grid grid(condition.pnd_weight_radius, particles.temporary_position, particles.particle_types.array() != tiny_mps::ParticleType::GHOST, condition.dimension);
-    particles.calculateTemporaryParticleNumberDensity();
     while(particles.nextLoop(output_path, timer)) {
       particles.calculateTemporaryVelocity(condition.gravity, timer);
       particles.updateTemporaryPosition(timer);
@@ -31,7 +29,7 @@ int main(int argc, char* argv[]) {
       particles.updateTemporaryPosition(timer);
       tiny_mps::Grid grid(condition.pnd_weight_radius, particles.temporary_position, particles.particle_types.array() != tiny_mps::ParticleType::GHOST, condition.dimension);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.updateVoxelRatio(2, grid);
+      particles.updateVoxelRatio(3, grid);
       particles.checkSurfaceParticles();
       particles.solvePressurePoissonTamai(timer);
       particles.correctVelocityWithTensor(timer);

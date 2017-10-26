@@ -493,7 +493,7 @@ void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
       for (int idx = 0; idx < voxels_size; ++idx) {
         val_sum += voxels[idx];
       }
-      voxel_ratio(i_particle) = val_sum / voxels_size;
+      voxel_ratio(i_particle) = val_sum / (voxels_size * 2);
     }
   } else {
     throw std::out_of_range("Not implemented for 3d.");
