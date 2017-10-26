@@ -51,6 +51,7 @@ class Particles {
   void calculateTemporaryParticleNumberDensity();
   void updateParticleNumberDensity();
   void updateParticleNumberDensity(const Grid& grid);
+  void updateVoxelRatio(int half_width, const Grid& grid);
   void moveInflowParticles(const Timer& timer);
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);
@@ -90,6 +91,7 @@ class Particles {
   Eigen::VectorXi particle_types;
   Eigen::VectorXi boundary_types;
   Eigen::VectorXi neighbor_particles;
+  Eigen::VectorXd voxel_ratio;
 
  protected:
   virtual double weightForParticleNumberDensity(const Eigen::Vector3d& vec) const;

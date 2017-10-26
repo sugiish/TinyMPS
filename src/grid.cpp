@@ -60,6 +60,42 @@ void Grid::getNeighbors(int index, Neighbors& neighbors) const {
   }
 }
 
+void Grid::getNeighborsInBox(int index, Neighbors& neighbors) const {
+  neighbors.clear();
+  if(valid_coordinates(index) == false) return;
+  int x_begin, x_end, y_begin, y_end, z_begin, z_end;
+  {
+    int ix, iy, iz;
+    toIndex(coordinates.col(index), ix, iy, iz);
+    x_begin = std::max(ix - 1, 0);
+    y_begin = std::max(iy - 1, 0);
+    z_begin = std::max(iz - 1, 0);
+    x_end = std::min(ix + 1, getGridNumberX() - 1);
+    y_end = std::min(iy + 1, getGridNumberY() - 1);
+    z_end = std::min(iz + 1, getGridNumberZ() - 1);
+    if(dimension == 2) {
+      z_begin = 0;
+      z_end = 0;
+    }
+  }
+  for (int gz = z_begin; gz <= z_end; ++gz) {
+    for (int gy = y_begin; gy <= y_end; ++gy) {
+      for (int gx = x_begin; gx <= x_end; ++gx) {
+        int begin, end;
+        getGridHashBegin(toHash(gx, gy, gz), begin, end);
+        if (begin == -1 || end == -1) continue;
+        for (int n = begin; n <= end; ++n) {
+          int j_particle = grid_hash[n].second;
+          if (index == j_particle) continue;
+          if (valid_coordinates(j_particle) == false) continue;
+          neighbors.push_back(j_particle);
+        }
+      }
+    }
+  }
+}
+
+
 void Grid::setHash() {
   if (size == 0) return;
   if (!begin_hash.empty()) begin_hash.clear();

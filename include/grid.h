@@ -37,6 +37,8 @@ class Grid {
   // Neighbor particles are within the distance, grid_width, from the "index" particle.
   void getNeighbors(int index, Neighbors& neighbors) const;
 
+  void getNeighborsInBox(int index, Neighbors& neighbors) const;
+
   inline int getSize() const { return size; }
   inline int getDimension() const { return dimension; }
   inline double getGridWidth() const { return grid_width; }

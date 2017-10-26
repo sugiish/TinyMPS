@@ -11,7 +11,7 @@ BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condit
   init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
-  
+
 }
 
 void BubbleParticles::writeVtkFile(const std::string& path, const std::string& title) const {
@@ -81,6 +81,12 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   for(int i = 0; i < size; ++i) {
     ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
   }
+  ofs << std::endl;
+  ofs << "SCALARS VoxelsRatio double" << std::endl;
+  ofs << "LOOKUP_TABLE VoxelsRatio" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << voxel_ratio(i) << std::endl;
+  }
 
   // extended
   ofs << std::endl;
@@ -106,7 +112,6 @@ void BubbleParticles::extendStorage(int extra_size) {
   bubble_radius.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
   void_fraction.conservativeResize(size + extra_size);
   void_fraction.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
-  
 }
 
 void BubbleParticles::setGhostParticle(int index) {
@@ -117,13 +122,13 @@ void BubbleParticles::setGhostParticle(int index) {
 
 void BubbleParticles::calculateBubbles() {
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
-    if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {      
+    if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
       double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
       if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
       if (bubble_radius(i_particle) < 0) bubble_radius(i_particle) = 0;
-      
+
       double bubble_vol = 4 * M_PI * condition_.bubble_density * bubble_radius(i_particle) * bubble_radius(i_particle) * bubble_radius(i_particle) / 3;
       void_fraction(i_particle) = bubble_vol / (1 + bubble_vol);
       if (void_fraction(i_particle) < condition_.min_void_fraction) void_fraction(i_particle) = condition_.min_void_fraction;
@@ -160,7 +165,7 @@ void BubbleParticles::solvePressurePoission(const tiny_mps::Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      // 
+      //
       double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
       sum -= mat_ij;

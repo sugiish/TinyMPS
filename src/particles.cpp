@@ -46,6 +46,7 @@ Particles::Particles(const Particles& other)
   particle_types = other.particle_types;
   boundary_types = other.boundary_types;
   neighbor_particles = other.neighbor_particles;
+  voxel_ratio = other.voxel_ratio;
 }
 
 Particles& Particles::operator=(const Particles& other) {
@@ -67,6 +68,7 @@ Particles& Particles::operator=(const Particles& other) {
     particle_types = other.particle_types;
     boundary_types = other.boundary_types;
     neighbor_particles = other.neighbor_particles;
+    voxel_ratio = other.voxel_ratio;
   }
   return *this;
 }
@@ -85,6 +87,7 @@ void Particles::initialize(int size) {
   boundary_types = Eigen::VectorXi::Zero(size);
   correction_velocity = Eigen::MatrixXd::Zero(3, size);
   neighbor_particles = Eigen::VectorXi::Zero(size);
+  voxel_ratio = Eigen::VectorXd::Zero(size);
 }
 
 void Particles::readGridFile(const std::string& path, const Condition& condition) {
@@ -194,6 +197,12 @@ void Particles::writeVtkFile(const std::string& path, const std::string& title) 
   ofs << "VECTORS CorrectionVelocity double" << std::endl;
   for(int i = 0; i < size; ++i) {
     ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
+  }
+  ofs << std::endl;
+  ofs << "SCALARS VoxelsRatio double" << std::endl;
+  ofs << "LOOKUP_TABLE VoxelsRatio" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << voxel_ratio(i) << std::endl;
   }
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
 }
@@ -451,6 +460,47 @@ void Particles::updateParticleNumberDensity(const Grid& grid) {
     }
     particle_number_density(i_particle) = pnd;
     neighbor_particles(i_particle) = count;
+  }
+}
+
+void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
+  if (condition_.dimension == 2) {
+    for (int i_particle = 0; i_particle < size; ++i_particle) {
+      if (particle_types(i_particle) == ParticleType::GHOST
+       || boundary_types(i_particle) == BoundaryType::OTHERS) {
+        voxel_ratio(i_particle) = 0;
+        continue;
+      }
+      Grid::Neighbors neighbors;
+      grid.getNeighborsInBox(i_particle, neighbors);
+      const int voxels_size = half_width * half_width * 4;
+      std::vector<int> voxels(voxels_size);
+      for (int idx = 0; idx < voxels_size; ++idx) voxels[idx] = 0;
+      for (int j_particle : neighbors) {
+        if (particle_types(j_particle) == ParticleType::GHOST) continue;
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        int x_idx = std::floor(r_ij(0) / condition_.average_distance) + half_width;
+        int y_idx = std::floor(r_ij(1) / condition_.average_distance) + half_width;
+        int hash = x_idx + y_idx * half_width * 2;
+        if (hash < 0 || hash >= voxels_size) continue;
+        if (boundary_types(j_particle) == BoundaryType::SURFACE) {
+          voxels[hash] = 1;
+        } else {
+          if (voxels[hash] != 1) voxels[hash] = 2;
+        }
+      }
+      double val_sum = 0;
+      double voxel_sum = 0;
+      for (int idx = 0; idx < voxels_size; ++idx) {
+        if (voxels[idx] > 0) {
+          voxel_sum += 2;
+          val_sum += voxels[idx];
+        }
+      }
+      voxel_ratio(i_particle) = (voxel_sum)? val_sum / voxel_sum : 0;
+    }
+  } else {
+    throw std::out_of_range("Not implemented for 3d.");
   }
 }
 
