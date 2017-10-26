@@ -70,6 +70,7 @@
       "slist": "cpp",
       "mutex": "cpp",
       "thread": "cpp",
-      "strstream": "cpp"
+      "strstream": "cpp",
+      "string_view": "cpp"
     }
   }

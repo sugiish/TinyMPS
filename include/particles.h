@@ -59,6 +59,7 @@ class Particles {
   void solvePressurePoisson(const Timer& timer);
   void solvePressurePoissonOriginal(const Timer& timer, const Grid& grid);
   void solvePressurePoissonTanakaMasunaga(const Timer& timer);
+  void solvePressurePoissonTamai(const Timer& timer);
   void correctVelocity(const Timer& timer);
   void correctVelocity(const Timer& timer, const Grid& grid);
   void correctVelocityExplicitly(const Timer& timer);

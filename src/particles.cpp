@@ -490,14 +490,10 @@ void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
         }
       }
       double val_sum = 0;
-      double voxel_sum = 0;
       for (int idx = 0; idx < voxels_size; ++idx) {
-        if (voxels[idx] > 0) {
-          voxel_sum += 2;
-          val_sum += voxels[idx];
-        }
+        val_sum += voxels[idx];
       }
-      voxel_ratio(i_particle) = (voxel_sum)? val_sum / voxel_sum : 0;
+      voxel_ratio(i_particle) = val_sum / voxels_size;
     }
   } else {
     throw std::out_of_range("Not implemented for 3d.");
@@ -727,6 +723,66 @@ void Particles::solvePressurePoissonTanakaMasunaga(const Timer& timer) {
     source(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_particle_number_density)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+  }
+  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+
+  // Solving a problem
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+  cg.compute(p_mat);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed decompostion." << std::endl;
+  }
+  pressure = cg.solve(source);
+  if (cg.info() != Eigen::ComputationInfo::Success) {
+    std::cerr << "Error: Failed solving." << std::endl;
+  }
+  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+  for (int i = 0; i < size; ++i) {
+    if (pressure(i) < 0) pressure(i) = 0;
+  }
+}
+
+void Particles::solvePressurePoissonTamai(const Timer& timer) {
+  Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  using T = Eigen::Triplet<double>;
+  double lap_r = grid.getGridWidth();
+  int n_size = (int)(std::pow(lap_r * 2, dimension));
+  double delta_time = timer.getCurrentDeltaTime();
+  Eigen::SparseMatrix<double> p_mat(size, size);
+  Eigen::VectorXd source(size);
+  std::vector<T> coeffs(size * n_size);
+  std::vector<int> neighbors(n_size * 2);
+  source.setZero();
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    }
+    grid.getNeighbors(i_particle, neighbors);
+    double sum = 0.0;
+    double div_vel = 0.0;
+    double div_tmp_vel = 0.0;
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
+              / (laplacian_lambda_pressure * initial_particle_number_density);
+      sum -= mat_ij;
+      div_vel += (velocity.col(j_particle) - velocity.col(i_particle)).dot(r_ij)
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+      div_tmp_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+              if (boundary_types(j_particle) == BoundaryType::INNER) {
+        coeffs.push_back(T(i_particle, j_particle, mat_ij));
+      }
+    }
+    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
+    coeffs.push_back(T(i_particle, i_particle, sum));
+    double pnd_diff = (particle_number_density(i_particle) - initial_particle_number_density * voxel_ratio(i_particle)) / (initial_particle_number_density * voxel_ratio(i_particle));
+    source(i_particle) = (div_tmp_vel + std::abs(pnd_diff) * div_vel + std::abs(div_vel) * pnd_diff) * condition_.mass_density / delta_time;
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
 
