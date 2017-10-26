@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
       particles.checkSurfaceParticles();
-      particles.solvePressurePoission(timer);
+      particles.solvePressurePoisson(timer);
       particles.correctVelocity(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
       // particles.calculateTemporaryVelocity(condition.gravity, timer);
       // particles.calculateTemporaryParticleNumberDensity();
       // particles.checkSurfaceParticles();
-      // particles.solvePressurePoissionTanakaMasunaga(timer);
+      // particles.solvePressurePoissonTanakaMasunaga(timer);
       // particles.correctVelocityTanakaMasunagaWithTensor(timer);
       // // particles.correctVelocityExplicitly(timer);
       // particles.updateTemporaryPosition(timer);

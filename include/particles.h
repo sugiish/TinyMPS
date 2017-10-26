@@ -56,9 +56,9 @@ class Particles {
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);
   void updateTemporaryPosition(const Timer& timer);
-  void solvePressurePoission(const Timer& timer);
-  void solvePressurePoissionOriginal(const Timer& timer, const Grid& grid);
-  void solvePressurePoissionTanakaMasunaga(const Timer& timer);
+  void solvePressurePoisson(const Timer& timer);
+  void solvePressurePoissonOriginal(const Timer& timer, const Grid& grid);
+  void solvePressurePoissonTanakaMasunaga(const Timer& timer);
   void correctVelocity(const Timer& timer);
   void correctVelocity(const Timer& timer, const Grid& grid);
   void correctVelocityExplicitly(const Timer& timer);

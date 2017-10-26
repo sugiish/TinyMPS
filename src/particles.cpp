@@ -576,7 +576,7 @@ void Particles::updateTemporaryPosition(const Timer& timer) {
   temporary_position = position + timer.getCurrentDeltaTime() * temporary_velocity;
 }
 
-void Particles::solvePressurePoission(const Timer& timer) {
+void Particles::solvePressurePoisson(const Timer& timer) {
   Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
   using T = Eigen::Triplet<double>;
   double lap_r = grid.getGridWidth();
@@ -634,7 +634,7 @@ void Particles::solvePressurePoission(const Timer& timer) {
   }
 }
 
-void Particles::solvePressurePoissionOriginal(const Timer& timer, const Grid& grid) {
+void Particles::solvePressurePoissonOriginal(const Timer& timer, const Grid& grid) {
   using T = Eigen::Triplet<double>;
   double lap_r = grid.getGridWidth();
   int n_size = (int)(std::pow(lap_r * 2, dimension));
@@ -688,7 +688,7 @@ void Particles::solvePressurePoissionOriginal(const Timer& timer, const Grid& gr
   }
 }
 
-void Particles::solvePressurePoissionTanakaMasunaga(const Timer& timer) {
+void Particles::solvePressurePoissonTanakaMasunaga(const Timer& timer) {
   Grid grid(condition_.laplacian_pressure_weight_radius, position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
   using T = Eigen::Triplet<double>;
   double lap_r = grid.getGridWidth();

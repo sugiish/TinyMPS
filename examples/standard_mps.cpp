@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
       particles.calculateTemporaryParticleNumberDensity();
       particles.updateVoxelRatio(2, grid);
       particles.checkSurfaceParticles();
-      particles.solvePressurePoission(timer);
+      particles.solvePressurePoisson(timer);
       particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();

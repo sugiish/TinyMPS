@@ -138,7 +138,7 @@ void BubbleParticles::calculateBubbles() {
 }
 
 
-void BubbleParticles::solvePressurePoission(const tiny_mps::Timer& timer) {
+void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
   using namespace tiny_mps;
   Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
   using T = Eigen::Triplet<double>;

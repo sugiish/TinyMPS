@@ -18,7 +18,7 @@ class BubbleParticles : public tiny_mps::Particles {
   void extendStorage(int extra_size);
   void setGhostParticle(int index);
   void calculateBubbles();
-  void solvePressurePoission(const tiny_mps::Timer& timer);
+  void solvePressurePoisson(const tiny_mps::Timer& timer);
 
  private:
   Eigen::VectorXd bubble_radius;
