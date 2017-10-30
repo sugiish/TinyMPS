@@ -59,7 +59,7 @@ viscosity_calculation                   on
 #    TIME
 initial_time(sec)                       0
 finish_time(sec)                        1.0
-delta_time(sec)                         1.0e-3
+delta_time(sec)                         1.0e-4
 min_delta_time(ratio)                   1.0e-3
 output_interval(sec)                    1.0e-2
 
@@ -68,7 +68,7 @@ courant_number                          0.2
 diffusion_number                        0.2
 
 #    INFLUENCE RATIO
-pnd_influence(ratio)                    3.1
+pnd_influence(ratio)                    2.1
 gradient_influence(ratio)               2.1
 laplacian_pressure_influence(ratio)     4.0
 laplacian_viscosity_influence(ratio)    4.0
@@ -89,9 +89,9 @@ head_pressure(Pa)                       101325.0
 temperature(K)                          292.0
 gas_constant(J/K*mol)                   8.3144621
 
-relaxation_coefficient_pnd              0.2
+relaxation_coefficient_pnd              1.0
 relaxation_coefficient_vel_div          0.0
-weak_compressibility(ratio)             1.0e-6
+weak_compressibility(ratio)             0.0
 extra_ghost_particles                   0
 additional_ghost_particles              1000
 

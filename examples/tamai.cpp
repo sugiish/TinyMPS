@@ -27,10 +27,10 @@ int main(int argc, char* argv[]) {
       particles.updateTemporaryPosition(timer);
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
-      tiny_mps::Grid grid(condition.pnd_weight_radius, particles.temporary_position, particles.particle_types.array() != tiny_mps::ParticleType::GHOST, condition.dimension);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.updateVoxelRatio(3, grid);
       particles.checkSurfaceParticles();
+      tiny_mps::Grid grid(condition.pnd_weight_radius, particles.temporary_position, particles.particle_types.array() != tiny_mps::ParticleType::GHOST, condition.dimension);
+      particles.updateVoxelRatio(2, grid);
       particles.solvePressurePoissonTamai(timer);
       particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);
