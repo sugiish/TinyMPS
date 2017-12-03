@@ -51,7 +51,7 @@ class Particles {
   void calculateTemporaryParticleNumberDensity();
   void updateParticleNumberDensity();
   void updateParticleNumberDensity(const Grid& grid);
-  void updateVoxelRatio(int half_width, const Grid& grid);
+  void updateVoxelRatio(int width, const Grid& grid);
   void moveInflowParticles(const Timer& timer);
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer);
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);

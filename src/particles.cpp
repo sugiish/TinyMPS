@@ -463,7 +463,7 @@ void Particles::updateParticleNumberDensity(const Grid& grid) {
   }
 }
 
-void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
+void Particles::updateVoxelRatio(int width, const Grid& grid) {
   if (condition_.dimension == 2) {
     for (int i_particle = 0; i_particle < size; ++i_particle) {
       if (particle_types(i_particle) == ParticleType::GHOST
@@ -473,18 +473,28 @@ void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
       }
       Grid::Neighbors neighbors;
       grid.getNeighborsInBox(i_particle, neighbors);
-      const int voxels_size = half_width * half_width * 4;
+      const int voxels_size = width * width;
       std::vector<int> voxels(voxels_size);
+      double shift = width * condition_.average_distance / 2.0;
       for (int idx = 0; idx < voxels_size; ++idx) voxels[idx] = 0;
+      double center_hash = voxels_size / 2;
+      if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+        voxels[center_hash] = 1;
+      } else {
+        if (voxels[center_hash] != 1) voxels[center_hash] = 2;
+      }
+      bool near_surface = false;
       for (int j_particle : neighbors) {
         if (particle_types(j_particle) == ParticleType::GHOST) continue;
         Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-        int x_idx = std::floor(r_ij(0) / condition_.average_distance) + half_width;
-        int y_idx = std::floor(r_ij(1) / condition_.average_distance) + half_width;
-        int hash = x_idx + y_idx * half_width * 2;
+        int x_idx = std::floor((r_ij(0) + shift) / condition_.average_distance);
+        int y_idx = std::floor((r_ij(1) + shift) / condition_.average_distance);
+        if (x_idx < 0 || x_idx >= width || y_idx < 0 || y_idx >= width) continue;
+        int hash = x_idx + y_idx * width;
         if (hash < 0 || hash >= voxels_size) continue;
         if (boundary_types(j_particle) == BoundaryType::SURFACE) {
           voxels[hash] = 1;
+          near_surface = true;
         } else {
           if (voxels[hash] != 1) voxels[hash] = 2;
         }
@@ -493,7 +503,7 @@ void Particles::updateVoxelRatio(int half_width, const Grid& grid) {
       for (int idx = 0; idx < voxels_size; ++idx) {
         val_sum += voxels[idx];
       }
-      voxel_ratio(i_particle) = val_sum / (voxels_size * 2);
+      voxel_ratio(i_particle) = (near_surface)? val_sum / (voxels_size * 2) : 1.0;
     }
   } else {
     throw std::out_of_range("Not implemented for 3d.");

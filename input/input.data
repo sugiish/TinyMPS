@@ -61,7 +61,7 @@ initial_time(sec)                       0
 finish_time(sec)                        1.0
 delta_time(sec)                         1.0e-3
 min_delta_time(ratio)                   1.0e-3
-output_interval(sec)                    1.0e-2
+output_interval(sec)                    1.0e-3
 
 #    CFL CONDITION
 courant_number                          0.2
@@ -69,7 +69,7 @@ diffusion_number                        0.2
 
 #    INFLUENCE RATIO
 pnd_influence(ratio)                    2.1
-gradient_influence(ratio)               2.1
+gradient_influence(ratio)               3.1
 laplacian_pressure_influence(ratio)     4.0
 laplacian_viscosity_influence(ratio)    4.0
 
@@ -80,7 +80,7 @@ gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
 surface_threshold_pnd                   0.95
-surface_threshold_number                0.95
+surface_threshold_number                0.85
 
 #    PHYSICAL PROPERTIES
 mass_density(kg/m^3)                    1000.0

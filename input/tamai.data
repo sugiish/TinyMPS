@@ -61,7 +61,7 @@ initial_time(sec)                       0
 finish_time(sec)                        1.0
 delta_time(sec)                         1.0e-4
 min_delta_time(ratio)                   1.0e-3
-output_interval(sec)                    1.0e-2
+output_interval(sec)                    1.0e-3
 
 #    CFL CONDITION
 courant_number                          0.2
