@@ -111,13 +111,15 @@ class Particles {
   double initial_neighbor_particles;
   double inflow_stride;
 
+ protected:
+  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat);
+
  private:
   using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   void initialize(int particles_number);
   void readGridFile(const std::string& path, const Condition& condition);
   void setInitialParticleNumberDensity();
   void setLaplacianLambda();
-  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat);
 
   static inline double weightStandard(const double distance, const double influence_radius) {
     if (distance < influence_radius) return (influence_radius / distance - 1.0);

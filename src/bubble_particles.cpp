@@ -146,17 +146,15 @@ void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
   int n_size = (int)(std::pow(lap_r * 2, dimension));
   double delta_time = timer.getCurrentDeltaTime();
   Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
+  source_term.setZero();
   std::vector<T> coeffs(size * n_size);
   std::vector<int> neighbors(n_size * 2);
-  source.setZero();
   for (int i_particle = 0; i_particle < size; ++i_particle) {
     if (boundary_types(i_particle) == BoundaryType::OTHERS) {
       coeffs.push_back(T(i_particle, i_particle, 1.0));
       continue;
     } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
       coeffs.push_back(T(i_particle, i_particle, 1.0));
-      // source(i_particle) = condition_.head_pressure;
       continue;
     }
     grid.getNeighbors(i_particle, neighbors);
@@ -165,7 +163,6 @@ void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
     for (int j_particle : neighbors) {
       if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
       Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      //
       double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
               / (laplacian_lambda_pressure * initial_particle_number_density);
       sum -= mat_ij;
@@ -174,33 +171,16 @@ void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
       if (boundary_types(j_particle) == BoundaryType::INNER) {
         coeffs.push_back(T(i_particle, j_particle, mat_ij));
       }
-      if (boundary_types(j_particle) == BoundaryType::SURFACE) {
-        // source(i_particle) -= mat_ij * condition_.head_pressure;
-      }
     }
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
     double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
-    source(i_particle) += div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+    source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_pnd_i)
-                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_pnd_i);
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  // for (int i = 0; i < size; ++i) {
-  //   if (pressure(i) < 0) pressure(i) = 0;
-  // }
+  solveConjugateGradient(p_mat);
 }
 
 }
