@@ -61,7 +61,7 @@ initial_time(sec)                       0
 finish_time(sec)                        1.0e-2
 delta_time(sec)                         1.0e-6
 min_delta_time(ratio)                   1.0e-3
-output_interval(sec)                    1.0e-6
+output_interval(sec)                    1.0e-5
 
 #    CFL CONDITION
 courant_number                          0.2
@@ -69,7 +69,7 @@ diffusion_number                        0.2
 
 #    INFLUENCE RATIO
 pnd_influence(ratio)                    2.1
-gradient_influence(ratio)               2.1
+gradient_influence(ratio)               3.1
 laplacian_pressure_influence(ratio)     4.0
 laplacian_viscosity_influence(ratio)    4.0
 
@@ -79,8 +79,8 @@ gravity_y(m/s^2)                        0.0
 gravity_z(m/s^2)                        0.0
 
 #    SURFACE CONDITION
-surface_threshold_pnd                   0.90
-surface_threshold_number                0.80
+surface_threshold_pnd                   0.95
+surface_threshold_number                0.85
 
 #    PHYSICAL PROPERTIES
 mass_density(kg/m^3)                    1000.0
@@ -91,7 +91,7 @@ gas_constant(J/K*mol)                   8.3144621
 
 relaxation_coefficient_pnd              0.2
 relaxation_coefficient_vel_div          0.0
-weak_compressibility(ratio)             1.0e-9
+weak_compressibility(ratio)             1.0e-6
 extra_ghost_particles                   0
 additional_ghost_particles              1000
 
