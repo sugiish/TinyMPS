@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
       particles.calculateTemporaryParticleNumberDensity();
       particles.checkSurfaceParticles();
       particles.solvePressurePoisson(timer);
+      particles.setZeroOnNegativePressure();
       particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();

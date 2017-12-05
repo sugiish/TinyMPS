@@ -46,6 +46,7 @@ Particles::Particles(const Particles& other)
   particle_types = other.particle_types;
   boundary_types = other.boundary_types;
   neighbor_particles = other.neighbor_particles;
+  source_term = other.source_term;
   voxel_ratio = other.voxel_ratio;
 }
 
@@ -68,6 +69,7 @@ Particles& Particles::operator=(const Particles& other) {
     particle_types = other.particle_types;
     boundary_types = other.boundary_types;
     neighbor_particles = other.neighbor_particles;
+    source_term = other.source_term;
     voxel_ratio = other.voxel_ratio;
   }
   return *this;
@@ -87,6 +89,7 @@ void Particles::initialize(int size) {
   boundary_types = Eigen::VectorXi::Zero(size);
   correction_velocity = Eigen::MatrixXd::Zero(3, size);
   neighbor_particles = Eigen::VectorXi::Zero(size);
+  source_term = Eigen::VectorXd::Zero(size);
   voxel_ratio = Eigen::VectorXd::Zero(size);
 }
 
@@ -197,6 +200,12 @@ void Particles::writeVtkFile(const std::string& path, const std::string& title) 
   ofs << "VECTORS CorrectionVelocity double" << std::endl;
   for(int i = 0; i < size; ++i) {
     ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
+  }
+  ofs << std::endl;
+  ofs << "SCALARS SourceTerm double" << std::endl;
+  ofs << "LOOKUP_TABLE SourceTerm" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << source_term(i) << std::endl;
   }
   ofs << std::endl;
   ofs << "SCALARS VoxelsRatio double" << std::endl;
@@ -334,6 +343,8 @@ void Particles::extendStorage(int extra_size) {
   neighbor_particles.conservativeResize(size + extra_size);
   boundary_types.conservativeResize(size + extra_size);
   particle_types.conservativeResize(size + extra_size);
+  source_term.conservativeResize(size + extra_size);
+  voxel_ratio.conservativeResize(size + extra_size);
 
   position.block(0, size, 3, extra_size)            = Eigen::MatrixXd::Zero(3, extra_size);
   velocity.block(0, size, 3, extra_size)            = Eigen::MatrixXd::Zero(3, extra_size);
@@ -343,6 +354,8 @@ void Particles::extendStorage(int extra_size) {
   pressure.segment(size, extra_size)                = Eigen::VectorXd::Zero(extra_size);
   particle_number_density.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
   neighbor_particles.segment(size, extra_size)      = Eigen::VectorXi::Zero(extra_size);
+  source_term.segment(size, extra_size)             = Eigen::VectorXd::Zero(extra_size);
+  voxel_ratio.segment(size, extra_size)             = Eigen::VectorXd::Zero(extra_size);
   for (int i_particle = size; i_particle < size + extra_size; ++i_particle) {
     particle_types(i_particle) = ParticleType::GHOST;
     boundary_types(i_particle) = BoundaryType::OTHERS;
@@ -391,6 +404,8 @@ void Particles::setGhostParticle(int index) {
   temporary_position.col(index).setZero();
   temporary_velocity.col(index).setZero();
   correction_velocity.col(index).setZero();
+  source_term(index) = 0.0;
+  voxel_ratio(index) = 0.0;
   ghost_stack.push(index);
   std::cout << "Changed ghost particle: " << index << std::endl;
 }
@@ -589,10 +604,9 @@ void Particles::solvePressurePoisson(const Timer& timer) {
   int n_size = (int)(std::pow(lap_r * 2, dimension));
   double delta_time = timer.getCurrentDeltaTime();
   Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
+  source_term.setZero();
   std::vector<T> coeffs(size * n_size);
   std::vector<int> neighbors(n_size * 2);
-  source.setZero();
   for (int i_particle = 0; i_particle < size; ++i_particle) {
     if (boundary_types(i_particle) == BoundaryType::OTHERS) {
       coeffs.push_back(T(i_particle, i_particle, 1.0));
@@ -618,80 +632,12 @@ void Particles::solvePressurePoisson(const Timer& timer) {
     }
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
-    source(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+    source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_particle_number_density)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  for (int i = 0; i < size; ++i) {
-    if (pressure(i) < 0) pressure(i) = 0;
-  }
-}
-
-void Particles::solvePressurePoissonOriginal(const Timer& timer, const Grid& grid) {
-  using T = Eigen::Triplet<double>;
-  double lap_r = grid.getGridWidth();
-  int n_size = (int)(std::pow(lap_r * 2, dimension));
-  double delta_time = timer.getCurrentDeltaTime();
-  Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
-  std::vector<T> coeffs(size * n_size);
-  std::vector<int> neighbors(n_size * 2);
-  source.setZero();
-  for (int i_particle = 0; i_particle < size; ++i_particle) {
-    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
-      coeffs.push_back(T(i_particle, i_particle, 1.0));
-      continue;
-    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
-      coeffs.push_back(T(i_particle, i_particle, 1.0));
-      continue;
-    }
-    grid.getNeighbors(i_particle, neighbors);
-    double sum = 0.0;
-    for (int j_particle : neighbors) {
-      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
-      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
-              / (laplacian_lambda_pressure * initial_particle_number_density);
-      sum -= mat_ij;
-      if (boundary_types(j_particle) == BoundaryType::INNER) {
-        coeffs.push_back(T(i_particle, j_particle, mat_ij));
-      }
-    }
-    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
-    coeffs.push_back(T(i_particle, i_particle, sum));
-    source(i_particle) = - (particle_number_density(i_particle) - initial_particle_number_density)
-                * condition_.relaxation_coefficient_pnd * condition_.mass_density
-                / (delta_time * delta_time * initial_particle_number_density);
-  }
-  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  for (int i = 0; i < size; ++i) {
-    if (pressure(i) < 0) pressure(i) = 0;
-  }
+  solveConjugateGradient(p_mat);
 }
 
 void Particles::solvePressurePoissonTanakaMasunaga(const Timer& timer) {
@@ -701,10 +647,9 @@ void Particles::solvePressurePoissonTanakaMasunaga(const Timer& timer) {
   int n_size = (int)(std::pow(lap_r * 2, dimension));
   double delta_time = timer.getCurrentDeltaTime();
   Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
   std::vector<T> coeffs(size * n_size);
   std::vector<int> neighbors(n_size * 2);
-  source.setZero();
+  source_term.setZero();
   for (int i_particle = 0; i_particle < size; ++i_particle) {
     if (boundary_types(i_particle) == BoundaryType::OTHERS) {
       coeffs.push_back(T(i_particle, i_particle, 1.0));
@@ -730,26 +675,12 @@ void Particles::solvePressurePoissonTanakaMasunaga(const Timer& timer) {
     }
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
-    source(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+    source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
                 - (particle_number_density(i_particle) - initial_particle_number_density)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  for (int i = 0; i < size; ++i) {
-    if (pressure(i) < 0) pressure(i) = 0;
-  }
+  solveConjugateGradient(p_mat);
 }
 
 void Particles::solvePressurePoissonTamai(const Timer& timer) {
@@ -759,10 +690,9 @@ void Particles::solvePressurePoissonTamai(const Timer& timer) {
   int n_size = (int)(std::pow(lap_r * 2, dimension));
   double delta_time = timer.getCurrentDeltaTime();
   Eigen::SparseMatrix<double> p_mat(size, size);
-  Eigen::VectorXd source(size);
   std::vector<T> coeffs(size * n_size);
   std::vector<int> neighbors(n_size * 2);
-  source.setZero();
+  source_term.setZero();
   for (int i_particle = 0; i_particle < size; ++i_particle) {
     if (boundary_types(i_particle) == BoundaryType::OTHERS) {
       coeffs.push_back(T(i_particle, i_particle, 1.0));
@@ -792,38 +722,26 @@ void Particles::solvePressurePoissonTamai(const Timer& timer) {
     sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
     coeffs.push_back(T(i_particle, i_particle, sum));
     double pnd_diff = (particle_number_density(i_particle) - initial_particle_number_density * voxel_ratio(i_particle)) / (initial_particle_number_density * voxel_ratio(i_particle));
-    source(i_particle) = (div_tmp_vel + std::abs(pnd_diff) * div_vel + std::abs(div_vel) * pnd_diff) * condition_.mass_density / delta_time;
+    source_term(i_particle) = (div_tmp_vel + std::abs(pnd_diff) * div_vel + std::abs(div_vel) * pnd_diff) * condition_.mass_density / delta_time;
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
-
-  // Solving a problem
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
-  cg.compute(p_mat);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed decompostion." << std::endl;
-  }
-  pressure = cg.solve(source);
-  if (cg.info() != Eigen::ComputationInfo::Success) {
-    std::cerr << "Error: Failed solving." << std::endl;
-  }
-  std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
-  for (int i = 0; i < size; ++i) {
-    if (pressure(i) < 0) pressure(i) = 0;
-  }
+  solveConjugateGradient(p_mat);
 }
 
-void Particles::solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source) {
-  Eigen::VectorXd solutions;
+void Particles::solveConjugateGradient(Eigen::SparseMatrix<double> p_mat) {
   Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
   cg.compute(p_mat);
   if (cg.info() != Eigen::ComputationInfo::Success) {
     std::cerr << "Error: Failed decompostion." << std::endl;
   }
-  solutions = cg.solve(source);
+  pressure = cg.solve(source_term);
   if (cg.info() != Eigen::ComputationInfo::Success) {
     std::cerr << "Error: Failed solving." << std::endl;
   }
   std::cout << "Solver - iterations: " << cg.iterations() << ", estimated error: " << cg.error() << std::endl;
+}
+
+void Particles::setZeroOnNegativePressure(){
   for (int i = 0; i < size; ++i) {
     if (pressure(i) < 0) pressure(i) = 0;
   }

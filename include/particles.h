@@ -57,9 +57,9 @@ class Particles {
   void calculateTemporaryVelocity(const Eigen::Vector3d& force, const Timer& timer, Grid& grid);
   void updateTemporaryPosition(const Timer& timer);
   void solvePressurePoisson(const Timer& timer);
-  void solvePressurePoissonOriginal(const Timer& timer, const Grid& grid);
   void solvePressurePoissonTanakaMasunaga(const Timer& timer);
   void solvePressurePoissonTamai(const Timer& timer);
+  void setZeroOnNegativePressure();
   void correctVelocity(const Timer& timer);
   void correctVelocity(const Timer& timer, const Grid& grid);
   void correctVelocityExplicitly(const Timer& timer);
@@ -92,6 +92,7 @@ class Particles {
   Eigen::VectorXi particle_types;
   Eigen::VectorXi boundary_types;
   Eigen::VectorXi neighbor_particles;
+  Eigen::VectorXd source_term;
   Eigen::VectorXd voxel_ratio;
 
  protected:
@@ -116,7 +117,7 @@ class Particles {
   void readGridFile(const std::string& path, const Condition& condition);
   void setInitialParticleNumberDensity();
   void setLaplacianLambda();
-  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat, Eigen::VectorXd source);
+  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat);
 
   static inline double weightStandard(const double distance, const double influence_radius) {
     if (distance < influence_radius) return (influence_radius / distance - 1.0);

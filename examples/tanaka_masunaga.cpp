@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
       particles.calculateTemporaryParticleNumberDensity();
       particles.checkSurfaceParticles();
       particles.solvePressurePoissonTanakaMasunaga(timer);
+      particles.setZeroOnNegativePressure();
       // particles.correctVelocityTanakaMasunagaWithTensor(timer);
       particles.correctVelocityExplicitly(timer);
       particles.updateTemporaryPosition(timer);

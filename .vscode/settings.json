@@ -71,6 +71,9 @@
       "mutex": "cpp",
       "thread": "cpp",
       "strstream": "cpp",
-      "string_view": "cpp"
+      "string_view": "cpp",
+      "iomanip": "cpp",
+      "numeric": "cpp",
+      "optional": "cpp"
     }
   }
