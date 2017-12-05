@@ -120,6 +120,24 @@ void BubbleParticles::setGhostParticle(int index) {
   void_fraction(index) = condition_.initial_void_fraction;
 }
 
+void BubbleParticles::checkSurface(double shift){
+  using namespace tiny_mps;
+  for(int i = 0; i < getSize(); ++i) {
+    if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL
+        || particle_types(i) == ParticleType::INFLOW) {
+      if (particle_number_density(i) < condition_.surface_threshold_pnd * initial_particle_number_density
+              && neighbor_particles(i) < condition_.surface_threshold_number * initial_neighbor_particles
+              && temporary_position(1, i) < shift) {
+        boundary_types(i) = BoundaryType::SURFACE;
+      } else {
+        boundary_types(i) = BoundaryType::INNER;
+      }
+    } else {
+      boundary_types(i) = BoundaryType::OTHERS;
+    }
+  }
+}
+
 void BubbleParticles::calculateBubbles() {
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {

@@ -21,7 +21,8 @@ int main(int argc, char* argv[]) {
     tiny_mps::Condition condition(input_data);
     my_mps::BubbleParticles particles(input_grid, condition);
     tiny_mps::Timer timer(condition);
-    Eigen::Vector3d minpos(-0.1, -0.1, 0);
+    Eigen::Vector3d minpos(-0.1, -2.1 * condition.average_distance, 0);
+    // Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop(output_path, timer)) {
       particles.moveInflowParticles(timer);
@@ -32,13 +33,13 @@ int main(int argc, char* argv[]) {
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurfaceParticles();
+      particles.checkSurface(2.1 * condition.average_distance);
       particles.solvePressurePoisson(timer);
-      particles.correctVelocity(timer);
+      particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
-      
+
       // particles.moveInflowParticles(timer);
       // // particles.shiftParticles(2.1, 0.03);
       // particles.giveCollisionRepulsionForce();
