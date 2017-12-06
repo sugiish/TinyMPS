@@ -70,6 +70,7 @@ class Condition {
   double min_void_fraction;
   double bubble_density;
   double vapor_pressure;
+  double secondary_surface_eta;
 
  private:
   void readDataFile(std::string path);

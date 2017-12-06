@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurface(2.1 * condition.average_distance);
+      particles.checkSurface();
       particles.solvePressurePoisson(timer);
       particles.correctVelocityWithTensor(timer);
       particles.updateTemporaryPosition(timer);

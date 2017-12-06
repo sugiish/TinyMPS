@@ -109,3 +109,6 @@ initial_void_fraction                   0.001
 min_void_fraction                       1.0e-6
 bubble_density                          1.0e12
 vapor_pressure                          2200
+
+#   ADDITIONAL PARAMETER
+secondary_surface_eta                   1.1

@@ -60,6 +60,7 @@ Condition::Condition(std::string path) {
   getValue("min_void_fraction", min_void_fraction);
   getValue("bubble_density", bubble_density);
   getValue("vapor_pressure", vapor_pressure);
+  getValue("secondary_surface_eta", secondary_surface_eta);
 
   pnd_weight_radius = pnd_influence * average_distance;
   gradient_radius = gradient_influence * average_distance;

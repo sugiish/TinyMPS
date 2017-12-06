@@ -136,20 +136,69 @@ void BubbleParticles::setGhostParticle(int index) {
   void_fraction(index) = condition_.initial_void_fraction;
 }
 
-void BubbleParticles::checkSurface(double shift){
+void BubbleParticles::checkSurface(){
+  // First step.
   using namespace tiny_mps;
-  for(int i = 0; i < getSize(); ++i) {
-    if (particle_types(i) == ParticleType::NORMAL || particle_types(i) == ParticleType::WALL
-        || particle_types(i) == ParticleType::INFLOW) {
-      if (particle_number_density(i) < condition_.surface_threshold_pnd * initial_particle_number_density
-              && neighbor_particles(i) < condition_.surface_threshold_number * initial_neighbor_particles
-              && temporary_position(1, i) < shift) {
-        boundary_types(i) = BoundaryType::SURFACE;
+  for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == ParticleType::NORMAL || particle_types(i_particle) == ParticleType::WALL
+        || particle_types(i_particle) == ParticleType::INFLOW) {
+      if (particle_number_density(i_particle) < condition_.surface_threshold_pnd * initial_particle_number_density
+              && neighbor_particles(i_particle) < condition_.surface_threshold_number * initial_neighbor_particles) {
+              // && temporary_position(1, i) < shift) {
+        boundary_types(i_particle) = BoundaryType::SURFACE;
+        free_surface_type(i_particle) = SurfaceLayer::OUTER_SURFACE;
       } else {
-        boundary_types(i) = BoundaryType::INNER;
+        boundary_types(i_particle) = BoundaryType::INNER;
+        free_surface_type(i_particle) = SurfaceLayer::INNER;
       }
     } else {
-      boundary_types(i) = BoundaryType::OTHERS;
+      boundary_types(i_particle) = BoundaryType::OTHERS;
+      free_surface_type(i_particle) = SurfaceLayer::OTHERS;
+    }
+  }
+  // Second step.
+  Grid grid(condition_.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
+  constexpr double root2 = std::sqrt(2); 
+  for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if(boundary_types(i_particle) == BoundaryType::SURFACE) {
+      Grid::Neighbors neighbors;
+      grid.getNeighbors(i_particle, neighbors);
+      if (neighbors.empty()) continue;
+      Eigen::Vector3d n_vec(0, 0, 0);
+      for (int j_particle : neighbors) {
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        n_vec += r_ij.normalized() * weightForParticleNumberDensity(r_ij);
+      }
+      n_vec /= particle_number_density(i_particle);
+      n_vec.normalize();
+      for (int j_particle : neighbors) {
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        if (r_ij.norm() >= root2 * condition_.average_distance
+            && (temporary_position.col(i_particle) + condition_.average_distance * n_vec - temporary_position.col(j_particle)).norm() < condition_.average_distance) {
+          boundary_types(i_particle) = BoundaryType::INNER;
+          free_surface_type(i_particle) = SurfaceLayer::INNER;
+          break;
+        }
+        if (r_ij.norm() < root2 * condition_.average_distance
+            && r_ij.normalized().dot(n_vec) > 1.0 / root2) {
+          boundary_types(i_particle) = BoundaryType::INNER;
+          free_surface_type(i_particle) = SurfaceLayer::INNER;
+          break;
+        }
+      }
+    }
+  }
+  // Third step.
+  Grid judge_inner_surface(condition_.average_distance * condition_.secondary_surface_eta, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      Grid::Neighbors neighbors;
+      judge_inner_surface.getNeighbors(i_particle, neighbors);
+      if (neighbors.empty()) continue;
+      for (int j_particle : neighbors) {
+        if (boundary_types(j_particle) == BoundaryType::INNER && free_surface_type(j_particle) == SurfaceLayer::INNER)
+          free_surface_type(j_particle) = SurfaceLayer::INNER_SURFACE; 
+      }
     }
   }
 }

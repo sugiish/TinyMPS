@@ -8,6 +8,13 @@
 
 namespace my_mps{
 
+enum SurfaceLayer {
+  INNER = 0,
+  OUTER_SURFACE = 1,
+  INNER_SURFACE = 2,
+  OTHERS = -1
+};
+
 class BubbleParticles : public tiny_mps::Particles {
  public:
   BubbleParticles(const std::string& path, const tiny_mps::Condition& condition);
@@ -19,7 +26,7 @@ class BubbleParticles : public tiny_mps::Particles {
   void setGhostParticle(int index);
   void calculateBubbles();
   void solvePressurePoisson(const tiny_mps::Timer& timer);
-  void checkSurface(double shift);
+  void checkSurface();
 
  private:
   Eigen::VectorXd bubble_radius;
