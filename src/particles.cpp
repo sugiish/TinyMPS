@@ -532,7 +532,6 @@ void Particles::moveInflowParticles(const Timer& timer) {
     for (int i_particle = 0; i_particle < size; ++i_particle) {
       if (particle_types(i_particle) == ParticleType::INFLOW) {
         int new_index = addParticle();
-        ghost_stack.pop();
         particle_types(new_index) = ParticleType::NORMAL;
         boundary_types(new_index) = boundary_types(i_particle);
         position.col(new_index) = position.col(i_particle);

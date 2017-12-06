@@ -24,6 +24,7 @@ class BubbleParticles : public tiny_mps::Particles {
  private:
   Eigen::VectorXd bubble_radius;
   Eigen::VectorXd void_fraction;
+  Eigen::VectorXi free_surface_type;
   double init_bubble_radius;
 };
 

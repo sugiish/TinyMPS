@@ -11,6 +11,7 @@ BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condit
   init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
+  free_surface_type = Eigen::VectorXi::Zero(getSize());
 
 }
 
@@ -82,6 +83,12 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
     ofs << correction_velocity(0, i) << " " << correction_velocity(1, i) << " " << correction_velocity(2, i) << std::endl;
   }
   ofs << std::endl;
+  ofs << "SCALARS SourceTerm double" << std::endl;
+  ofs << "LOOKUP_TABLE SourceTerm" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << source_term(i) << std::endl;
+  }
+  ofs << std::endl;
   ofs << "SCALARS VoxelsRatio double" << std::endl;
   ofs << "LOOKUP_TABLE VoxelsRatio" << std::endl;
   for(int i = 0; i < size; ++i) {
@@ -102,6 +109,13 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   for(int i = 0; i < size; ++i) {
     ofs << void_fraction(i) << std::endl;
   }
+  ofs << std::endl;
+  ofs << "SCALARS FreeSurfaceType int" << std::endl;
+  ofs << "LOOKUP_TABLE FreeSurfaceType" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << free_surface_type(i) << std::endl;
+  }
+  
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
 }
 
@@ -109,9 +123,11 @@ void BubbleParticles::extendStorage(int extra_size) {
   int size = getSize();
   Particles::extendStorage(extra_size);
   bubble_radius.conservativeResize(size + extra_size);
-  bubble_radius.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
+  bubble_radius.segment(size, extra_size).setZero();
   void_fraction.conservativeResize(size + extra_size);
-  void_fraction.segment(size, extra_size) = Eigen::VectorXd::Zero(extra_size);
+  void_fraction.segment(size, extra_size).setZero();
+  free_surface_type.conservativeResize(size + extra_size);
+  free_surface_type.segment(size, extra_size).setZero();
 }
 
 void BubbleParticles::setGhostParticle(int index) {

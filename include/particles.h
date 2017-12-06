@@ -100,6 +100,7 @@ class Particles {
   virtual double weightForGradientPressure(const Eigen::Vector3d& vec) const;
   virtual double weightForLaplacianPressure(const Eigen::Vector3d& vec) const;
   virtual double weightForLaplacianViscosity(const Eigen::Vector3d& vec) const;
+  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat);
 
   const Condition& condition_;
   int size;
@@ -110,9 +111,6 @@ class Particles {
   double laplacian_lambda_viscosity;
   double initial_neighbor_particles;
   double inflow_stride;
-
- protected:
-  void solveConjugateGradient(Eigen::SparseMatrix<double> p_mat);
 
  private:
   using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
