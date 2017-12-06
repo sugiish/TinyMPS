@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     // if (argc >= 4) input_grid = argv[3];
     output_path += "output_%1%.vtk";
     tiny_mps::Condition condition(input_data);
-    if (argc >= 3) condition.inflow_velocity(1) = std::stoi(argv[2]);
+    if (argc >= 3) condition.inflow_velocity(1) = std::stod(argv[2]);
     my_mps::BubbleParticles particles(input_grid, condition);
     tiny_mps::Timer timer(condition);
     Eigen::Vector3d minpos(-0.1, -2.1 * condition.average_distance, 0);
