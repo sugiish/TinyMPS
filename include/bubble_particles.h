@@ -25,10 +25,12 @@ class BubbleParticles : public tiny_mps::Particles {
   void extendStorage(int extra_size);
   void setGhostParticle(int index);
   void calculateBubbles();
+  void calculateModifiedParticleNumberDensity();
   void solvePressurePoisson(const tiny_mps::Timer& timer);
   void checkSurface();
 
  private:
+  Eigen::VectorXd modified_pnd;
   Eigen::VectorXd bubble_radius;
   Eigen::VectorXd void_fraction;
   Eigen::VectorXi free_surface_type;

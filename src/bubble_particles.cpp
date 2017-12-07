@@ -9,6 +9,7 @@ namespace my_mps{
 BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condition& condition)
     : Particles(path, condition) {
   init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
+  modified_pnd = Eigen::VectorXd::Zero(getSize());
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
   free_surface_type = Eigen::VectorXi::Zero(getSize());
@@ -115,13 +116,21 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   for(int i = 0; i < size; ++i) {
     ofs << free_surface_type(i) << std::endl;
   }
-  
+  ofs << std::endl;
+  ofs << "SCALARS ModifiedParticleNumberDensity double" << std::endl;
+  ofs << "LOOKUP_TABLE ModifiedParticleNumberDensity" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << modified_pnd(i) << std::endl;
+  }
+
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
 }
 
 void BubbleParticles::extendStorage(int extra_size) {
   int size = getSize();
   Particles::extendStorage(extra_size);
+  modified_pnd.conservativeResize(size + extra_size);
+  modified_pnd.segment(size, extra_size).setZero();
   bubble_radius.conservativeResize(size + extra_size);
   bubble_radius.segment(size, extra_size).setZero();
   void_fraction.conservativeResize(size + extra_size);
@@ -132,8 +141,10 @@ void BubbleParticles::extendStorage(int extra_size) {
 
 void BubbleParticles::setGhostParticle(int index) {
   Particles::setGhostParticle(index);
+  modified_pnd(index) = 0.0;
   bubble_radius(index) = 0.0;
   void_fraction(index) = condition_.initial_void_fraction;
+  free_surface_type(index) = SurfaceLayer::OTHERS;
 }
 
 void BubbleParticles::checkSurface(){
@@ -158,7 +169,7 @@ void BubbleParticles::checkSurface(){
   }
   // Second step.
   Grid grid(condition_.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
-  constexpr double root2 = std::sqrt(2); 
+  constexpr double root2 = std::sqrt(2);
   for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if(boundary_types(i_particle) == BoundaryType::SURFACE) {
       Grid::Neighbors neighbors;
@@ -197,7 +208,7 @@ void BubbleParticles::checkSurface(){
       if (neighbors.empty()) continue;
       for (int j_particle : neighbors) {
         if (boundary_types(j_particle) == BoundaryType::INNER && free_surface_type(j_particle) == SurfaceLayer::INNER)
-          free_surface_type(j_particle) = SurfaceLayer::INNER_SURFACE; 
+          free_surface_type(j_particle) = SurfaceLayer::INNER_SURFACE;
       }
     }
   }
@@ -220,6 +231,23 @@ void BubbleParticles::calculateBubbles() {
   }
 }
 
+void BubbleParticles::calculateModifiedParticleNumberDensity() {
+  using namespace tiny_mps;
+  Grid grid(condition_.average_distance, temporary_position, particle_types.array() != ParticleType::GHOST, condition_.dimension);
+  Eigen::Vector3d l0_vec(condition_.average_distance, 0.0, 0.0);
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == ParticleType::GHOST) modified_pnd(i_particle) = 0.0;
+    double n_hat = initial_particle_number_density;
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    if (neighbors.empty()) continue;
+    for (int j_particle : neighbors) {
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      n_hat += weightForParticleNumberDensity(r_ij) - weightForParticleNumberDensity(l0_vec);
+    }
+    modified_pnd(i_particle) = std::max(particle_number_density(i_particle), n_hat);
+  }
+}
 
 void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
   using namespace tiny_mps;
