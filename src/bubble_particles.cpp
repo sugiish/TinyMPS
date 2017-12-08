@@ -110,7 +110,6 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   for(int i = 0; i < size; ++i) {
     ofs << bubble_radius(i) << std::endl;
   }
-  std::cout << "Succeed in writing vtk file: " << path << std::endl;
   ofs << std::endl;
   ofs << "SCALARS VoidFraction double" << std::endl;
   ofs << "LOOKUP_TABLE VoidFraction" << std::endl;
@@ -136,6 +135,8 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 void BubbleParticles::extendStorage(int extra_size) {
   int size = getSize();
   Particles::extendStorage(extra_size);
+  normal_vector.conservativeResize(3, size + extra_size);
+  normal_vector.block(0, size, 3, extra_size).setZero();
   modified_pnd.conservativeResize(size + extra_size);
   modified_pnd.segment(size, extra_size).setZero();
   bubble_radius.conservativeResize(size + extra_size);
@@ -148,6 +149,7 @@ void BubbleParticles::extendStorage(int extra_size) {
 
 void BubbleParticles::setGhostParticle(int index) {
   Particles::setGhostParticle(index);
+  normal_vector.col(index).setZero();
   modified_pnd(index) = 0.0;
   bubble_radius(index) = 0.0;
   void_fraction(index) = condition_.initial_void_fraction;
