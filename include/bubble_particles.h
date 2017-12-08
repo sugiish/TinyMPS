@@ -27,9 +27,12 @@ class BubbleParticles : public tiny_mps::Particles {
   void calculateBubbles();
   void calculateModifiedParticleNumberDensity();
   void solvePressurePoisson(const tiny_mps::Timer& timer);
+  void solvePressurePoissonDuan(const tiny_mps::Timer& timer);
   void checkSurface();
+  void correctVelocityDuan(const tiny_mps::Timer& timer);
 
  private:
+  Eigen::Matrix3Xd normal_vector;
   Eigen::VectorXd modified_pnd;
   Eigen::VectorXd bubble_radius;
   Eigen::VectorXd void_fraction;

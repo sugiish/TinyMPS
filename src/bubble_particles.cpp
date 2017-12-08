@@ -3,12 +3,14 @@
 #include "bubble_particles.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <Eigen/LU>
 
 namespace my_mps{
 
 BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condition& condition)
     : Particles(path, condition) {
   init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
+  normal_vector = Eigen::Matrix3Xd::Zero(3, getSize());
   modified_pnd = Eigen::VectorXd::Zero(getSize());
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
@@ -98,6 +100,11 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 
   // extended
   ofs << std::endl;
+  ofs << "VECTORS NormalVector double" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << normal_vector(0, i) << " " << normal_vector(1, i) << " " << normal_vector(2, i) << std::endl;
+  }
+  ofs << std::endl;
   ofs << "SCALARS BubbleRadius double" << std::endl;
   ofs << "LOOKUP_TABLE BubbleRadius" << std::endl;
   for(int i = 0; i < size; ++i) {
@@ -169,29 +176,28 @@ void BubbleParticles::checkSurface(){
   }
   // Second step.
   Grid grid(condition_.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
-  constexpr double root2 = std::sqrt(2);
+  const double root2 = std::sqrt(2);
+  normal_vector.setZero();
   for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if(boundary_types(i_particle) == BoundaryType::SURFACE) {
       Grid::Neighbors neighbors;
       grid.getNeighbors(i_particle, neighbors);
       if (neighbors.empty()) continue;
-      Eigen::Vector3d n_vec(0, 0, 0);
       for (int j_particle : neighbors) {
         Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
-        n_vec += r_ij.normalized() * weightForParticleNumberDensity(r_ij);
+        normal_vector.col(i_particle) += r_ij.normalized() * weightForParticleNumberDensity(r_ij);
       }
-      n_vec /= particle_number_density(i_particle);
-      n_vec.normalize();
+      normal_vector.col(i_particle) /= particle_number_density(i_particle);
       for (int j_particle : neighbors) {
         Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
         if (r_ij.norm() >= root2 * condition_.average_distance
-            && (temporary_position.col(i_particle) + condition_.average_distance * n_vec - temporary_position.col(j_particle)).norm() < condition_.average_distance) {
+            && (temporary_position.col(i_particle) + condition_.average_distance * normal_vector.col(i_particle).normalized() - temporary_position.col(j_particle)).norm() < condition_.average_distance) {
           boundary_types(i_particle) = BoundaryType::INNER;
           free_surface_type(i_particle) = SurfaceLayer::INNER;
           break;
         }
         if (r_ij.norm() < root2 * condition_.average_distance
-            && r_ij.normalized().dot(n_vec) > 1.0 / root2) {
+            && r_ij.normalized().dot(normal_vector.col(i_particle).normalized()) > 1.0 / root2) {
           boundary_types(i_particle) = BoundaryType::INNER;
           free_surface_type(i_particle) = SurfaceLayer::INNER;
           break;
@@ -292,6 +298,110 @@ void BubbleParticles::solvePressurePoisson(const tiny_mps::Timer& timer) {
   }
   p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
   solveConjugateGradient(p_mat);
+}
+
+void BubbleParticles::solvePressurePoissonDuan(const tiny_mps::Timer& timer) {
+  using namespace tiny_mps;
+  Grid grid(condition_.laplacian_pressure_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  using T = Eigen::Triplet<double>;
+  double lap_r = grid.getGridWidth();
+  int n_size = (int)(std::pow(lap_r * 2, dimension));
+  double delta_time = timer.getCurrentDeltaTime();
+  Eigen::SparseMatrix<double> p_mat(size, size);
+  source_term.setZero();
+  std::vector<T> coeffs(size * n_size);
+  std::vector<int> neighbors(n_size * 2);
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    } else if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      coeffs.push_back(T(i_particle, i_particle, 1.0));
+      continue;
+    }
+    grid.getNeighbors(i_particle, neighbors);
+    double sum = 0.0;
+    double div_vel = 0.0;
+    for (int j_particle : neighbors) {
+      if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      double mat_ij = weightForLaplacianPressure(r_ij) * 2 * dimension
+              / (laplacian_lambda_pressure * initial_particle_number_density);
+      sum -= mat_ij;
+      div_vel += (temporary_velocity.col(j_particle) - temporary_velocity.col(i_particle)).dot(r_ij)
+              * weightForLaplacianPressure(r_ij) * condition_.dimension / (r_ij.squaredNorm() * initial_particle_number_density);
+      if (boundary_types(j_particle) == BoundaryType::INNER) {
+        coeffs.push_back(T(i_particle, j_particle, mat_ij));
+      }
+    }
+    sum -= condition_.weak_compressibility * condition_.mass_density / (delta_time * delta_time);
+    if (free_surface_type(i_particle) == SurfaceLayer::INNER_SURFACE) {
+      sum -= (modified_pnd(i_particle) - particle_number_density(i_particle)) * 2 * dimension / (laplacian_lambda_pressure * initial_particle_number_density);
+      coeffs.push_back(T(i_particle, i_particle, sum));
+      // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
+      source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+                - (modified_pnd(i_particle) - initial_particle_number_density)
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+    } else {
+      coeffs.push_back(T(i_particle, i_particle, sum));
+      // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
+      source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+                - (particle_number_density(i_particle) - initial_particle_number_density)
+                * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+    }
+  }
+  p_mat.setFromTriplets(coeffs.begin(), coeffs.end()); // Finished setup matrix
+  solveConjugateGradient(p_mat);
+}
+
+void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
+  using namespace tiny_mps;
+  Grid grid(condition_.gradient_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  correction_velocity.setZero();
+  int tensor_count = 0;
+  int not_tensor_count = 0;
+  for (int i_particle = 0; i_particle < size; ++i_particle) {
+    if (particle_types(i_particle) != ParticleType::NORMAL) continue;
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    Eigen::Matrix3d tensor = Eigen::Matrix3d::Zero();
+    Eigen::Vector3d tmp_vel(0.0, 0.0, 0.0);
+    if (free_surface_type(i_particle) == SurfaceLayer::INNER_SURFACE) {
+      for (int j_particle : neighbors) {
+        if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        tmp_vel += r_ij * (pressure(j_particle) + pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
+      }
+      if (dimension == 2) tmp_vel(2) = 0;
+      correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+    } else {
+      for (int j_particle : neighbors) {
+        if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        Eigen::Vector3d n_ij = r_ij.normalized();
+        Eigen::Matrix3d tmp_tensor = Eigen::Matrix3d::Zero();
+        tmp_tensor << n_ij(0) * n_ij(0), n_ij(0) * n_ij(1), n_ij(0) * n_ij(2),
+                      n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
+                      n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
+        tensor += tmp_tensor * weightForGradientPressure(r_ij) / initial_particle_number_density;
+        tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
+      }
+      if (dimension == 2) {
+        tmp_vel(2) = 0;
+        tensor(2, 2) = 1.0;
+      }
+      if (tensor.determinant() > 1.0e-10) {
+        correction_velocity.col(i_particle) -= tensor.inverse() * tmp_vel * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+        ++tensor_count;
+      } else {
+        correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
+        ++not_tensor_count;
+      }
+    }
+  }
+  std::cout << "Tensor: " << tensor_count << ", Not Tensor: " << not_tensor_count << std::endl;
+  temporary_velocity += correction_velocity;
 }
 
 }

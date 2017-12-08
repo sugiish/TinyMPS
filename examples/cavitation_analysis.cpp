@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
     if (argc >= 3) condition.inflow_velocity(1) = std::stod(argv[2]);
     my_mps::BubbleParticles particles(input_grid, condition);
     tiny_mps::Timer timer(condition);
-    Eigen::Vector3d minpos(-0.1, -2.1 * condition.average_distance, 0);
-    // Eigen::Vector3d minpos(-0.1, -0.1, 0);
+    // Eigen::Vector3d minpos(-0.1, -2.1 * condition.average_distance, 0);
+    Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop(output_path, timer)) {
       particles.moveInflowParticles(timer);
@@ -36,8 +36,8 @@ int main(int argc, char* argv[]) {
       particles.calculateTemporaryParticleNumberDensity();
       particles.checkSurface();
       particles.calculateModifiedParticleNumberDensity();
-      particles.solvePressurePoisson(timer);
-      particles.correctVelocityWithTensor(timer);
+      particles.solvePressurePoissonDuan(timer);
+      particles.correctVelocityDuan(timer);
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
