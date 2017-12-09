@@ -68,7 +68,7 @@ courant_number                          0.2
 diffusion_number                        0.2
 
 #    INFLUENCE RATIO
-pnd_influence(ratio)                    2.1
+pnd_influence(ratio)                    3.1
 gradient_influence(ratio)               3.1
 laplacian_pressure_influence(ratio)     4.0
 laplacian_viscosity_influence(ratio)    4.0
@@ -111,4 +111,4 @@ bubble_density                          1.0e12
 vapor_pressure                          2200
 
 #   ADDITIONAL PARAMETER
-secondary_surface_eta                   1.1
+secondary_surface_eta                   2.1

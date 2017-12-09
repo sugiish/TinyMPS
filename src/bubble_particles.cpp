@@ -378,6 +378,13 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
       if (dimension == 2) tmp_vel(2) = 0;
       correction_velocity.col(i_particle) -= tmp_vel * dimension * timer.getCurrentDeltaTime() / (initial_particle_number_density * condition_.mass_density);
     } else {
+      double p_min = pressure(i_particle);
+      double p_max = pressure(i_particle);
+      for (int j_particle : neighbors) { 
+        if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
+        p_min = std::min(pressure(j_particle), p_min);
+        p_max = std::max(pressure(j_particle), p_max); 
+      }
       for (int j_particle : neighbors) {
         if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
         Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
@@ -387,7 +394,8 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
                       n_ij(1) * n_ij(0), n_ij(1) * n_ij(1), n_ij(1) * n_ij(2),
                       n_ij(2) * n_ij(0), n_ij(2) * n_ij(1), n_ij(2) * n_ij(2);
         tensor += tmp_tensor * weightForGradientPressure(r_ij) / initial_particle_number_density;
-        tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
+        double xi = 0.2 + 2 * normal_vector.col(j_particle).norm();
+        tmp_vel += r_ij * (pressure(j_particle) - pressure(i_particle) + xi * (p_max - p_min)) * weightForGradientPressure(r_ij) / r_ij.squaredNorm();
       }
       if (dimension == 2) {
         tmp_vel(2) = 0;
