@@ -222,6 +222,41 @@ void BubbleParticles::checkSurface(){
   }
 }
 
+void BubbleParticles::checkSurface2(){
+  // First step.
+  using namespace tiny_mps;
+  for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == ParticleType::NORMAL || particle_types(i_particle) == ParticleType::WALL
+        || particle_types(i_particle) == ParticleType::INFLOW) {
+      if (particle_number_density(i_particle) < condition_.surface_threshold_pnd * initial_particle_number_density
+              && neighbor_particles(i_particle) < condition_.surface_threshold_number * initial_neighbor_particles
+              && temporary_position(1, i_particle) < condition_.pnd_weight_radius) {
+        boundary_types(i_particle) = BoundaryType::SURFACE;
+        free_surface_type(i_particle) = SurfaceLayer::OUTER_SURFACE;
+      } else {
+        boundary_types(i_particle) = BoundaryType::INNER;
+        free_surface_type(i_particle) = SurfaceLayer::INNER;
+      }
+    } else {
+      boundary_types(i_particle) = BoundaryType::OTHERS;
+      free_surface_type(i_particle) = SurfaceLayer::OTHERS;
+    }
+  }
+  // Third step.
+  Grid judge_inner_surface(condition_.average_distance * condition_.secondary_surface_eta, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::SURFACE) {
+      Grid::Neighbors neighbors;
+      judge_inner_surface.getNeighbors(i_particle, neighbors);
+      if (neighbors.empty()) continue;
+      for (int j_particle : neighbors) {
+        if (boundary_types(j_particle) == BoundaryType::INNER && free_surface_type(j_particle) == SurfaceLayer::INNER)
+          free_surface_type(j_particle) = SurfaceLayer::INNER_SURFACE;
+      }
+    }
+  }
+}
+
 void BubbleParticles::calculateBubbles() {
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
@@ -380,10 +415,10 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
     } else {
       double p_min = pressure(i_particle);
       double p_max = pressure(i_particle);
-      for (int j_particle : neighbors) { 
+      for (int j_particle : neighbors) {
         if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;
         p_min = std::min(pressure(j_particle), p_min);
-        p_max = std::max(pressure(j_particle), p_max); 
+        p_max = std::max(pressure(j_particle), p_max);
       }
       for (int j_particle : neighbors) {
         if (boundary_types(j_particle) == BoundaryType::OTHERS) continue;

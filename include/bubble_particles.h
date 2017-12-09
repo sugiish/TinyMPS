@@ -29,6 +29,7 @@ class BubbleParticles : public tiny_mps::Particles {
   void solvePressurePoisson(const tiny_mps::Timer& timer);
   void solvePressurePoissonDuan(const tiny_mps::Timer& timer);
   void checkSurface();
+  void checkSurface2();
   void correctVelocityDuan(const tiny_mps::Timer& timer);
 
  private:
