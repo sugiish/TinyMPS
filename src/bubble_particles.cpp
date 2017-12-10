@@ -242,6 +242,21 @@ void BubbleParticles::checkSurface2(){
       free_surface_type(i_particle) = SurfaceLayer::OTHERS;
     }
   }
+  // Second step.
+  Grid grid(condition_.pnd_weight_radius, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
+  normal_vector.setZero();
+  for(int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if(boundary_types(i_particle) == BoundaryType::SURFACE) {
+      Grid::Neighbors neighbors;
+      grid.getNeighbors(i_particle, neighbors);
+      if (neighbors.empty()) continue;
+      for (int j_particle : neighbors) {
+        Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+        normal_vector.col(i_particle) += r_ij.normalized() * weightForParticleNumberDensity(r_ij);
+      }
+      normal_vector.col(i_particle) /= particle_number_density(i_particle);
+    }
+  }
   // Third step.
   Grid judge_inner_surface(condition_.average_distance * condition_.secondary_surface_eta, temporary_position, particle_types.array() != ParticleType::GHOST, dimension);
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
