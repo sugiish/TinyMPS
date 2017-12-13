@@ -25,14 +25,17 @@ class BubbleParticles : public tiny_mps::Particles {
   void extendStorage(int extra_size);
   void setGhostParticle(int index);
   void calculateBubbles();
+  void calculateAveragePressure();
   void calculateModifiedParticleNumberDensity();
   void solvePressurePoisson(const tiny_mps::Timer& timer);
   void solvePressurePoissonDuan(const tiny_mps::Timer& timer);
   void checkSurface();
   void checkSurface2();
   void correctVelocityDuan(const tiny_mps::Timer& timer);
+  inline double weightPoly6Kernel(double r, double h);
 
  private:
+  Eigen::VectorXd average_pressure;
   Eigen::Matrix3Xd normal_vector;
   Eigen::VectorXd modified_pnd;
   Eigen::VectorXd bubble_radius;

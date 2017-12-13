@@ -10,6 +10,7 @@ namespace my_mps{
 BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condition& condition)
     : Particles(path, condition) {
   init_bubble_radius = cbrt((3 * condition.initial_void_fraction) / (4 * M_PI * condition.bubble_density * (1 - condition.initial_void_fraction)));
+  average_pressure = Eigen::VectorXd::Zero(getSize());
   normal_vector = Eigen::Matrix3Xd::Zero(3, getSize());
   modified_pnd = Eigen::VectorXd::Zero(getSize());
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
@@ -100,6 +101,12 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 
   // extended
   ofs << std::endl;
+  ofs << "SCALARS AveragePressure double" << std::endl;
+  ofs << "LOOKUP_TABLE AveragePressure" << std::endl;
+  for(int i = 0; i < size; ++i) {
+    ofs << average_pressure(i) << std::endl;
+  }
+  ofs << std::endl;
   ofs << "VECTORS NormalVector double" << std::endl;
   for(int i = 0; i < size; ++i) {
     ofs << normal_vector(0, i) << " " << normal_vector(1, i) << " " << normal_vector(2, i) << std::endl;
@@ -135,6 +142,8 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 void BubbleParticles::extendStorage(int extra_size) {
   int size = getSize();
   Particles::extendStorage(extra_size);
+  average_pressure.conservativeResize(size + extra_size);
+  average_pressure.segment(size, extra_size).setZero();
   normal_vector.conservativeResize(3, size + extra_size);
   normal_vector.block(0, size, 3, extra_size).setZero();
   modified_pnd.conservativeResize(size + extra_size);
@@ -149,6 +158,7 @@ void BubbleParticles::extendStorage(int extra_size) {
 
 void BubbleParticles::setGhostParticle(int index) {
   Particles::setGhostParticle(index);
+  average_pressure(index) = 0.0;
   normal_vector.col(index).setZero();
   modified_pnd(index) = 0.0;
   bubble_radius(index) = 0.0;
@@ -275,7 +285,8 @@ void BubbleParticles::checkSurface2(){
 void BubbleParticles::calculateBubbles() {
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
-      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      // double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - average_pressure(i_particle);
       if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
@@ -289,12 +300,49 @@ void BubbleParticles::calculateBubbles() {
   }
 }
 
+void BubbleParticles::calculateAveragePressure() {
+  using namespace tiny_mps;
+  Grid grid(condition_.pnd_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) {
+      average_pressure(i_particle) = 0.0;
+      continue;
+    }
+    Grid::Neighbors neighbors;
+    grid.getNeighbors(i_particle, neighbors);
+    if (neighbors.empty()) {
+      average_pressure(i_particle) = pressure(i_particle);
+      continue;
+    }
+    double numerator = pressure(i_particle) * weightPoly6Kernel(0, condition_.pnd_weight_radius);
+    double denominator = weightPoly6Kernel(0, condition_.pnd_weight_radius);
+    for (int j_particle : neighbors) {
+      Eigen::Vector3d r_ij = temporary_position.col(j_particle) - temporary_position.col(i_particle);
+      numerator += pressure(j_particle) * weightPoly6Kernel(r_ij.norm(), condition_.pnd_weight_radius);
+      denominator += weightPoly6Kernel(r_ij.norm(), condition_.pnd_weight_radius);
+    }
+    average_pressure(i_particle) = numerator / denominator;
+  }
+}
+
+inline double BubbleParticles::weightPoly6Kernel(double r, double h) {
+  if (r > h) return 0;
+  if (condition_.dimension == 2) {
+    return 4 * std::pow(h * h - r * r, 3) / (M_PI * std::pow(h, 8));  
+  } else {
+    return 315 * std::pow(h * h - r * r, 3) / (64 * M_PI * std::pow(h, 8));  
+  }
+} 
+
 void BubbleParticles::calculateModifiedParticleNumberDensity() {
   using namespace tiny_mps;
-  Grid grid(condition_.average_distance, temporary_position, particle_types.array() != ParticleType::GHOST, condition_.dimension);
+  Grid grid(condition_.average_distance * 1.05, temporary_position, particle_types.array() != ParticleType::GHOST, condition_.dimension);
   Eigen::Vector3d l0_vec(condition_.average_distance, 0.0, 0.0);
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
-    if (particle_types(i_particle) == ParticleType::GHOST) modified_pnd(i_particle) = 0.0;
+    if (particle_types(i_particle) == ParticleType::GHOST) {
+      modified_pnd(i_particle) = 0.0;
+      continue;
+    }
     double n_hat = initial_particle_number_density;
     Grid::Neighbors neighbors;
     grid.getNeighbors(i_particle, neighbors);

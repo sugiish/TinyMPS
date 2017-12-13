@@ -27,17 +27,18 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
     while(particles.nextLoop(output_path, timer)) {
       particles.moveInflowParticles(timer);
-      particles.calculateBubbles();
       particles.calculateTemporaryVelocity(condition.gravity, timer);
       particles.updateTemporaryPosition(timer);
       // particles.shiftParticles(2.1, 0.03);
       particles.giveCollisionRepulsionForce();
       particles.updateTemporaryPosition(timer);
       particles.calculateTemporaryParticleNumberDensity();
-      particles.checkSurface();
+      particles.checkSurface2();
       particles.calculateModifiedParticleNumberDensity();
       particles.solvePressurePoissonDuan(timer);
       particles.correctVelocityDuan(timer);
+      particles.calculateAveragePressure();
+      particles.calculateBubbles();
       particles.updateTemporaryPosition(timer);
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
