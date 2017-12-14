@@ -512,4 +512,18 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
   temporary_velocity += correction_velocity;
 }
 
+void BubbleParticles::initAverageGrid(const Eigen::Vector3d& min_pos, const Eigen::Vector3d& max_pos) {
+  Eigen::Vector3d r_ij = max_pos - min_pos;
+  grid_w = r_ij(0) / condition_.average_distance;
+  grid_h = r_ij(1) / condition_.average_distance;
+  average_grid = new double[grid_w * grid_h];
+  for (int i = 0; i < grid_w * grid_h; i++) {
+    average_grid[i] = 0;
+  }
+}
+
+void BubbleParticles::updateAverageGrid() {
+
+}
+
 }
