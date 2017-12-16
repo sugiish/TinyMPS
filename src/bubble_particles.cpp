@@ -16,6 +16,7 @@ BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condit
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
   free_surface_type = Eigen::VectorXi::Zero(getSize());
+  average_count = 0;
 
 }
 
@@ -514,15 +515,36 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
 
 void BubbleParticles::initAverageGrid(const Eigen::Vector3d& min_pos, const Eigen::Vector3d& max_pos) {
   Eigen::Vector3d r_ij = max_pos - min_pos;
-  grid_w = r_ij(0) / condition_.average_distance;
-  grid_h = r_ij(1) / condition_.average_distance;
-  average_grid = new double[grid_w * grid_h];
+  grid_min_pos = min_pos;
+  grid_max_pos = max_pos;
+  grid_w = r_ij(0) / condition_.average_distance + 1;
+  grid_h = r_ij(1) / condition_.average_distance + 1;
+  average_grid.reserve(grid_w * grid_h);
   for (int i = 0; i < grid_w * grid_h; i++) {
     average_grid[i] = 0;
   }
 }
 
-void BubbleParticles::updateAverageGrid() {
+void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer& timer) {
+  using namespace tiny_mps;
+  if (start_time < timer.getCurrentTime()) {
+    average_count = timer.getLoopCount();
+    return;
+  }
+  std::vector<int> number(grid_w * grid_h);
+  std::vector<double> tmp_average(grid_w * grid_h);
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
+    int iy = std::floor((temporary_position(1, i_particle) - grid_min_pos(1) + condition_.average_distance / 2.0) / condition_.average_distance);
+    tmp_average[ix + iy * grid_w] += pressure(i_particle);
+    number[ix + iy * grid_w]++;
+  }
+  int n = timer.getLoopCount() - average_count;
+  for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
+    tmp_average[i_grid] /= number[i_grid];
+    average_grid[i_grid] = tmp_average[i_grid] * n / (n + 1);
+  }
 
 }
 

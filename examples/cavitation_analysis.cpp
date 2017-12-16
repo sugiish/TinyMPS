@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
     Eigen::Vector3d minpos(-0.1, -2.1 * condition.average_distance, 0);
     // Eigen::Vector3d minpos(-0.1, -0.1, 0);
     Eigen::Vector3d maxpos(1.1, 2.1, 0);
+    particles.initAverageGrid(minpos, maxpos);
     while(particles.nextLoop(output_path, timer)) {
       particles.moveInflowParticles(timer);
       particles.calculateTemporaryVelocity(condition.gravity, timer);
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
       particles.correctVelocityDuan(timer);
       particles.updateTemporaryPosition(timer);
       particles.calculateAveragePressure();
+      particles.updateAverageGrid(3.0e-4, timer);
       particles.calculateBubbles();
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
