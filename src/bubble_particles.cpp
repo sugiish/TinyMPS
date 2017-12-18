@@ -20,6 +20,44 @@ BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condit
 
 }
 
+bool BubbleParticles::nextLoop(const std::string& path, tiny_mps::Timer& timer) {
+  std::cout << std::endl;
+  timer.limitCurrentDeltaTime(getMaxSpeed(), condition_);
+  timer.printCompuationTime();
+  timer.printTimeInfo();
+  showParticlesInfo();
+  std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
+  saveInterval(path, timer);
+  if (checkNeedlessCalculation()) {
+    std::cerr << "Error: All particles have become ghost." << std::endl;
+    writeVtkFile(path + "err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    throw std::range_error("Error: All particles have become ghost.");
+  }
+  if (timer.isUnderMinDeltaTime()) {
+    std::cerr << "Error: Delta time has become so small." << std::endl;
+    writeVtkFile(path + "err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    throw std::range_error("Error: Delta time has become so small.");
+  }
+  if (!timer.hasNextLoop()) {
+    std::cout << std::endl << "Total ";
+    timer.printCompuationTime();
+    std::cout << "Succeed in simulation." << std::endl;
+    return false;
+  }
+  timer.update();
+  temporary_velocity = velocity;
+  temporary_position = position;
+  return true;
+}
+
+bool BubbleParticles::saveInterval(const std::string& path, const tiny_mps::Timer& timer) const {
+  if (!timer.isOutputTime()) return false;
+  std::string output_index = (boost::format("%04d") % timer.getOutputCount()).str();
+  writeVtkFile((boost::format(path + "output_%1%.vtk") % output_index).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+  writeGridVtkFile((boost::format(path + "grid_%1%.vtk") % output_index).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+  return true;
+}
+
 void BubbleParticles::writeVtkFile(const std::string& path, const std::string& title) const {
   int size = getSize();
   std::ofstream ofs(path);
@@ -33,7 +71,7 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   ofs << "DATASET UNSTRUCTURED_GRID" << std::endl;
   ofs << std::endl;
   ofs << "POINTS " << size << " double" << std::endl;
-  for(int i = 0; i < size; ++i) {void calculateBubbles();
+  for(int i = 0; i < size; ++i) {
     ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
   }
   ofs << std::endl;
@@ -138,6 +176,31 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   }
 
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
+}
+
+void BubbleParticles::writeGridVtkFile(const std::string& path, const std::string& title) const {
+  int size = getSize();
+  std::ofstream ofs(path);
+  if(ofs.fail()) {
+    std::cerr << "Error: in writeGridVtkFile() in particles.cpp." << std::endl;
+    throw std::ios_base::failure("Error: in writeGridVtkFile() in particles.cpp.");
+  }
+  ofs << "# vtk DataFile Version 2.0" << std::endl;
+  ofs << title << std::endl;
+  ofs << "ASCII" << std::endl;
+  ofs << "DATASET STRUCTURED_GRID" << std::endl;
+  ofs << "DIMENSIONS " << grid_w << " " << grid_h << " 1" << std::endl;
+  ofs << "ORIGIN " << grid_min_pos(0) << " " << grid_min_pos(1) <<  " 0.0" << std::endl;
+  ofs << "SPACING 1.0 1.0 1.0" << std::endl;
+  ofs << "POINT_DATA " << size << std::endl;
+  ofs << "SCALARS Pressure double" << std::endl;
+  ofs << "LOOKUP_TABLE Pressure" << std::endl;
+  for(int i = 0; i < grid_w * grid_h; ++i) {
+    ofs << average_grid[i] << std::endl;
+  }
+  ofs << std::endl;
+
+  std::cout << "Succeed in writing grid vtk file: " << path << std::endl;
 }
 
 void BubbleParticles::extendStorage(int extra_size) {
@@ -543,7 +606,7 @@ void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer
   int n = timer.getLoopCount() - average_count;
   for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
     tmp_average[i_grid] /= number[i_grid];
-    average_grid[i_grid] = tmp_average[i_grid] * n / (n + 1);
+    average_grid[i_grid] = (average_grid[i_grid] * n + tmp_average[i_grid])/ (n + 1);
   }
 
 }

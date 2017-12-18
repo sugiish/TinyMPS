@@ -21,7 +21,10 @@ class BubbleParticles : public tiny_mps::Particles {
   BubbleParticles(const tiny_mps::Particles& other) = delete;
   BubbleParticles& operator=(const tiny_mps::Particles& other) = delete;
   virtual ~BubbleParticles() {};
+  bool nextLoop(const std::string& path, tiny_mps::Timer& timer);
+  bool saveInterval(const std::string& path, const tiny_mps::Timer& timer) const;
   void writeVtkFile(const std::string& path, const std::string& title) const;
+  void writeGridVtkFile(const std::string& path, const std::string& title) const;
   void extendStorage(int extra_size);
   void setGhostParticle(int index);
   void calculateBubbles();

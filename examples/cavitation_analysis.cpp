@@ -17,7 +17,6 @@ int main(int argc, char* argv[]) {
     if (argc >= 2) output_path = argv[1];
     // if (argc >= 3) input_data = argv[2];
     // if (argc >= 4) input_grid = argv[3];
-    output_path += "output_%1%.vtk";
     tiny_mps::Condition condition(input_data);
     if (argc >= 3) condition.inflow_velocity(1) = std::stod(argv[2]);
     my_mps::BubbleParticles particles(input_grid, condition);
