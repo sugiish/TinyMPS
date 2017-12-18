@@ -596,6 +596,10 @@ void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer
   }
   std::vector<int> number(grid_w * grid_h);
   std::vector<double> tmp_average(grid_w * grid_h);
+  for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
+    tmp_average[i_grid] = 0.0;
+    number[i_grid] = 0.0;
+  }
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
     int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
@@ -605,7 +609,7 @@ void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer
   }
   int n = timer.getLoopCount() - average_count;
   for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
-    tmp_average[i_grid] /= number[i_grid];
+    if (number[i_grid] > 0) tmp_average[i_grid] /= number[i_grid];
     average_grid[i_grid] = (average_grid[i_grid] * n + tmp_average[i_grid])/ (n + 1);
   }
 
