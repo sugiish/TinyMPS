@@ -179,7 +179,6 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
 }
 
 void BubbleParticles::writeGridVtkFile(const std::string& path, const std::string& title) const {
-  int size = getSize();
   std::ofstream ofs(path);
   if(ofs.fail()) {
     std::cerr << "Error: in writeGridVtkFile() in particles.cpp." << std::endl;
@@ -188,11 +187,11 @@ void BubbleParticles::writeGridVtkFile(const std::string& path, const std::strin
   ofs << "# vtk DataFile Version 2.0" << std::endl;
   ofs << title << std::endl;
   ofs << "ASCII" << std::endl;
-  ofs << "DATASET STRUCTURED_GRID" << std::endl;
+  ofs << "DATASET STRUCTURED_POINTS" << std::endl;
   ofs << "DIMENSIONS " << grid_w << " " << grid_h << " 1" << std::endl;
   ofs << "ORIGIN " << grid_min_pos(0) << " " << grid_min_pos(1) <<  " 0.0" << std::endl;
-  ofs << "SPACING 1.0 1.0 1.0" << std::endl;
-  ofs << "POINT_DATA " << size << std::endl;
+  ofs << "SPACING " << condition_.average_distance << " " << condition_.average_distance << " " << condition_.average_distance << std::endl;
+  ofs << "POINT_DATA " << grid_w * grid_h << std::endl;
   ofs << "SCALARS Pressure double" << std::endl;
   ofs << "LOOKUP_TABLE Pressure" << std::endl;
   for(int i = 0; i < grid_w * grid_h; ++i) {
@@ -590,7 +589,8 @@ void BubbleParticles::initAverageGrid(const Eigen::Vector3d& min_pos, const Eige
 
 void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer& timer) {
   using namespace tiny_mps;
-  if (start_time < timer.getCurrentTime()) {
+  std::cout << "average: " << average_count  << ", " << timer.getLoopCount() << std::endl;
+  if (start_time > timer.getCurrentTime()) {
     average_count = timer.getLoopCount();
     return;
   }
@@ -604,6 +604,8 @@ void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer
     if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
     int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
     int iy = std::floor((temporary_position(1, i_particle) - grid_min_pos(1) + condition_.average_distance / 2.0) / condition_.average_distance);
+    if (ix < 0 || ix >= grid_w) continue;
+    if (iy < 0 || iy >= grid_h) continue;
     tmp_average[ix + iy * grid_w] += pressure(i_particle);
     number[ix + iy * grid_w]++;
   }
