@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
       particles.updateTemporaryPosition(timer);
       particles.calculateAveragePressure();
       particles.updateAverageGrid(5.0e-3, timer);
-      particles.calculateBubbles();
+      particles.calculateBubblesFromAveragePressure();
       particles.updateVelocityAndPosition();
       particles.removeOutsideParticles(minpos, maxpos);
 

@@ -363,6 +363,28 @@ void BubbleParticles::calculateBubbles() {
   }
 }
 
+void BubbleParticles::calculateBubblesFromAveragePressure() {
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
+      int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
+      int iy = std::floor((temporary_position(1, i_particle) - grid_min_pos(1) + condition_.average_distance / 2.0) / condition_.average_distance);
+      if (ix < 0 || ix >= grid_w) continue;
+      if (iy < 0 || iy >= grid_h) continue;
+      // double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - average_grid[ix + iy * grid_w];
+      if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
+      if (bubble_radius(i_particle) < 0) bubble_radius(i_particle) = 0;
+
+      double bubble_vol = 4 * M_PI * condition_.bubble_density * bubble_radius(i_particle) * bubble_radius(i_particle) * bubble_radius(i_particle) / 3;
+      void_fraction(i_particle) = bubble_vol / (1 + bubble_vol);
+      if (void_fraction(i_particle) < condition_.min_void_fraction) void_fraction(i_particle) = condition_.min_void_fraction;
+      if (void_fraction(i_particle) > 0.5) void_fraction(i_particle) = 0.5;
+    }
+  }
+}
+
 void BubbleParticles::calculateAveragePressure() {
   using namespace tiny_mps;
   Grid grid(condition_.pnd_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
