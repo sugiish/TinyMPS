@@ -523,10 +523,13 @@ void BubbleParticles::solvePressurePoissonDuan(const tiny_mps::Timer& timer) {
     if (free_surface_type(i_particle) == SurfaceLayer::INNER_SURFACE) {
       sum -= (modified_pnd(i_particle) - particle_number_density(i_particle)) * 2 * dimension / (laplacian_lambda_pressure * initial_particle_number_density);
       coeffs.push_back(T(i_particle, i_particle, sum));
-      // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
+      double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
       source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
-                - (modified_pnd(i_particle) - initial_particle_number_density)
+                - (modified_pnd(i_particle) - initial_pnd_i)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+      // source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+      //           - (modified_pnd(i_particle) - initial_particle_number_density)
+      //           * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
     } else {
       coeffs.push_back(T(i_particle, i_particle, sum));
       // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
