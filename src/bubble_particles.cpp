@@ -16,7 +16,46 @@ BubbleParticles::BubbleParticles(const std::string& path, const tiny_mps::Condit
   bubble_radius = Eigen::VectorXd::Constant(getSize(), init_bubble_radius);
   void_fraction = Eigen::VectorXd::Constant(getSize(), condition.initial_void_fraction);
   free_surface_type = Eigen::VectorXi::Zero(getSize());
+  average_count = 0;
 
+}
+
+bool BubbleParticles::nextLoop(const std::string& path, tiny_mps::Timer& timer) {
+  std::cout << std::endl;
+  timer.limitCurrentDeltaTime(getMaxSpeed(), condition_);
+  timer.printCompuationTime();
+  timer.printTimeInfo();
+  showParticlesInfo();
+  std::cout << boost::format("Max velocity: %f") % getMaxSpeed() << std::endl;
+  saveInterval(path, timer);
+  if (checkNeedlessCalculation()) {
+    std::cerr << "Error: All particles have become ghost." << std::endl;
+    writeVtkFile(path + "err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    throw std::range_error("Error: All particles have become ghost.");
+  }
+  if (timer.isUnderMinDeltaTime()) {
+    std::cerr << "Error: Delta time has become so small." << std::endl;
+    writeVtkFile(path + "err.vtk", (boost::format("Time: %s") % timer.getCurrentTime()).str());
+    throw std::range_error("Error: Delta time has become so small.");
+  }
+  if (!timer.hasNextLoop()) {
+    std::cout << std::endl << "Total ";
+    timer.printCompuationTime();
+    std::cout << "Succeed in simulation." << std::endl;
+    return false;
+  }
+  timer.update();
+  temporary_velocity = velocity;
+  temporary_position = position;
+  return true;
+}
+
+bool BubbleParticles::saveInterval(const std::string& path, const tiny_mps::Timer& timer) const {
+  if (!timer.isOutputTime()) return false;
+  std::string output_index = (boost::format("%04d") % timer.getOutputCount()).str();
+  writeVtkFile((boost::format(path + "output_%1%.vtk") % output_index).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+  writeGridVtkFile((boost::format(path + "grid_%1%.vtk") % output_index).str(), (boost::format("Time: %s") % timer.getCurrentTime()).str());
+  return true;
 }
 
 void BubbleParticles::writeVtkFile(const std::string& path, const std::string& title) const {
@@ -32,7 +71,7 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   ofs << "DATASET UNSTRUCTURED_GRID" << std::endl;
   ofs << std::endl;
   ofs << "POINTS " << size << " double" << std::endl;
-  for(int i = 0; i < size; ++i) {void calculateBubbles();
+  for(int i = 0; i < size; ++i) {
     ofs << position(0, i) << " " << position(1, i) << " " << position(2, i) << std::endl;
   }
   ofs << std::endl;
@@ -137,6 +176,30 @@ void BubbleParticles::writeVtkFile(const std::string& path, const std::string& t
   }
 
   std::cout << "Succeed in writing vtk file: " << path << std::endl;
+}
+
+void BubbleParticles::writeGridVtkFile(const std::string& path, const std::string& title) const {
+  std::ofstream ofs(path);
+  if(ofs.fail()) {
+    std::cerr << "Error: in writeGridVtkFile() in particles.cpp." << std::endl;
+    throw std::ios_base::failure("Error: in writeGridVtkFile() in particles.cpp.");
+  }
+  ofs << "# vtk DataFile Version 2.0" << std::endl;
+  ofs << title << std::endl;
+  ofs << "ASCII" << std::endl;
+  ofs << "DATASET STRUCTURED_POINTS" << std::endl;
+  ofs << "DIMENSIONS " << grid_w << " " << grid_h << " 1" << std::endl;
+  ofs << "ORIGIN " << grid_min_pos(0) << " " << grid_min_pos(1) <<  " 0.0" << std::endl;
+  ofs << "SPACING " << condition_.average_distance << " " << condition_.average_distance << " " << condition_.average_distance << std::endl;
+  ofs << "POINT_DATA " << grid_w * grid_h << std::endl;
+  ofs << "SCALARS Pressure double" << std::endl;
+  ofs << "LOOKUP_TABLE Pressure" << std::endl;
+  for(int i = 0; i < grid_w * grid_h; ++i) {
+    ofs << average_grid[i] << std::endl;
+  }
+  ofs << std::endl;
+
+  std::cout << "Succeed in writing grid vtk file: " << path << std::endl;
 }
 
 void BubbleParticles::extendStorage(int extra_size) {
@@ -300,6 +363,28 @@ void BubbleParticles::calculateBubbles() {
   }
 }
 
+void BubbleParticles::calculateBubblesFromAveragePressure() {
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
+      int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
+      int iy = std::floor((temporary_position(1, i_particle) - grid_min_pos(1) + condition_.average_distance / 2.0) / condition_.average_distance);
+      if (ix < 0 || ix >= grid_w) continue;
+      if (iy < 0 || iy >= grid_h) continue;
+      // double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - average_grid[ix + iy * grid_w];
+      if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
+      if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
+      if (bubble_radius(i_particle) < 0) bubble_radius(i_particle) = 0;
+
+      double bubble_vol = 4 * M_PI * condition_.bubble_density * bubble_radius(i_particle) * bubble_radius(i_particle) * bubble_radius(i_particle) / 3;
+      void_fraction(i_particle) = bubble_vol / (1 + bubble_vol);
+      if (void_fraction(i_particle) < condition_.min_void_fraction) void_fraction(i_particle) = condition_.min_void_fraction;
+      if (void_fraction(i_particle) > 0.5) void_fraction(i_particle) = 0.5;
+    }
+  }
+}
+
 void BubbleParticles::calculateAveragePressure() {
   using namespace tiny_mps;
   Grid grid(condition_.pnd_weight_radius, temporary_position, boundary_types.array() != BoundaryType::OTHERS, condition_.dimension);
@@ -438,10 +523,13 @@ void BubbleParticles::solvePressurePoissonDuan(const tiny_mps::Timer& timer) {
     if (free_surface_type(i_particle) == SurfaceLayer::INNER_SURFACE) {
       sum -= (modified_pnd(i_particle) - particle_number_density(i_particle)) * 2 * dimension / (laplacian_lambda_pressure * initial_particle_number_density);
       coeffs.push_back(T(i_particle, i_particle, sum));
-      // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
+      double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
       source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
-                - (modified_pnd(i_particle) - initial_particle_number_density)
+                - (modified_pnd(i_particle) - initial_pnd_i)
                 * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
+      // source_term(i_particle) = div_vel * condition_.mass_density * condition_.relaxation_coefficient_vel_div / delta_time
+      //           - (modified_pnd(i_particle) - initial_particle_number_density)
+      //           * condition_.relaxation_coefficient_pnd * condition_.mass_density / (delta_time * delta_time * initial_particle_number_density);
     } else {
       coeffs.push_back(T(i_particle, i_particle, sum));
       // double initial_pnd_i = initial_particle_number_density * (1 - void_fraction(i_particle));
@@ -514,15 +602,43 @@ void BubbleParticles::correctVelocityDuan(const tiny_mps::Timer& timer) {
 
 void BubbleParticles::initAverageGrid(const Eigen::Vector3d& min_pos, const Eigen::Vector3d& max_pos) {
   Eigen::Vector3d r_ij = max_pos - min_pos;
-  grid_w = r_ij(0) / condition_.average_distance;
-  grid_h = r_ij(1) / condition_.average_distance;
-  average_grid = new double[grid_w * grid_h];
+  grid_min_pos = min_pos;
+  grid_max_pos = max_pos;
+  grid_w = r_ij(0) / condition_.average_distance + 1;
+  grid_h = r_ij(1) / condition_.average_distance + 1;
+  average_grid.reserve(grid_w * grid_h);
   for (int i = 0; i < grid_w * grid_h; i++) {
     average_grid[i] = 0;
   }
 }
 
-void BubbleParticles::updateAverageGrid() {
+void BubbleParticles::updateAverageGrid(double start_time, const tiny_mps::Timer& timer) {
+  using namespace tiny_mps;
+  std::cout << "average: " << average_count  << ", " << timer.getLoopCount() << std::endl;
+  if (start_time > timer.getCurrentTime()) {
+    average_count = timer.getLoopCount();
+    return;
+  }
+  std::vector<int> number(grid_w * grid_h);
+  std::vector<double> tmp_average(grid_w * grid_h);
+  for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
+    tmp_average[i_grid] = 0.0;
+    number[i_grid] = 0.0;
+  }
+  for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
+    if (boundary_types(i_particle) == BoundaryType::OTHERS) continue;
+    int ix = std::floor((temporary_position(0, i_particle) - grid_min_pos(0) + condition_.average_distance / 2.0) / condition_.average_distance);
+    int iy = std::floor((temporary_position(1, i_particle) - grid_min_pos(1) + condition_.average_distance / 2.0) / condition_.average_distance);
+    if (ix < 0 || ix >= grid_w) continue;
+    if (iy < 0 || iy >= grid_h) continue;
+    tmp_average[ix + iy * grid_w] += pressure(i_particle);
+    number[ix + iy * grid_w]++;
+  }
+  int n = timer.getLoopCount() - average_count;
+  for (int i_grid = 0; i_grid < grid_w * grid_h; ++i_grid) {
+    if (number[i_grid] > 0) tmp_average[i_grid] /= number[i_grid];
+    average_grid[i_grid] = (average_grid[i_grid] * n + tmp_average[i_grid])/ (n + 1);
+  }
 
 }
 

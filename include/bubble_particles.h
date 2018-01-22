@@ -21,10 +21,14 @@ class BubbleParticles : public tiny_mps::Particles {
   BubbleParticles(const tiny_mps::Particles& other) = delete;
   BubbleParticles& operator=(const tiny_mps::Particles& other) = delete;
   virtual ~BubbleParticles() {};
+  bool nextLoop(const std::string& path, tiny_mps::Timer& timer);
+  bool saveInterval(const std::string& path, const tiny_mps::Timer& timer) const;
   void writeVtkFile(const std::string& path, const std::string& title) const;
+  void writeGridVtkFile(const std::string& path, const std::string& title) const;
   void extendStorage(int extra_size);
   void setGhostParticle(int index);
   void calculateBubbles();
+  void calculateBubblesFromAveragePressure();
   void calculateAveragePressure();
   void calculateModifiedParticleNumberDensity();
   void solvePressurePoisson(const tiny_mps::Timer& timer);
@@ -34,7 +38,7 @@ class BubbleParticles : public tiny_mps::Particles {
   void correctVelocityDuan(const tiny_mps::Timer& timer);
   inline double weightPoly6Kernel(double r, double h);
   void initAverageGrid(const Eigen::Vector3d& min_pos, const Eigen::Vector3d& max_pos);
-  void updateAverageGrid();
+  void updateAverageGrid(double start_time, const tiny_mps::Timer& timer);
 
  private:
   Eigen::VectorXd average_pressure;
@@ -44,8 +48,10 @@ class BubbleParticles : public tiny_mps::Particles {
   Eigen::VectorXd void_fraction;
   Eigen::VectorXi free_surface_type;
   double init_bubble_radius;
-  double* average_grid;
+  std::vector<double> average_grid;
+  Eigen::Vector3d grid_min_pos, grid_max_pos;
   int grid_w, grid_h;
+  int average_count;
 };
 
 }
