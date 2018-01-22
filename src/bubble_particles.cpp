@@ -285,8 +285,8 @@ void BubbleParticles::checkSurface2(){
 void BubbleParticles::calculateBubbles() {
   for (int i_particle = 0; i_particle < getSize(); ++i_particle) {
     if (particle_types(i_particle) == tiny_mps::ParticleType::NORMAL) {
-      // double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
-      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - average_pressure(i_particle);
+      double del_p = (condition_.vapor_pressure - condition_.head_pressure) - pressure(i_particle);
+      // double del_p = (condition_.vapor_pressure - condition_.head_pressure) - average_pressure(i_particle);
       if (del_p > 0) bubble_radius(i_particle) += sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       else bubble_radius(i_particle) -= sqrt(2 * abs(del_p) / (3 * condition_.mass_density));
       if (bubble_radius(i_particle) > condition_.average_distance) bubble_radius(i_particle) = condition_.average_distance;
@@ -328,11 +328,11 @@ void BubbleParticles::calculateAveragePressure() {
 inline double BubbleParticles::weightPoly6Kernel(double r, double h) {
   if (r > h) return 0;
   if (condition_.dimension == 2) {
-    return 4 * std::pow(h * h - r * r, 3) / (M_PI * std::pow(h, 8));  
+    return 4 * std::pow(h * h - r * r, 3) / (M_PI * std::pow(h, 8));
   } else {
-    return 315 * std::pow(h * h - r * r, 3) / (64 * M_PI * std::pow(h, 8));  
+    return 315 * std::pow(h * h - r * r, 3) / (64 * M_PI * std::pow(h, 8));
   }
-} 
+}
 
 void BubbleParticles::calculateModifiedParticleNumberDensity() {
   using namespace tiny_mps;
